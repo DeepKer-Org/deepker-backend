@@ -1,0 +1,39 @@
+package services
+
+import "biometric-data-backend/repositories"
+
+type Service[T any] interface {
+	GetAll() ([]T, error)
+	GetByID(id uint) (T, error)
+	Create(entity *T) (*T, error)
+	Update(entity *T) (*T, error)
+	Delete(id uint) error
+}
+
+type service[T any] struct {
+	repository repositories.Repository[T]
+}
+
+func NewService[T any](repository repositories.Repository[T]) Service[T] {
+	return &service[T]{repository: repository}
+}
+
+func (s *service[T]) GetAll() ([]T, error) {
+	return s.repository.FindAll()
+}
+
+func (s *service[T]) GetByID(id uint) (T, error) {
+	return s.repository.FindByID(id)
+}
+
+func (s *service[T]) Create(entity *T) (*T, error) {
+	return s.repository.Create(entity)
+}
+
+func (s *service[T]) Update(entity *T) (*T, error) {
+	return s.repository.Update(entity)
+}
+
+func (s *service[T]) Delete(id uint) error {
+	return s.repository.Delete(id)
+}
