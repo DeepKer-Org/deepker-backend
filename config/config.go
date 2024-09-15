@@ -1,18 +1,16 @@
 package config
 
 import (
-	"biometric-data-backend/models"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	"github.com/gocql/gocql"
 	"log"
 	"os"
 )
 
 var (
-	DB         *gorm.DB
+	Session    *gocql.Session
 	DBUser     string
 	DBPassword string
-	DBName     string
+	DBKeyspace string
 	DBHost     string
 	DBPort     string
 )
@@ -20,28 +18,33 @@ var (
 func LoadConfig() {
 	DBUser = os.Getenv("DB_USER")
 	DBPassword = os.Getenv("DB_PASSWORD")
-	DBName = os.Getenv("DB_NAME")
+	DBKeyspace = os.Getenv("DB_KEYSPACE")
 	DBHost = os.Getenv("DB_HOST")
 	DBPort = os.Getenv("DB_PORT")
 
-	if DBUser == "" || DBPassword == "" || DBName == "" || DBHost == "" || DBPort == "" {
+	if DBUser == "" || DBPassword == "" || DBKeyspace == "" || DBHost == "" || DBPort == "" {
 		log.Fatal("Database configuration not set")
 	}
 
-	// Construct DSN (Data Source Name)
-	dsn := DBUser + ":" + DBPassword + "@tcp(" + DBHost + ":" + DBPort + ")/" + DBName + "?charset=utf8mb4&parseTime=True&loc=Local"
+	// Cassandra Cluster Setup
+	cluster := gocql.NewCluster(DBHost)
+	cluster.Keyspace = DBKeyspace
+	cluster.Consistency = gocql.Quorum
+	cluster.Port = 9042
+
+	// Create the session
 	var err error
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	Session, err = cluster.CreateSession()
 	if err != nil {
-		log.Fatal("Failed to connect to database: ", err)
+		log.Fatal("Failed to connect to Cassandra: ", err)
 	}
-	log.Println("Database connected")
+	log.Println("Cassandra database connected")
+}
 
-	// Auto migrate the schema
-	err = DB.AutoMigrate(&models.User{})
-	if err != nil {
-		log.Fatal("Failed to auto migrate schema: ", err)
+// CloseSession Function to close the session when the app stops
+func CloseSession() {
+	if Session != nil {
+		Session.Close()
+		log.Println("Cassandra session closed")
 	}
-
-	log.Println("Database connected and schema migrated")
 }
