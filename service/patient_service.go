@@ -24,8 +24,9 @@ func NewPatientService(repo repository.PatientRepository) PatientService {
 }
 
 func (s *patientService) CreatePatient(patient *models.Patient) error {
-	if patient.CreatedAt == 0 {
-		patient.CreatedAt = time.Now().UnixNano() / int64(time.Millisecond)
+	if patient.Auditable.CreatedAt.IsZero() {
+		patient.Auditable.CreatedAt = time.Now()
+		patient.Auditable.ModifiedAt = patient.Auditable.CreatedAt
 	}
 	return s.repo.Create(patient)
 }
@@ -43,5 +44,5 @@ func (s *patientService) UpdatePatient(patient *models.Patient) error {
 }
 
 func (s *patientService) DeletePatient(id gocql.UUID) error {
-	return s.repo.Delete(id)
+	return s.repo.SoftDelete(id)
 }

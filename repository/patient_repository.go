@@ -4,6 +4,7 @@ import (
 	"biometric-data-backend/models"
 	"github.com/gocql/gocql"
 	"log"
+	"time"
 )
 
 type PatientRepository interface {
@@ -12,6 +13,7 @@ type PatientRepository interface {
 	GetByID(id gocql.UUID) (*models.Patient, error)
 	Update(patient *models.Patient) error
 	Delete(id gocql.UUID) error
+	SoftDelete(id gocql.UUID) error
 }
 
 type patientRepository struct {
@@ -25,7 +27,7 @@ func NewPatientRepository(session *gocql.Session) PatientRepository {
 // Create a new patient
 func (r *patientRepository) Create(patient *models.Patient) error {
 	query := `INSERT INTO patients (id, name, age, current_state, medications, created_at) VALUES (?, ?, ?, ?, ?, ?)`
-	if err := r.session.Query(query, patient.ID, patient.Name, patient.Age, patient.CurrentState, patient.Medications, patient.CreatedAt).Exec(); err != nil {
+	if err := r.session.Query(query, patient.ID, patient.Name, patient.Age, patient.CurrentState, patient.Medications, patient.Auditable.CreatedAt).Exec(); err != nil {
 		log.Println("Error creating patient:", err)
 		return err
 	}
@@ -40,7 +42,7 @@ func (r *patientRepository) GetAll() ([]*models.Patient, error) {
 
 	for {
 		patient := &models.Patient{}
-		if !iter.Scan(&patient.ID, &patient.Name, &patient.Age, &patient.CurrentState, &patient.Medications, &patient.CreatedAt) {
+		if !iter.Scan(&patient.ID, &patient.Name, &patient.Age, &patient.CurrentState, &patient.Medications, &patient.Auditable.CreatedAt) {
 			break
 		}
 		patients = append(patients, patient)
@@ -56,7 +58,7 @@ func (r *patientRepository) GetAll() ([]*models.Patient, error) {
 func (r *patientRepository) GetByID(id gocql.UUID) (*models.Patient, error) {
 	patient := &models.Patient{}
 	query := `SELECT id, name, age, current_state, medications, created_at FROM patients WHERE id = ? LIMIT 1`
-	if err := r.session.Query(query, id).Scan(&patient.ID, &patient.Name, &patient.Age, &patient.CurrentState, &patient.Medications, &patient.CreatedAt); err != nil {
+	if err := r.session.Query(query, id).Scan(&patient.ID, &patient.Name, &patient.Age, &patient.CurrentState, &patient.Medications, &patient.Auditable.CreatedAt); err != nil {
 		log.Println("Error fetching patient:", err)
 		return nil, err
 	}
@@ -78,6 +80,17 @@ func (r *patientRepository) Delete(id gocql.UUID) error {
 	query := `DELETE FROM patients WHERE id = ?`
 	if err := r.session.Query(query, id).Exec(); err != nil {
 		log.Println("Error deleting patient:", err)
+		return err
+	}
+	return nil
+}
+
+// SoftDelete a patient by ID
+func (r *patientRepository) SoftDelete(id gocql.UUID) error {
+	now := time.Now()
+	query := `UPDATE patients SET deleted_at = ? WHERE id = ?`
+	if err := r.session.Query(query, now, id).Exec(); err != nil {
+		log.Println("Error soft deleting patient:", err)
 		return err
 	}
 	return nil

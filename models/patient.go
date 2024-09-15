@@ -8,5 +8,5 @@ type Patient struct {
 	Age          int        `json:"age"`
 	CurrentState string     `json:"current_state"`
 	Medications  []string   `json:"medications"`
-	CreatedAt    int64      `json:"created_at"`
+	Auditable    Auditable  `json:"auditable"`
 }
