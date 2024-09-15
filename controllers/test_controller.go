@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"biometric-data-backend/models"
-	"biometric-data-backend/services"
+	"biometric-data-backend/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -10,7 +10,7 @@ type TestController struct {
 	controller *Controller[*models.Test]
 }
 
-func NewTestController(service services.Service[*models.Test]) *TestController {
+func NewTestController(service service.Service[*models.Test]) *TestController {
 	return &TestController{
 		controller: NewController(service),
 	}

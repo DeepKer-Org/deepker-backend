@@ -1,6 +1,6 @@
-package services
+package service
 
-import "biometric-data-backend/repositories"
+import "biometric-data-backend/repository"
 
 type Service[T any] interface {
 	GetAll() ([]T, error)
@@ -11,10 +11,10 @@ type Service[T any] interface {
 }
 
 type service[T any] struct {
-	repository repositories.Repository[T]
+	repository repository.Repository[T]
 }
 
-func NewService[T any](repository repositories.Repository[T]) Service[T] {
+func NewService[T any](repository repository.Repository[T]) Service[T] {
 	return &service[T]{repository: repository}
 }
 

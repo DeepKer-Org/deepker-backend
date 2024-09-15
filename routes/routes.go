@@ -1,39 +1,24 @@
 package routes
 
 import (
-	"biometric-data-backend/config"
 	"biometric-data-backend/controllers"
-	"biometric-data-backend/models"
-	"biometric-data-backend/repositories"
-	"biometric-data-backend/services"
+	"biometric-data-backend/repository"
+	"biometric-data-backend/service"
 	"github.com/gin-gonic/gin"
+	"github.com/gocql/gocql"
 )
 
-func RegisterRoutes(router *gin.Engine) {
-	testRepository := repositories.NewRepository[*models.Test](config.DB)
-	testService := services.NewService[*models.Test](testRepository)
-	testController := controllers.NewController[*models.Test](testService)
+// RegisterRoutes sets up the application routes
+func RegisterRoutes(router *gin.Engine, session *gocql.Session) {
+	// Initialize repository, service, and controller
+	patientRepo := repository.NewPatientRepository(session)
+	patientService := service.NewPatientService(patientRepo)
+	patientController := controllers.NewPatientController(patientService)
 
-	testRoutes := router.Group("/tests")
-	{
-		testRoutes.GET("/", testController.GetAll)
-		testRoutes.GET("/:id", testController.GetByID)
-		testRoutes.POST("/", testController.Create)
-		testRoutes.PUT("/:id", testController.Update)
-		testRoutes.DELETE("/:id", testController.Delete)
-	}
-
-	userRepository := repositories.NewRepository[*models.User](config.DB)
-	userService := services.NewService[*models.User](userRepository)
-	userController := controllers.NewController[*models.User](userService)
-
-	userRoutes := router.Group("/users")
-	{
-		userRoutes.GET("/", userController.GetAll)
-		userRoutes.GET("/:id", userController.GetByID)
-		userRoutes.POST("/", userController.Create)
-		userRoutes.PUT("/:id", userController.Update)
-		userRoutes.DELETE("/:id", userController.Delete)
-	}
-
+	// Define your routes here
+	router.POST("/patients", patientController.CreatePatient)
+	router.GET("/patients", patientController.GetAllPatients)
+	router.GET("/patients/:id", patientController.GetPatientByID)
+	router.PUT("/patients/:id", patientController.UpdatePatient)
+	router.DELETE("/patients/:id", patientController.DeletePatient)
 }

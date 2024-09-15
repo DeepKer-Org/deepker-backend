@@ -2,17 +2,17 @@ package controllers
 
 import (
 	"biometric-data-backend/models"
-	"biometric-data-backend/services"
+	"biometric-data-backend/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 )
 
 type Controller[T models.Identifiable] struct {
-	service services.Service[T]
+	service service.Service[T]
 }
 
-func NewController[T models.Identifiable](service services.Service[T]) *Controller[T] {
+func NewController[T models.Identifiable](service service.Service[T]) *Controller[T] {
 	return &Controller[T]{service: service}
 }
 
