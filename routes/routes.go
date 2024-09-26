@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"biometric-data-backend/controllers"
+	"biometric-data-backend/controller"
 	"biometric-data-backend/repository"
 	"biometric-data-backend/service"
 
@@ -10,15 +10,14 @@ import (
 )
 
 func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
-	alertRepo := repository.NewAlertRepository(db)
+	doctorRepo := repository.NewDoctorRepository(db)
+	doctorService := service.NewDoctorService(doctorRepo)
+	doctorController := controller.NewDoctorController(doctorService)
 
-	alertService := service.NewAlertService(alertRepo)
-
-	alertController := controllers.NewAlertController(alertService)
-
-	router.POST("/alerts", alertController.CreateAlert)
-	router.GET("/alerts", alertController.GetAllAlerts)
-	router.GET("/alerts/:id", alertController.GetAlertByID)
-	router.PUT("/alerts/:id", alertController.UpdateAlert)
-	router.DELETE("/alerts/:id", alertController.DeleteAlert)
+	router.POST("/doctors", doctorController.CreateDoctor)
+	router.GET("/doctors/:id", doctorController.GetDoctorByID)
+	router.GET("/doctors/:id/short", doctorController.GetShortDoctorByID)
+	router.GET("/doctors", doctorController.GetAllDoctors)
+	router.PUT("/doctors/:id", doctorController.UpdateDoctor)
+	router.DELETE("/doctors/:id", doctorController.DeleteDoctor)
 }
