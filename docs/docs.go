@@ -75,7 +75,7 @@ const docTemplate = `{
         },
         "/tests/{id}": {
             "get": {
-                "description": "Get a single test by ID",
+                "description": "Get a single test by DoctorID",
                 "consumes": [
                     "application/json"
                 ],
@@ -85,11 +85,11 @@ const docTemplate = `{
                 "tags": [
                     "tests"
                 ],
-                "summary": "Get test by ID",
+                "summary": "Get test by DoctorID",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Test ID",
+                        "description": "Test DoctorID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -119,7 +119,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Test ID",
+                        "description": "Test DoctorID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -144,7 +144,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete a test by ID",
+                "description": "Delete a test by DoctorID",
                 "consumes": [
                     "application/json"
                 ],
@@ -158,7 +158,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Test ID",
+                        "description": "Test DoctorID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -231,7 +231,7 @@ const docTemplate = `{
         },
         "/users/{id}": {
             "get": {
-                "description": "Get a single user by ID",
+                "description": "Get a single user by DoctorID",
                 "consumes": [
                     "application/json"
                 ],
@@ -241,11 +241,11 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Get user by ID",
+                "summary": "Get user by DoctorID",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "User ID",
+                        "description": "User DoctorID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -275,7 +275,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "User ID",
+                        "description": "User DoctorID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -300,7 +300,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete a user by ID",
+                "description": "Delete a user by DoctorID",
                 "consumes": [
                     "application/json"
                 ],
@@ -314,7 +314,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "User ID",
+                        "description": "User DoctorID",
                         "name": "id",
                         "in": "path",
                         "required": true
