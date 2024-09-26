@@ -1,39 +1,24 @@
 package routes
 
 import (
-	"biometric-data-backend/config"
 	"biometric-data-backend/controllers"
-	"biometric-data-backend/models"
-	"biometric-data-backend/repositories"
-	"biometric-data-backend/services"
+	"biometric-data-backend/repository"
+	"biometric-data-backend/service"
+
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-func RegisterRoutes(router *gin.Engine) {
-	testRepository := repositories.NewRepository[*models.Test](config.DB)
-	testService := services.NewService[*models.Test](testRepository)
-	testController := controllers.NewController[*models.Test](testService)
+func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
+	alertRepo := repository.NewAlertRepository(db)
 
-	testRoutes := router.Group("/tests")
-	{
-		testRoutes.GET("/", testController.GetAll)
-		testRoutes.GET("/:id", testController.GetByID)
-		testRoutes.POST("/", testController.Create)
-		testRoutes.PUT("/:id", testController.Update)
-		testRoutes.DELETE("/:id", testController.Delete)
-	}
+	alertService := service.NewAlertService(alertRepo)
 
-	userRepository := repositories.NewRepository[*models.User](config.DB)
-	userService := services.NewService[*models.User](userRepository)
-	userController := controllers.NewController[*models.User](userService)
+	alertController := controllers.NewAlertController(alertService)
 
-	userRoutes := router.Group("/users")
-	{
-		userRoutes.GET("/", userController.GetAll)
-		userRoutes.GET("/:id", userController.GetByID)
-		userRoutes.POST("/", userController.Create)
-		userRoutes.PUT("/:id", userController.Update)
-		userRoutes.DELETE("/:id", userController.Delete)
-	}
-
+	router.POST("/alerts", alertController.CreateAlert)
+	router.GET("/alerts", alertController.GetAllAlerts)
+	router.GET("/alerts/:id", alertController.GetAlertByID)
+	router.PUT("/alerts/:id", alertController.UpdateAlert)
+	router.DELETE("/alerts/:id", alertController.DeleteAlert)
 }

@@ -12,22 +12,29 @@ import (
 )
 
 func main() {
+	// Cargar el archivo .env
 	env := godotenv.Load()
 	if env != nil {
 		log.Fatal("Error loading .env file")
 	}
-	config.LoadConfig()
 
+	// Cargar la configuración de la base de datos y establecer la conexión
+	config.LoadConfig()
+	defer config.CloseDB() // Asegurarse de cerrar la conexión a PostgreSQL al finalizar
+
+	// Crear un nuevo router de Gin
 	router := gin.Default()
-	// Initialize swagger
+
+	// Inicializar Swagger
 	docs.SwaggerInfo.BasePath = "/"
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	routes.RegisterRoutes(router)
+	// Registrar las rutas y pasar la conexión de la base de datos (PostgreSQL)
+	routes.RegisterRoutes(router, config.DB)
 
+	// Iniciar el servidor
 	log.Println("Server is running on port 8080")
-	err := router.Run(":8080")
-	if err != nil {
-		return
+	if err := router.Run(":8080"); err != nil {
+		log.Fatal("Failed to start server: ", err)
 	}
 }

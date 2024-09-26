@@ -1,5 +1,5 @@
 DB_USER=root
 DB_PASSWORD=root
-DB_NAME=go_db
 DB_HOST=localhost
-DB_PORT=3306
+DB_PORT=9042
+DB_KEYSPACE=deepker_keyspace
