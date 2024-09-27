@@ -8,10 +8,10 @@ import (
 
 type BiometricRepository interface {
 	CreateBiometric(biometric *models.Biometric) error
-	GetBiometricByID(id uint) (*models.Biometric, error)
+	GetBiometricByID(id string) (*models.Biometric, error)
 	GetAllBiometrics() ([]*models.Biometric, error)
 	UpdateBiometric(biometric *models.Biometric) error
-	DeleteBiometric(id uint) error
+	DeleteBiometric(id string) error
 }
 
 type biometricRepository struct {
@@ -31,7 +31,7 @@ func (r *biometricRepository) CreateBiometric(biometric *models.Biometric) error
 }
 
 // GetBiometricByID retrieves a biometric by their BiometricID.
-func (r *biometricRepository) GetBiometricByID(id uint) (*models.Biometric, error) {
+func (r *biometricRepository) GetBiometricByID(id string) (*models.Biometric, error) {
 	var biometric models.Biometric
 	if err := r.db.First(&biometric, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -60,7 +60,7 @@ func (r *biometricRepository) UpdateBiometric(biometric *models.Biometric) error
 }
 
 // DeleteBiometric deletes a biometric by their BiometricID.
-func (r *biometricRepository) DeleteBiometric(id uint) error {
+func (r *biometricRepository) DeleteBiometric(id string) error {
 	if err := r.db.Delete(&models.Biometric{}, id).Error; err != nil {
 		return err
 	}

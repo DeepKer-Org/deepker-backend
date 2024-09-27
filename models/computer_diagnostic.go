@@ -1,6 +1,6 @@
 package models
 
-type ComputerDiagnosis struct {
+type ComputerDiagnostic struct {
 	BaseModel
 	DiagnosisID uint    `gorm:"primaryKey;autoIncrement" json:"diagnosis_id"`
 	AlertID     string  `gorm:"type:uuid;not null" json:"alert_id"`

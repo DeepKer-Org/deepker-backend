@@ -4,13 +4,17 @@ import (
 	"biometric-data-backend/controller"
 	"biometric-data-backend/repository"
 	"biometric-data-backend/service"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 const (
-	DoctorsResource       = "doctors"
-	ComorbiditiesResource = "comorbidities"
+	DoctorsResource            = "doctors"
+	ComorbiditiesResource      = "comorbidities"
+	MedicationsResource        = "medications"
+	BiometricsResource         = "biometrics"
+	ComputerDiagnosticResource = "computer-diagnostics"
 )
 
 // registerCrudRoutes registers CRUD routes for a given resource
@@ -55,5 +59,53 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		comorbidityController.GetAllComorbidities,
 		comorbidityController.UpdateComorbidity,
 		comorbidityController.DeleteComorbidity,
+	)
+
+	// Medication
+	medicationRepo := repository.NewMedicationRepository(db)
+	medicationService := service.NewMedicationService(medicationRepo)
+	medicationController := controller.NewMedicationController(medicationService)
+
+	// Register medication routes
+	registerCrudRoutes(
+		router,
+		MedicationsResource,
+		medicationController.CreateMedication,
+		medicationController.GetMedicationByID,
+		medicationController.GetAllMedications,
+		medicationController.UpdateMedication,
+		medicationController.DeleteMedication,
+	)
+
+	// Biometric
+	biometricRepo := repository.NewBiometricRepository(db)
+	biometricService := service.NewBiometricService(biometricRepo)
+	biometricController := controller.NewBiometricController(biometricService)
+
+	// Register biometric routes
+	registerCrudRoutes(
+		router,
+		BiometricsResource,
+		biometricController.CreateBiometric,
+		biometricController.GetBiometricByID,
+		biometricController.GetAllBiometrics,
+		biometricController.UpdateBiometric,
+		biometricController.DeleteBiometric,
+	)
+
+	// ComputerDiagnostic
+	computerDiagnosticRepo := repository.NewComputerDiagnosticRepository(db)
+	computerDiagnosticService := service.NewComputerDiagnosticService(computerDiagnosticRepo)
+	computerDiagnosticController := controller.NewComputerDiagnosticController(computerDiagnosticService)
+
+	// Register computer diagnostic routes
+	registerCrudRoutes(
+		router,
+		ComputerDiagnosticResource,
+		computerDiagnosticController.CreateComputerDiagnostic,
+		computerDiagnosticController.GetComputerDiagnosticByID,
+		computerDiagnosticController.GetAllComputerDiagnostics,
+		computerDiagnosticController.UpdateComputerDiagnostic,
+		computerDiagnosticController.DeleteComputerDiagnostic,
 	)
 }
