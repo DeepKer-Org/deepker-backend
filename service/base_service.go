@@ -4,10 +4,10 @@ import "biometric-data-backend/repository"
 
 type Service[T any] interface {
 	GetAll() ([]T, error)
-	GetByID(id uint) (T, error)
+	GetByID(id string) (T, error)
 	Create(entity *T) (*T, error)
 	Update(entity *T) (*T, error)
-	Delete(id uint) error
+	Delete(id string) error
 }
 
 type service[T any] struct {
@@ -22,7 +22,7 @@ func (s *service[T]) GetAll() ([]T, error) {
 	return s.repository.FindAll()
 }
 
-func (s *service[T]) GetByID(id uint) (T, error) {
+func (s *service[T]) GetByID(id string) (T, error) {
 	return s.repository.FindByID(id)
 }
 
@@ -34,6 +34,6 @@ func (s *service[T]) Update(entity *T) (*T, error) {
 	return s.repository.Update(entity)
 }
 
-func (s *service[T]) Delete(id uint) error {
+func (s *service[T]) Delete(id string) error {
 	return s.repository.Delete(id)
 }

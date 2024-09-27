@@ -4,16 +4,17 @@ import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
 	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"log"
 )
 
 type ComorbidityService interface {
 	CreateComorbidity(comorbidityDTO *dto.ComorbidityCreateDTO) error
-	GetComorbidityByID(id uint) (*dto.ComorbidityDTO, error)
+	GetComorbidityByID(id uuid.UUID) (*dto.ComorbidityDTO, error)
 	GetAllComorbidities() ([]*dto.ComorbidityDTO, error)
-	UpdateComorbidity(id uint, comorbidityDTO *dto.ComorbidityUpdateDTO) error
-	DeleteComorbidity(id uint) error
+	UpdateComorbidity(id uuid.UUID, comorbidityDTO *dto.ComorbidityUpdateDTO) error
+	DeleteComorbidity(id uuid.UUID) error
 }
 
 type comorbidityService struct {
@@ -35,7 +36,7 @@ func (s *comorbidityService) CreateComorbidity(comorbidityDTO *dto.ComorbidityCr
 	return nil
 }
 
-func (s *comorbidityService) GetComorbidityByID(id uint) (*dto.ComorbidityDTO, error) {
+func (s *comorbidityService) GetComorbidityByID(id uuid.UUID) (*dto.ComorbidityDTO, error) {
 	log.Println("Fetching comorbidity with ComorbidityID:", id)
 	comorbidity, err := s.repo.GetComorbidityByID(id)
 	if err != nil {
@@ -61,7 +62,7 @@ func (s *comorbidityService) GetAllComorbidities() ([]*dto.ComorbidityDTO, error
 	return dto.MapComorbiditiesToDTOs(comorbidities), nil
 }
 
-func (s *comorbidityService) UpdateComorbidity(id uint, comorbidityDTO *dto.ComorbidityUpdateDTO) error {
+func (s *comorbidityService) UpdateComorbidity(id uuid.UUID, comorbidityDTO *dto.ComorbidityUpdateDTO) error {
 	log.Println("Updating comorbidity with ComorbidityID:", id)
 
 	comorbidity, err := s.repo.GetComorbidityByID(id)
@@ -84,7 +85,7 @@ func (s *comorbidityService) UpdateComorbidity(id uint, comorbidityDTO *dto.Como
 	return nil
 }
 
-func (s *comorbidityService) DeleteComorbidity(id uint) error {
+func (s *comorbidityService) DeleteComorbidity(id uuid.UUID) error {
 	log.Println("Deleting comorbidity with ComorbidityID:", id)
 	err := s.repo.DeleteComorbidity(id)
 	if err != nil {

@@ -33,7 +33,7 @@ func (r *monitoringDeviceRepository) CreateMonitoringDevice(monitoringDevice *mo
 // GetMonitoringDeviceByID retrieves a monitoringDevice by their MonitoringDeviceID.
 func (r *monitoringDeviceRepository) GetMonitoringDeviceByID(id string) (*models.MonitoringDevice, error) {
 	var monitoringDevice models.MonitoringDevice
-	if err := r.db.First(&monitoringDevice, id).Error; err != nil {
+	if err := r.db.First(&monitoringDevice).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -61,7 +61,7 @@ func (r *monitoringDeviceRepository) UpdateMonitoringDevice(monitoringDevice *mo
 
 // DeleteMonitoringDevice deletes a monitoringDevice by their MonitoringDeviceID.
 func (r *monitoringDeviceRepository) DeleteMonitoringDevice(id string) error {
-	if err := r.db.Delete(&models.MonitoringDevice{}, id).Error; err != nil {
+	if err := r.db.Delete(&models.MonitoringDevice{}).Error; err != nil {
 		return err
 	}
 	return nil

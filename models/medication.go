@@ -1,11 +1,14 @@
 package models
 
-import "time"
+import (
+	"github.com/google/uuid"
+	"time"
+)
 
 type Medication struct {
 	BaseModel
-	MedicationID uint       `gorm:"primaryKey;autoIncrement" json:"medication_id"`
-	PatientID    uint       `json:"patient_id"`
+	MedicationID uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"medication_id"`
+	PatientID    uuid.UUID  `gorm:"type:uuid;not null" json:"patient_id"`
 	Medication   string     `gorm:"size:100;not null" json:"medication"`
 	StartDate    *time.Time `json:"start_date"`
 	EndDate      *time.Time `json:"end_date"`

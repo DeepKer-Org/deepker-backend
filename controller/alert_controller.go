@@ -4,6 +4,7 @@ import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/service"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"log"
 	"net/http"
 )
@@ -41,7 +42,14 @@ func (ac *AlertController) CreateAlert(c *gin.Context) {
 func (ac *AlertController) GetAlertByID(c *gin.Context) {
 	id := c.Param("id")
 
-	alert, err := ac.AlertService.GetAlertByID(id)
+	alertID, err := uuid.Parse(id)
+	if err != nil {
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid alert ID"})
+		return
+	}
+
+	alert, err := ac.AlertService.GetAlertByID(alertID)
 	if err != nil {
 		log.Printf("Error retrieving alert: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve alert"})
@@ -73,6 +81,13 @@ func (ac *AlertController) GetAllAlerts(c *gin.Context) {
 func (ac *AlertController) UpdateAlert(c *gin.Context) {
 	id := c.Param("id")
 
+	alertID, err := uuid.Parse(id)
+	if err != nil {
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid alert ID"})
+		return
+	}
+
 	var alertDTO dto.AlertUpdateDTO
 	if err := c.ShouldBindJSON(&alertDTO); err != nil {
 		log.Printf("Error binding JSON: %v", err)
@@ -80,7 +95,7 @@ func (ac *AlertController) UpdateAlert(c *gin.Context) {
 		return
 	}
 
-	err := ac.AlertService.UpdateAlert(id, &alertDTO)
+	err = ac.AlertService.UpdateAlert(alertID, &alertDTO)
 	if err != nil {
 		log.Printf("Failed to update alert: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update alert"})
@@ -94,7 +109,14 @@ func (ac *AlertController) UpdateAlert(c *gin.Context) {
 func (ac *AlertController) DeleteAlert(c *gin.Context) {
 	id := c.Param("id")
 
-	err := ac.AlertService.DeleteAlert(id)
+	alertID, err := uuid.Parse(id)
+	if err != nil {
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid alert ID"})
+		return
+	}
+
+	err = ac.AlertService.DeleteAlert(alertID)
 	if err != nil {
 		log.Printf("Failed to delete alert: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete alert"})

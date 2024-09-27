@@ -5,16 +5,17 @@ import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
 	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"log"
 )
 
 type BiometricService interface {
 	CreateBiometric(biometricDTO *dto.BiometricCreateDTO) error
-	GetBiometricByID(id string) (*dto.BiometricDTO, error)
+	GetBiometricByID(id uuid.UUID) (*dto.BiometricDTO, error)
 	GetAllBiometrics() ([]*dto.BiometricDTO, error)
-	UpdateBiometric(id string, biometricDTO *dto.BiometricUpdateDTO) error
-	DeleteBiometric(id string) error
+	UpdateBiometric(id uuid.UUID, biometricDTO *dto.BiometricUpdateDTO) error
+	DeleteBiometric(id uuid.UUID) error
 }
 
 type biometricService struct {
@@ -43,7 +44,7 @@ func (s *biometricService) CreateBiometric(biometricDTO *dto.BiometricCreateDTO)
 	return nil
 }
 
-func (s *biometricService) GetBiometricByID(id string) (*dto.BiometricDTO, error) {
+func (s *biometricService) GetBiometricByID(id uuid.UUID) (*dto.BiometricDTO, error) {
 	log.Println("Fetching biometric with BiometricsID:", id)
 	biometric, err := s.repo.GetBiometricByID(id)
 	if err != nil {
@@ -73,7 +74,7 @@ func (s *biometricService) GetAllBiometrics() ([]*dto.BiometricDTO, error) {
 	return biometricDTOs, nil
 }
 
-func (s *biometricService) UpdateBiometric(id string, biometricDTO *dto.BiometricUpdateDTO) error {
+func (s *biometricService) UpdateBiometric(id uuid.UUID, biometricDTO *dto.BiometricUpdateDTO) error {
 	log.Println("Updating biometric with BiometricsID:", id)
 
 	biometric, err := s.repo.GetBiometricByID(id)
@@ -101,7 +102,7 @@ func (s *biometricService) UpdateBiometric(id string, biometricDTO *dto.Biometri
 	return nil
 }
 
-func (s *biometricService) DeleteBiometric(id string) error {
+func (s *biometricService) DeleteBiometric(id uuid.UUID) error {
 	log.Println("Deleting biometric with BiometricsID:", id)
 	err := s.repo.DeleteBiometric(id)
 	if err != nil {

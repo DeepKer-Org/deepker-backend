@@ -5,17 +5,18 @@ import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
 	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"log"
 )
 
 type DoctorService interface {
 	CreateDoctor(doctor *models.Doctor) error
-	GetDoctorByID(id uint) (*models.Doctor, error)
-	GetShortDoctorByID(id uint) (*dto.DoctorDTO, error)
+	GetDoctorByID(id uuid.UUID) (*models.Doctor, error)
+	GetShortDoctorByID(id uuid.UUID) (*dto.DoctorDTO, error)
 	GetAllDoctors() ([]*models.Doctor, error)
 	UpdateDoctor(doctor *models.Doctor) error
-	DeleteDoctor(id uint) error
+	DeleteDoctor(id uuid.UUID) error
 }
 
 type doctorService struct {
@@ -37,7 +38,7 @@ func (s *doctorService) CreateDoctor(doctor *models.Doctor) error {
 	return nil
 }
 
-func (s *doctorService) GetDoctorByID(id uint) (*models.Doctor, error) {
+func (s *doctorService) GetDoctorByID(id uuid.UUID) (*models.Doctor, error) {
 	log.Println("Fetching doctor with DoctorID:", id)
 	doctor, err := s.repo.GetDoctorByID(id)
 	if err != nil {
@@ -52,7 +53,7 @@ func (s *doctorService) GetDoctorByID(id uint) (*models.Doctor, error) {
 	return doctor, nil
 }
 
-func (s *doctorService) GetShortDoctorByID(id uint) (*dto.DoctorDTO, error) {
+func (s *doctorService) GetShortDoctorByID(id uuid.UUID) (*dto.DoctorDTO, error) {
 	doctor, err := s.repo.GetDoctorByID(id)
 	if err != nil {
 		return nil, err
@@ -82,7 +83,7 @@ func (s *doctorService) UpdateDoctor(doctor *models.Doctor) error {
 	return nil
 }
 
-func (s *doctorService) DeleteDoctor(id uint) error {
+func (s *doctorService) DeleteDoctor(id uuid.UUID) error {
 	log.Println("Deleting doctor with DoctorID:", id)
 	err := s.repo.DeleteDoctor(id)
 	if err != nil {

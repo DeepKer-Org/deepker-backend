@@ -1,11 +1,14 @@
 package dto
 
-import "biometric-data-backend/models"
+import (
+	"biometric-data-backend/models"
+	"github.com/google/uuid"
+)
 import "time"
 
 // MedicationCreateDTO is used for creating a new medication
 type MedicationCreateDTO struct {
-	PatientID   uint       `json:"patient_id"`
+	PatientID   uuid.UUID  `json:"patient_id"`
 	Medication  string     `json:"medication"`
 	StartDate   *time.Time `json:"start_date"`
 	EndDate     *time.Time `json:"end_date"`
@@ -15,7 +18,7 @@ type MedicationCreateDTO struct {
 
 // MedicationUpdateDTO is used for updating an existing medication
 type MedicationUpdateDTO struct {
-	PatientID   uint       `json:"patient_id"`
+	PatientID   uuid.UUID  `json:"patient_id"`
 	Medication  string     `json:"medication"`
 	StartDate   *time.Time `json:"start_date"`
 	EndDate     *time.Time `json:"end_date"`
@@ -25,8 +28,8 @@ type MedicationUpdateDTO struct {
 
 // MedicationDTO is used for retrieving a medication
 type MedicationDTO struct {
-	MedicationID uint       `json:"medication_id"`
-	PatientID    uint       `json:"patient_id"`
+	MedicationID uuid.UUID  `json:"medication_id"`
+	PatientID    uuid.UUID  `json:"patient_id"`
 	Medication   string     `json:"medication"`
 	StartDate    *time.Time `json:"start_date"`
 	EndDate      *time.Time `json:"end_date"`

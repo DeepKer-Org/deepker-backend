@@ -4,13 +4,10 @@ import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/service"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"log"
 	"net/http"
-	"strconv"
 )
-
-const invalidComorbidityIDMsg = "Invalid comorbidity ComorbidityID: %v"
-const invalidComorbidityID = "Invalid comorbidity ComorbidityID"
 
 type ComorbidityController struct {
 	ComorbidityService service.ComorbidityService
@@ -43,15 +40,16 @@ func (cc *ComorbidityController) CreateComorbidity(c *gin.Context) {
 
 // GetComorbidityByID handles retrieving a comorbidity by their ComorbidityID
 func (cc *ComorbidityController) GetComorbidityByID(c *gin.Context) {
-	idParam := c.Param("id")
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id := c.Param("id")
+
+	comorbidityID, err := uuid.Parse(id)
 	if err != nil {
-		log.Printf(invalidComorbidityIDMsg, idParam)
-		c.JSON(http.StatusBadRequest, gin.H{"error": invalidComorbidityID})
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comorbidity ID"})
 		return
 	}
 
-	comorbidity, err := cc.ComorbidityService.GetComorbidityByID(uint(id))
+	comorbidity, err := cc.ComorbidityService.GetComorbidityByID(comorbidityID)
 	if err != nil {
 		log.Printf("Error retrieving comorbidity: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve comorbidity"})
@@ -81,11 +79,12 @@ func (cc *ComorbidityController) GetAllComorbidities(c *gin.Context) {
 
 // UpdateComorbidity handles updating an existing comorbidity
 func (cc *ComorbidityController) UpdateComorbidity(c *gin.Context) {
-	idParam := c.Param("id")
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id := c.Param("id")
+
+	comorbidityID, err := uuid.Parse(id)
 	if err != nil {
-		log.Printf(invalidComorbidityIDMsg, idParam)
-		c.JSON(http.StatusBadRequest, gin.H{"error": invalidComorbidityID})
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comorbidity ID"})
 		return
 	}
 
@@ -96,7 +95,7 @@ func (cc *ComorbidityController) UpdateComorbidity(c *gin.Context) {
 		return
 	}
 
-	err = cc.ComorbidityService.UpdateComorbidity(uint(id), &comorbidityDTO)
+	err = cc.ComorbidityService.UpdateComorbidity(comorbidityID, &comorbidityDTO)
 	if err != nil {
 		log.Printf("Failed to update comorbidity: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update comorbidity"})
@@ -108,15 +107,16 @@ func (cc *ComorbidityController) UpdateComorbidity(c *gin.Context) {
 
 // DeleteComorbidity handles deleting a comorbidity by their ComorbidityID
 func (cc *ComorbidityController) DeleteComorbidity(c *gin.Context) {
-	idParam := c.Param("id")
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id := c.Param("id")
+
+	comorbidityID, err := uuid.Parse(id)
 	if err != nil {
-		log.Printf(invalidComorbidityIDMsg, idParam)
-		c.JSON(http.StatusBadRequest, gin.H{"error": invalidComorbidityID})
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comorbidity ID"})
 		return
 	}
 
-	err = cc.ComorbidityService.DeleteComorbidity(uint(id))
+	err = cc.ComorbidityService.DeleteComorbidity(comorbidityID)
 	if err != nil {
 		log.Printf("Failed to delete comorbidity: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete comorbidity"})

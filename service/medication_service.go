@@ -5,16 +5,17 @@ import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
 	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"log"
 )
 
 type MedicationService interface {
 	CreateMedication(medicationDTO *dto.MedicationCreateDTO) error
-	GetMedicationByID(id uint) (*dto.MedicationDTO, error)
+	GetMedicationByID(id uuid.UUID) (*dto.MedicationDTO, error)
 	GetAllMedications() ([]*dto.MedicationDTO, error)
-	UpdateMedication(id uint, medicationDTO *dto.MedicationUpdateDTO) error
-	DeleteMedication(id uint) error
+	UpdateMedication(id uuid.UUID, medicationDTO *dto.MedicationUpdateDTO) error
+	DeleteMedication(id uuid.UUID) error
 }
 
 type medicationService struct {
@@ -44,7 +45,7 @@ func (s *medicationService) CreateMedication(medicationDTO *dto.MedicationCreate
 	return nil
 }
 
-func (s *medicationService) GetMedicationByID(id uint) (*dto.MedicationDTO, error) {
+func (s *medicationService) GetMedicationByID(id uuid.UUID) (*dto.MedicationDTO, error) {
 	log.Println("Fetching medication with MedicationID:", id)
 	medication, err := s.repo.GetMedicationByID(id)
 	if err != nil {
@@ -74,7 +75,7 @@ func (s *medicationService) GetAllMedications() ([]*dto.MedicationDTO, error) {
 	return medicationDTOs, nil
 }
 
-func (s *medicationService) UpdateMedication(id uint, medicationDTO *dto.MedicationUpdateDTO) error {
+func (s *medicationService) UpdateMedication(id uuid.UUID, medicationDTO *dto.MedicationUpdateDTO) error {
 	log.Println("Updating medication with MedicationID:", id)
 
 	medication, err := s.repo.GetMedicationByID(id)
@@ -103,7 +104,7 @@ func (s *medicationService) UpdateMedication(id uint, medicationDTO *dto.Medicat
 	return nil
 }
 
-func (s *medicationService) DeleteMedication(id uint) error {
+func (s *medicationService) DeleteMedication(id uuid.UUID) error {
 	log.Println("Deleting medication with MedicationID:", id)
 	err := s.repo.DeleteMedication(id)
 	if err != nil {

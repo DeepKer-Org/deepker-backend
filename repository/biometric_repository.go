@@ -3,16 +3,17 @@ package repository
 import (
 	"biometric-data-backend/models"
 	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type BiometricRepository interface {
 	CreateBiometric(biometric *models.Biometric) error
-	GetBiometricByID(id string) (*models.Biometric, error)
-	GetBiometricsByAlertID(id string) ([]*models.Biometric, error)
+	GetBiometricByID(id uuid.UUID) (*models.Biometric, error)
+	GetBiometricsByAlertID(id uuid.UUID) ([]*models.Biometric, error)
 	GetAllBiometrics() ([]*models.Biometric, error)
 	UpdateBiometric(biometric *models.Biometric) error
-	DeleteBiometric(id string) error
+	DeleteBiometric(id uuid.UUID) error
 }
 
 type biometricRepository struct {
@@ -32,9 +33,9 @@ func (r *biometricRepository) CreateBiometric(biometric *models.Biometric) error
 }
 
 // GetBiometricByID retrieves a biometric by their BiometricID.
-func (r *biometricRepository) GetBiometricByID(id string) (*models.Biometric, error) {
+func (r *biometricRepository) GetBiometricByID(id uuid.UUID) (*models.Biometric, error) {
 	var biometric models.Biometric
-	if err := r.db.First(&biometric, id).Error; err != nil {
+	if err := r.db.First(&biometric).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -44,7 +45,7 @@ func (r *biometricRepository) GetBiometricByID(id string) (*models.Biometric, er
 }
 
 // GetBioByAlertID retrieves a biometric by their AlertID.
-func (r *biometricRepository) GetBiometricsByAlertID(id string) ([]*models.Biometric, error) {
+func (r *biometricRepository) GetBiometricsByAlertID(id uuid.UUID) ([]*models.Biometric, error) {
 	var biometrics []*models.Biometric
 	if err := r.db.Where("alert_id = ?", id).Find(&biometrics).Error; err != nil {
 		return nil, err
@@ -70,8 +71,8 @@ func (r *biometricRepository) UpdateBiometric(biometric *models.Biometric) error
 }
 
 // DeleteBiometric deletes a biometric by their BiometricID.
-func (r *biometricRepository) DeleteBiometric(id string) error {
-	if err := r.db.Delete(&models.Biometric{}, id).Error; err != nil {
+func (r *biometricRepository) DeleteBiometric(id uuid.UUID) error {
+	if err := r.db.Delete(&models.Biometric{}).Error; err != nil {
 		return err
 	}
 	return nil

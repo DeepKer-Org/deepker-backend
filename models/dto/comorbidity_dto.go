@@ -1,24 +1,27 @@
 package dto
 
-import "biometric-data-backend/models"
+import (
+	"biometric-data-backend/models"
+	"github.com/google/uuid"
+)
 
 // ComorbidityCreateDTO is used for the creation of a new comorbidity
 type ComorbidityCreateDTO struct {
-	PatientID   uint   `json:"patient_id"`
-	Comorbidity string `json:"comorbidity"`
+	PatientID   uuid.UUID `json:"patient_id"`
+	Comorbidity string    `json:"comorbidity"`
 }
 
 // ComorbidityUpdateDTO is used for updating an existing comorbidity
 type ComorbidityUpdateDTO struct {
-	PatientID   uint   `json:"patient_id"`
-	Comorbidity string `json:"comorbidity"`
+	PatientID   uuid.UUID `json:"patient_id"`
+	Comorbidity string    `json:"comorbidity"`
 }
 
 // ComorbidityDTO is used for retrieving a comorbidity
 type ComorbidityDTO struct {
-	ComorbidityID uint   `json:"comorbidity_id"`
-	PatientID     uint   `json:"patient_id"`
-	Comorbidity   string `json:"comorbidity"`
+	ComorbidityID uuid.UUID `json:"comorbidity_id"`
+	PatientID     uuid.UUID `json:"patient_id"`
+	Comorbidity   string    `json:"comorbidity"`
 }
 
 // MapComorbidityToDTO maps a Comorbidity model to a ComorbidityDTO

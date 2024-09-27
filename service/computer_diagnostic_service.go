@@ -5,16 +5,17 @@ import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
 	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"log"
 )
 
 type ComputerDiagnosticService interface {
 	CreateComputerDiagnostic(diagnosisDTO *dto.ComputerDiagnosticCreateDTO) error
-	GetComputerDiagnosticByID(id uint) (*dto.ComputerDiagnosticDTO, error)
+	GetComputerDiagnosticByID(id uuid.UUID) (*dto.ComputerDiagnosticDTO, error)
 	GetAllComputerDiagnostics() ([]*dto.ComputerDiagnosticDTO, error)
-	UpdateComputerDiagnostic(id uint, diagnosisDTO *dto.ComputerDiagnosticUpdateDTO) error
-	DeleteComputerDiagnostic(id uint) error
+	UpdateComputerDiagnostic(id uuid.UUID, diagnosisDTO *dto.ComputerDiagnosticUpdateDTO) error
+	DeleteComputerDiagnostic(id uuid.UUID) error
 }
 
 type computerDiagnosticService struct {
@@ -41,7 +42,7 @@ func (s *computerDiagnosticService) CreateComputerDiagnostic(diagnosisDTO *dto.C
 	return nil
 }
 
-func (s *computerDiagnosticService) GetComputerDiagnosticByID(id uint) (*dto.ComputerDiagnosticDTO, error) {
+func (s *computerDiagnosticService) GetComputerDiagnosticByID(id uuid.UUID) (*dto.ComputerDiagnosticDTO, error) {
 	log.Println("Fetching computer diagnosis with DiagnosisID:", id)
 	diagnosis, err := s.repo.GetComputerDiagnosticByID(id)
 	if err != nil {
@@ -71,7 +72,7 @@ func (s *computerDiagnosticService) GetAllComputerDiagnostics() ([]*dto.Computer
 	return diagnosisDTOs, nil
 }
 
-func (s *computerDiagnosticService) UpdateComputerDiagnostic(id uint, diagnosisDTO *dto.ComputerDiagnosticUpdateDTO) error {
+func (s *computerDiagnosticService) UpdateComputerDiagnostic(id uuid.UUID, diagnosisDTO *dto.ComputerDiagnosticUpdateDTO) error {
 	log.Println("Updating computer diagnosis with DiagnosisID:", id)
 
 	diagnosis, err := s.repo.GetComputerDiagnosticByID(id)
@@ -97,7 +98,7 @@ func (s *computerDiagnosticService) UpdateComputerDiagnostic(id uint, diagnosisD
 	return nil
 }
 
-func (s *computerDiagnosticService) DeleteComputerDiagnostic(id uint) error {
+func (s *computerDiagnosticService) DeleteComputerDiagnostic(id uuid.UUID) error {
 	log.Println("Deleting computer diagnosis with DiagnosisID:", id)
 	err := s.repo.DeleteComputerDiagnostic(id)
 	if err != nil {

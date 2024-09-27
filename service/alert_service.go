@@ -5,16 +5,17 @@ import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
 	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"log"
 )
 
 type AlertService interface {
 	CreateAlert(alertDTO *dto.AlertCreateDTO) error
-	GetAlertByID(id string) (*dto.AlertDTO, error)
+	GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error)
 	GetAllAlerts() ([]*dto.AlertDTO, error)
-	UpdateAlert(id string, alertDTO *dto.AlertUpdateDTO) error
-	DeleteAlert(id string) error
+	UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) error
+	DeleteAlert(id uuid.UUID) error
 }
 
 type alertService struct {
@@ -50,7 +51,7 @@ func (s *alertService) CreateAlert(alertDTO *dto.AlertCreateDTO) error {
 	return nil
 }
 
-func (s *alertService) GetAlertByID(id string) (*dto.AlertDTO, error) {
+func (s *alertService) GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error) {
 	log.Println("Fetching alert with AlertID:", id)
 	alert, err := s.alertRepo.GetAlertByID(id)
 	if err != nil {
@@ -129,7 +130,7 @@ func (s *alertService) GetAllAlerts() ([]*dto.AlertDTO, error) {
 	return alertDTOs, nil
 }
 
-func (s *alertService) UpdateAlert(id string, alertDTO *dto.AlertUpdateDTO) error {
+func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) error {
 	log.Println("Updating alert with AlertID:", id)
 
 	alert, err := s.alertRepo.GetAlertByID(id)
@@ -156,7 +157,7 @@ func (s *alertService) UpdateAlert(id string, alertDTO *dto.AlertUpdateDTO) erro
 	return nil
 }
 
-func (s *alertService) DeleteAlert(id string) error {
+func (s *alertService) DeleteAlert(id uuid.UUID) error {
 	log.Println("Deleting alert with AlertID:", id)
 	err := s.alertRepo.DeleteAlert(id)
 	if err != nil {

@@ -3,15 +3,16 @@ package repository
 import (
 	"biometric-data-backend/models"
 	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type AlertRepository interface {
 	CreateAlert(alert *models.Alert) error
-	GetAlertByID(id string) (*models.Alert, error)
+	GetAlertByID(id uuid.UUID) (*models.Alert, error)
 	GetAllAlerts() ([]*models.Alert, error)
 	UpdateAlert(alert *models.Alert) error
-	DeleteAlert(id string) error
+	DeleteAlert(id uuid.UUID) error
 }
 
 type alertRepository struct {
@@ -32,9 +33,9 @@ func (r *alertRepository) CreateAlert(alert *models.Alert) error {
 
 /* old code
 // GetAlertByID retrieves an alert by their AlertID.
-func (r *alertRepository) GetAlertByID(id string) (*models.Alert, error) {
+func (r *alertRepository) GetAlertByID(id uuid.UUID) (*models.Alert, error) {
 	var alert models.Alert
-	if err := r.db.First(&alert, id).Error; err != nil {
+	if err := r.db.First(&alert).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -44,7 +45,7 @@ func (r *alertRepository) GetAlertByID(id string) (*models.Alert, error) {
 }
 */
 // GetAlertByID retrieves an alert by its AlertID.
-func (r *alertRepository) GetAlertByID(id string) (*models.Alert, error) {
+func (r *alertRepository) GetAlertByID(id uuid.UUID) (*models.Alert, error) {
 	var alert models.Alert
 	// Explicitly search by the alert_id field
 	if err := r.db.Where("alert_id = ?", id).First(&alert).Error; err != nil {
@@ -74,8 +75,8 @@ func (r *alertRepository) UpdateAlert(alert *models.Alert) error {
 }
 
 // DeleteAlert deletes a alert by their AlertID.
-func (r *alertRepository) DeleteAlert(id string) error {
-	if err := r.db.Delete(&models.Alert{}, id).Error; err != nil {
+func (r *alertRepository) DeleteAlert(id uuid.UUID) error {
+	if err := r.db.Delete(&models.Alert{}).Error; err != nil {
 		return err
 	}
 	return nil

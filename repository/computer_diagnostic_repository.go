@@ -3,16 +3,17 @@ package repository
 import (
 	"biometric-data-backend/models"
 	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type ComputerDiagnosticRepository interface {
 	CreateComputerDiagnostic(computerDiagnosis *models.ComputerDiagnostic) error
-	GetComputerDiagnosticByID(id uint) (*models.ComputerDiagnostic, error)
-	GetComputerDiagnosticsByAlertID(alertID string) ([]*models.ComputerDiagnostic, error)
+	GetComputerDiagnosticByID(id uuid.UUID) (*models.ComputerDiagnostic, error)
+	GetComputerDiagnosticsByAlertID(alertID uuid.UUID) ([]*models.ComputerDiagnostic, error)
 	GetAllComputerDiagnostics() ([]*models.ComputerDiagnostic, error)
 	UpdateComputerDiagnostic(computerDiagnosis *models.ComputerDiagnostic) error
-	DeleteComputerDiagnostic(id uint) error
+	DeleteComputerDiagnostic(id uuid.UUID) error
 }
 
 type computerDiagnosticRepository struct {
@@ -32,9 +33,9 @@ func (r *computerDiagnosticRepository) CreateComputerDiagnostic(computerDiagnosi
 }
 
 // GetComputerDiagnosticByID retrieves a computerDiagnosis by their ComputerDiagnosticID.
-func (r *computerDiagnosticRepository) GetComputerDiagnosticByID(id uint) (*models.ComputerDiagnostic, error) {
+func (r *computerDiagnosticRepository) GetComputerDiagnosticByID(id uuid.UUID) (*models.ComputerDiagnostic, error) {
 	var computerDiagnosis models.ComputerDiagnostic
-	if err := r.db.First(&computerDiagnosis, id).Error; err != nil {
+	if err := r.db.First(&computerDiagnosis).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -44,7 +45,7 @@ func (r *computerDiagnosticRepository) GetComputerDiagnosticByID(id uint) (*mode
 }
 
 // GetComputerDiagnosticsByAlertID retrieves a computerDiagnosis by their AlertID.
-func (r *computerDiagnosticRepository) GetComputerDiagnosticsByAlertID(alertID string) ([]*models.ComputerDiagnostic, error) {
+func (r *computerDiagnosticRepository) GetComputerDiagnosticsByAlertID(alertID uuid.UUID) ([]*models.ComputerDiagnostic, error) {
 	var computerDiagnostics []*models.ComputerDiagnostic
 	if err := r.db.Where("alert_id = ?", alertID).Find(&computerDiagnostics).Error; err != nil {
 		return nil, err
@@ -70,8 +71,8 @@ func (r *computerDiagnosticRepository) UpdateComputerDiagnostic(computerDiagnosi
 }
 
 // DeleteComputerDiagnostic deletes a computerDiagnosis by their ComputerDiagnosticID.
-func (r *computerDiagnosticRepository) DeleteComputerDiagnostic(id uint) error {
-	if err := r.db.Delete(&models.ComputerDiagnostic{}, id).Error; err != nil {
+func (r *computerDiagnosticRepository) DeleteComputerDiagnostic(id uuid.UUID) error {
+	if err := r.db.Delete(&models.ComputerDiagnostic{}).Error; err != nil {
 		return err
 	}
 	return nil

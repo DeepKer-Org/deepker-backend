@@ -4,9 +4,9 @@ import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/service"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 type ComputerDiagnosticController struct {
@@ -40,15 +40,16 @@ func (cdc *ComputerDiagnosticController) CreateComputerDiagnostic(c *gin.Context
 
 // GetComputerDiagnosticByID handles retrieving a computer diagnosis by its DiagnosisID
 func (cdc *ComputerDiagnosticController) GetComputerDiagnosticByID(c *gin.Context) {
-	idParam := c.Param("id")
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id := c.Param("id")
+
+	diagnosisID, err := uuid.Parse(id)
 	if err != nil {
-		log.Printf("Invalid computer diagnosis DiagnosisID: %v", idParam)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid computer diagnosis DiagnosisID"})
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid diagnosis ID"})
 		return
 	}
 
-	diagnosis, err := cdc.ComputerDiagnosticService.GetComputerDiagnosticByID(uint(id))
+	diagnosis, err := cdc.ComputerDiagnosticService.GetComputerDiagnosticByID(diagnosisID)
 	if err != nil {
 		log.Printf("Error retrieving computer diagnosis: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve computer diagnosis"})
@@ -78,11 +79,12 @@ func (cdc *ComputerDiagnosticController) GetAllComputerDiagnostics(c *gin.Contex
 
 // UpdateComputerDiagnostic handles updating an existing computer diagnosis
 func (cdc *ComputerDiagnosticController) UpdateComputerDiagnostic(c *gin.Context) {
-	idParam := c.Param("id")
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id := c.Param("id")
+
+	diagnosisID, err := uuid.Parse(id)
 	if err != nil {
-		log.Printf("Invalid computer diagnosis DiagnosisID: %v", idParam)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid computer diagnosis DiagnosisID"})
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid diagnosis ID"})
 		return
 	}
 
@@ -93,7 +95,7 @@ func (cdc *ComputerDiagnosticController) UpdateComputerDiagnostic(c *gin.Context
 		return
 	}
 
-	err = cdc.ComputerDiagnosticService.UpdateComputerDiagnostic(uint(id), &diagnosisDTO)
+	err = cdc.ComputerDiagnosticService.UpdateComputerDiagnostic(diagnosisID, &diagnosisDTO)
 	if err != nil {
 		log.Printf("Failed to update computer diagnosis: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update computer diagnosis"})
@@ -105,15 +107,16 @@ func (cdc *ComputerDiagnosticController) UpdateComputerDiagnostic(c *gin.Context
 
 // DeleteComputerDiagnostic handles deleting a computer diagnosis by its DiagnosisID
 func (cdc *ComputerDiagnosticController) DeleteComputerDiagnostic(c *gin.Context) {
-	idParam := c.Param("id")
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id := c.Param("id")
+
+	diagnosisID, err := uuid.Parse(id)
 	if err != nil {
-		log.Printf("Invalid computer diagnosis DiagnosisID: %v", idParam)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid computer diagnosis DiagnosisID"})
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid diagnosis ID"})
 		return
 	}
 
-	err = cdc.ComputerDiagnosticService.DeleteComputerDiagnostic(uint(id))
+	err = cdc.ComputerDiagnosticService.DeleteComputerDiagnostic(diagnosisID)
 	if err != nil {
 		log.Printf("Failed to delete computer diagnosis: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete computer diagnosis"})

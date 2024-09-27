@@ -4,6 +4,7 @@ import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/service"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"log"
 	"net/http"
 )
@@ -21,9 +22,7 @@ func NewBiometricController(biometricService service.BiometricService) *Biometri
 // CreateBiometric handles the creation of a new biometric record
 func (bc *BiometricController) CreateBiometric(c *gin.Context) {
 	var biometricDTO dto.BiometricCreateDTO
-	if err := c.ShouldBindJSON(&biometricDTO); err != nil {
-		log.Printf("Error binding JSON: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+	if !bindJSON(c, &biometricDTO) {
 		return
 	}
 
@@ -39,21 +38,10 @@ func (bc *BiometricController) CreateBiometric(c *gin.Context) {
 
 // GetBiometricByID handles retrieving a biometric record by its BiometricsID
 func (bc *BiometricController) GetBiometricByID(c *gin.Context) {
-	id := c.Param("id")
-
-	biometric, err := bc.BiometricService.GetBiometricByID(id)
-	if err != nil {
-		log.Printf("Error retrieving biometric: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve biometric"})
+	biometric, err := getByID(c, "id", bc.BiometricService.GetBiometricByID, "Biometric not found with BiometricsID: %v")
+	if err != nil || biometric == nil {
 		return
 	}
-
-	if biometric == nil {
-		log.Printf("Biometric not found with BiometricsID: %v", id)
-		c.JSON(http.StatusNotFound, gin.H{"error": "Biometric not found"})
-		return
-	}
-
 	c.JSON(http.StatusOK, gin.H{"biometric": biometric})
 }
 
@@ -73,14 +61,20 @@ func (bc *BiometricController) GetAllBiometrics(c *gin.Context) {
 func (bc *BiometricController) UpdateBiometric(c *gin.Context) {
 	id := c.Param("id")
 
-	var biometricDTO dto.BiometricUpdateDTO
-	if err := c.ShouldBindJSON(&biometricDTO); err != nil {
-		log.Printf("Error binding JSON: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+	// Parse the string to a UUID
+	biometricID, err := uuid.Parse(id)
+	if err != nil {
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid biometric ID"})
 		return
 	}
 
-	err := bc.BiometricService.UpdateBiometric(id, &biometricDTO)
+	var biometricDTO dto.BiometricUpdateDTO
+	if !bindJSON(c, &biometricDTO) {
+		return
+	}
+
+	err = bc.BiometricService.UpdateBiometric(biometricID, &biometricDTO)
 	if err != nil {
 		log.Printf("Failed to update biometric: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update biometric"})
@@ -94,7 +88,15 @@ func (bc *BiometricController) UpdateBiometric(c *gin.Context) {
 func (bc *BiometricController) DeleteBiometric(c *gin.Context) {
 	id := c.Param("id")
 
-	err := bc.BiometricService.DeleteBiometric(id)
+	// Parse the string to a UUID
+	biometricID, err := uuid.Parse(id)
+	if err != nil {
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid biometric ID"})
+		return
+	}
+
+	err = bc.BiometricService.DeleteBiometric(biometricID)
 	if err != nil {
 		log.Printf("Failed to delete biometric: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete biometric"})

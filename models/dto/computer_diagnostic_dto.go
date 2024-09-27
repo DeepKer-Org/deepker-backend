@@ -1,27 +1,30 @@
 package dto
 
-import "biometric-data-backend/models"
+import (
+	"biometric-data-backend/models"
+	"github.com/google/uuid"
+)
 
 // ComputerDiagnosticCreateDTO is used for creating a new computer diagnosis
 type ComputerDiagnosticCreateDTO struct {
-	AlertID    string  `json:"alert_id"`
-	Diagnosis  string  `json:"diagnosis"`
-	Percentage float64 `json:"percentage"`
+	AlertID    uuid.UUID `json:"alert_id"`
+	Diagnosis  string    `json:"diagnosis"`
+	Percentage float64   `json:"percentage"`
 }
 
 // ComputerDiagnosticUpdateDTO is used for updating an existing computer diagnosis
 type ComputerDiagnosticUpdateDTO struct {
-	AlertID    string  `json:"alert_id"`
-	Diagnosis  string  `json:"diagnosis"`
-	Percentage float64 `json:"percentage"`
+	AlertID    uuid.UUID `json:"alert_id"`
+	Diagnosis  string    `json:"diagnosis"`
+	Percentage float64   `json:"percentage"`
 }
 
 // ComputerDiagnosticDTO is used for retrieving a computer diagnosis
 type ComputerDiagnosticDTO struct {
-	DiagnosisID uint    `json:"diagnosis_id"`
-	AlertID     string  `json:"alert_id"`
-	Diagnosis   string  `json:"diagnosis"`
-	Percentage  float64 `json:"percentage"`
+	DiagnosisID uuid.UUID `json:"diagnosis_id"`
+	AlertID     uuid.UUID `json:"alert_id"`
+	Diagnosis   string    `json:"diagnosis"`
+	Percentage  float64   `json:"percentage"`
 }
 
 // MapComputerDiagnosticToDTO maps a ComputerDiagnostic model to a ComputerDiagnosisDTO

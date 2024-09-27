@@ -2,6 +2,7 @@ package dto
 
 import (
 	"biometric-data-backend/models"
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -10,7 +11,7 @@ type AlertCreateDTO struct {
 	AlertStatus    string    `json:"alert_status"`
 	Room           string    `json:"room"`
 	AlertTimestamp time.Time `json:"alert_timestamp"`
-	PatientID      uint      `json:"patient_id"`
+	PatientID      uuid.UUID `json:"patient_id"`
 }
 
 // AlertUpdateDTO is used for updating an existing alert
@@ -18,17 +19,17 @@ type AlertUpdateDTO struct {
 	AlertStatus       string     `json:"alert_status"`
 	Room              string     `json:"room"`
 	AttendedTimestamp *time.Time `json:"attended_timestamp"`
-	PatientID         uint       `json:"patient_id"`
+	PatientID         uuid.UUID  `json:"patient_id"`
 }
 
 // AlertDTO is used for retrieving an alert along with related entities
 type AlertDTO struct {
-	AlertID             string                   `json:"alert_id"`
+	AlertID             uuid.UUID                `json:"alert_id"`
 	AlertStatus         string                   `json:"alert_status"`
 	Room                string                   `json:"room"`
 	AlertTimestamp      time.Time                `json:"alert_timestamp"`
 	AttendedTimestamp   *time.Time               `json:"attended_timestamp"`
-	PatientID           uint                     `json:"patient_id"`
+	PatientID           uuid.UUID                `json:"patient_id"`
 	Biometrics          []*BiometricDTO          `json:"biometrics"`
 	ComputerDiagnostics []*ComputerDiagnosticDTO `json:"computer_diagnoses"`
 	Doctors             []*DoctorDTO             `json:"doctors"`

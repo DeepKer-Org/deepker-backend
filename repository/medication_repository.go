@@ -3,15 +3,16 @@ package repository
 import (
 	"biometric-data-backend/models"
 	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type MedicationRepository interface {
 	CreateMedication(medication *models.Medication) error
-	GetMedicationByID(id uint) (*models.Medication, error)
+	GetMedicationByID(id uuid.UUID) (*models.Medication, error)
 	GetAllMedications() ([]*models.Medication, error)
 	UpdateMedication(medication *models.Medication) error
-	DeleteMedication(id uint) error
+	DeleteMedication(id uuid.UUID) error
 }
 
 type medicationRepository struct {
@@ -31,9 +32,9 @@ func (r *medicationRepository) CreateMedication(medication *models.Medication) e
 }
 
 // GetMedicationByID retrieves a medication by their MedicationID.
-func (r *medicationRepository) GetMedicationByID(id uint) (*models.Medication, error) {
+func (r *medicationRepository) GetMedicationByID(id uuid.UUID) (*models.Medication, error) {
 	var medication models.Medication
-	if err := r.db.First(&medication, id).Error; err != nil {
+	if err := r.db.First(&medication).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -60,8 +61,8 @@ func (r *medicationRepository) UpdateMedication(medication *models.Medication) e
 }
 
 // DeleteMedication deletes a medication by their MedicationID.
-func (r *medicationRepository) DeleteMedication(id uint) error {
-	if err := r.db.Delete(&models.Medication{}, id).Error; err != nil {
+func (r *medicationRepository) DeleteMedication(id uuid.UUID) error {
+	if err := r.db.Delete(&models.Medication{}).Error; err != nil {
 		return err
 	}
 	return nil
