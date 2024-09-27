@@ -16,6 +16,7 @@ const (
 	BiometricsResource          = "biometrics"
 	ComputerDiagnosticsResource = "computer-diagnostics"
 	MonitoringDevicesResource   = "monitoring-devices"
+	AlertsResource              = "alerts"
 )
 
 // registerCrudRoutes registers CRUD routes for a given resource
@@ -124,5 +125,21 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		monitoringDeviceController.GetAllMonitoringDevices,
 		monitoringDeviceController.UpdateMonitoringDevice,
 		monitoringDeviceController.DeleteMonitoringDevice,
+	)
+
+	// Alert
+	alertRepo := repository.NewAlertRepository(db)
+	alertService := service.NewAlertService(alertRepo, biometricRepo, computerDiagnosticRepo, doctorRepo)
+	alertController := controller.NewAlertController(alertService)
+
+	// Register alert routes
+	registerCrudRoutes(
+		router,
+		AlertsResource,
+		alertController.CreateAlert,
+		alertController.GetAlertByID,
+		alertController.GetAllAlerts,
+		alertController.UpdateAlert,
+		alertController.DeleteAlert,
 	)
 }

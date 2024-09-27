@@ -2,17 +2,16 @@ package repository
 
 import (
 	"biometric-data-backend/models"
+	"errors"
 	"gorm.io/gorm"
-	"time"
 )
 
 type AlertRepository interface {
-	FindAll() ([]models.Alert, error)
-	FindByID(id string) (models.Alert, error)
-	FindByStatus(status string) ([]models.Alert, error)
-	Create(alert models.Alert) (models.Alert, error)
-	Update(alert models.Alert) (models.Alert, error)
-	Delete(id string) error
+	CreateAlert(alert *models.Alert) error
+	GetAlertByID(id string) (*models.Alert, error)
+	GetAllAlerts() ([]*models.Alert, error)
+	UpdateAlert(alert *models.Alert) error
+	DeleteAlert(id string) error
 }
 
 type alertRepository struct {
@@ -20,43 +19,64 @@ type alertRepository struct {
 }
 
 func NewAlertRepository(db *gorm.DB) AlertRepository {
-	return &alertRepository{db: db}
+	return &alertRepository{db}
 }
 
-// Ajustar para ignorar los eliminados lógicamente
-func (r *alertRepository) FindAll() ([]models.Alert, error) {
-	var alerts []models.Alert
-	err := r.db.Preload("Biometrics").Preload("ComputerDiagnoses").Preload("AssociatedDoctors").Where("deleted_at IS NULL").Find(&alerts).Error
-	return alerts, err
+// CreateAlert creates a new alert record in the database.
+func (r *alertRepository) CreateAlert(alert *models.Alert) error {
+	if err := r.db.Create(alert).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
-// Ajustar para ignorar los eliminados lógicamente
-func (r *alertRepository) FindByID(id string) (models.Alert, error) {
+/* old code
+// GetAlertByID retrieves an alert by their AlertID.
+func (r *alertRepository) GetAlertByID(id string) (*models.Alert, error) {
 	var alert models.Alert
-	err := r.db.Preload("Biometrics").Preload("ComputerDiagnoses").Preload("AssociatedDoctors").Where("alert_id = ? AND deleted_at IS NULL", id).First(&alert).Error
-	return alert, err
+	if err := r.db.First(&alert, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &alert, nil
 }
-
-func (r *alertRepository) FindByStatus(status string) ([]models.Alert, error) {
-	var alerts []models.Alert
-	err := r.db.Preload("Biometrics").Preload("ComputerDiagnoses").Preload("AssociatedDoctors").Where("alert_status = ? AND deleted_at IS NULL", status).Find(&alerts).Error
-	return alerts, err
-}
-
-// Crear y actualizar siguen igual
-func (r *alertRepository) Create(alert models.Alert) (models.Alert, error) {
-	err := r.db.Create(&alert).Error
-	return alert, err
-}
-
-func (r *alertRepository) Update(alert models.Alert) (models.Alert, error) {
-	err := r.db.Save(&alert).Error
-	return alert, err
-}
-
-// Implementar borrado lógico
-func (r *alertRepository) Delete(id string) error {
+*/
+// GetAlertByID retrieves an alert by its AlertID.
+func (r *alertRepository) GetAlertByID(id string) (*models.Alert, error) {
 	var alert models.Alert
-	err := r.db.Model(&alert).Where("alert_id = ?", id).Update("deleted_at", gorm.DeletedAt{Time: time.Now(), Valid: true}).Error
-	return err
+	// Explicitly search by the alert_id field
+	if err := r.db.Where("alert_id = ?", id).First(&alert).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &alert, nil
+}
+
+// GetAllAlerts retrieves all alerts from the database.
+func (r *alertRepository) GetAllAlerts() ([]*models.Alert, error) {
+	var alerts []*models.Alert
+	if err := r.db.Find(&alerts).Error; err != nil {
+		return nil, err
+	}
+	return alerts, nil
+}
+
+// UpdateAlert updates an existing alert record in the database.
+func (r *alertRepository) UpdateAlert(alert *models.Alert) error {
+	if err := r.db.Save(alert).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeleteAlert deletes a alert by their AlertID.
+func (r *alertRepository) DeleteAlert(id string) error {
+	if err := r.db.Delete(&models.Alert{}, id).Error; err != nil {
+		return err
+	}
+	return nil
 }

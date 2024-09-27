@@ -9,6 +9,8 @@ import (
 type DoctorRepository interface {
 	CreateDoctor(doctor *models.Doctor) error
 	GetDoctorByID(id uint) (*models.Doctor, error)
+	GetDoctorsByIDs(ids []uint) ([]*models.Doctor, error)
+	GetDoctorsByAlertID(alertID string) ([]*models.Doctor, error)
 	GetAllDoctors() ([]*models.Doctor, error)
 	UpdateDoctor(doctor *models.Doctor) error
 	DeleteDoctor(id uint) error
@@ -40,6 +42,26 @@ func (r *doctorRepository) GetDoctorByID(id uint) (*models.Doctor, error) {
 		return nil, err
 	}
 	return &doctor, nil
+}
+
+// GetDoctorsByIDs retrieves doctors by their DoctorIDs.
+func (r *doctorRepository) GetDoctorsByIDs(ids []uint) ([]*models.Doctor, error) {
+	var doctors []*models.Doctor
+	if err := r.db.Where("doctor_id IN (?)", ids).Find(&doctors).Error; err != nil {
+		return nil, err
+	}
+	return doctors, nil
+}
+
+// GetDoctorsByAlertID retrieves doctors associated with a specific alert ID.
+func (r *doctorRepository) GetDoctorsByAlertID(alertID string) ([]*models.Doctor, error) {
+	var doctors []*models.Doctor
+	// Joining the doctor_alerts table to get the doctors for the given alert ID
+	if err := r.db.Joins("JOIN doctor_alerts ON doctor_alerts.doctor_id = doctors.doctor_id").
+		Where("doctor_alerts.alert_id = ?", alertID).Find(&doctors).Error; err != nil {
+		return nil, err
+	}
+	return doctors, nil
 }
 
 // GetAllDoctors retrieves all doctors from the database.

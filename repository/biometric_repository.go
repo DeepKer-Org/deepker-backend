@@ -9,6 +9,7 @@ import (
 type BiometricRepository interface {
 	CreateBiometric(biometric *models.Biometric) error
 	GetBiometricByID(id string) (*models.Biometric, error)
+	GetBiometricsByAlertID(id string) ([]*models.Biometric, error)
 	GetAllBiometrics() ([]*models.Biometric, error)
 	UpdateBiometric(biometric *models.Biometric) error
 	DeleteBiometric(id string) error
@@ -40,6 +41,15 @@ func (r *biometricRepository) GetBiometricByID(id string) (*models.Biometric, er
 		return nil, err
 	}
 	return &biometric, nil
+}
+
+// GetBioByAlertID retrieves a biometric by their AlertID.
+func (r *biometricRepository) GetBiometricsByAlertID(id string) ([]*models.Biometric, error) {
+	var biometrics []*models.Biometric
+	if err := r.db.Where("alert_id = ?", id).Find(&biometrics).Error; err != nil {
+		return nil, err
+	}
+	return biometrics, nil
 }
 
 // GetAllBiometrics retrieves all biometrics from the database.

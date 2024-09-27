@@ -9,6 +9,7 @@ import (
 type ComputerDiagnosticRepository interface {
 	CreateComputerDiagnostic(computerDiagnosis *models.ComputerDiagnostic) error
 	GetComputerDiagnosticByID(id uint) (*models.ComputerDiagnostic, error)
+	GetComputerDiagnosticsByAlertID(alertID string) ([]*models.ComputerDiagnostic, error)
 	GetAllComputerDiagnostics() ([]*models.ComputerDiagnostic, error)
 	UpdateComputerDiagnostic(computerDiagnosis *models.ComputerDiagnostic) error
 	DeleteComputerDiagnostic(id uint) error
@@ -40,6 +41,15 @@ func (r *computerDiagnosticRepository) GetComputerDiagnosticByID(id uint) (*mode
 		return nil, err
 	}
 	return &computerDiagnosis, nil
+}
+
+// GetComputerDiagnosticsByAlertID retrieves a computerDiagnosis by their AlertID.
+func (r *computerDiagnosticRepository) GetComputerDiagnosticsByAlertID(alertID string) ([]*models.ComputerDiagnostic, error) {
+	var computerDiagnostics []*models.ComputerDiagnostic
+	if err := r.db.Where("alert_id = ?", alertID).Find(&computerDiagnostics).Error; err != nil {
+		return nil, err
+	}
+	return computerDiagnostics, nil
 }
 
 // GetAllComputerDiagnostics retrieves all computerDiagnostics from the database.
