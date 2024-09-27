@@ -4,9 +4,9 @@ import (
 	"biometric-data-backend/models"
 	"biometric-data-backend/service"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 type DoctorController struct {
@@ -40,50 +40,19 @@ func (dc *DoctorController) CreateDoctor(c *gin.Context) {
 
 // GetDoctorByID handles retrieving a doctor by their DoctorID
 func (dc *DoctorController) GetDoctorByID(c *gin.Context) {
-	idParam := c.Param("id")
-	id, err := strconv.ParseUint(idParam, 10, 32)
-	if err != nil {
-		log.Printf("Invalid doctor DoctorID: %v", idParam)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid doctor DoctorID"})
+	doctor, err := getByID(c, "id", dc.DoctorService.GetDoctorByID, "Doctor not found with DoctorID: %v")
+	if err != nil || doctor == nil {
 		return
 	}
-
-	doctor, err := dc.DoctorService.GetDoctorByID(uint(id))
-	if err != nil {
-		log.Printf("Error retrieving doctor: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve doctor"})
-		return
-	}
-
-	if doctor == nil {
-		log.Printf("Doctor not found with DoctorID: %v", id)
-		c.JSON(http.StatusNotFound, gin.H{"error": "Doctor not found"})
-		return
-	}
-
 	c.JSON(http.StatusOK, gin.H{"doctor": doctor})
 }
 
 // GetShortDoctorByID handles retrieving a doctor by their DoctorID and returning a DTO
 func (dc *DoctorController) GetShortDoctorByID(c *gin.Context) {
-	idParam := c.Param("id")
-	id, err := strconv.ParseUint(idParam, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid doctor ID"})
+	doctorDTO, err := getByID(c, "id", dc.DoctorService.GetShortDoctorByID, "Doctor not found with DoctorID: %v")
+	if err != nil || doctorDTO == nil {
 		return
 	}
-
-	doctorDTO, err := dc.DoctorService.GetShortDoctorByID(uint(id))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve doctor"})
-		return
-	}
-
-	if doctorDTO == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Doctor not found"})
-		return
-	}
-
 	c.JSON(http.StatusOK, gin.H{"doctor": doctorDTO})
 }
 
@@ -120,15 +89,17 @@ func (dc *DoctorController) UpdateDoctor(c *gin.Context) {
 
 // DeleteDoctor handles deleting a doctor by their DoctorID
 func (dc *DoctorController) DeleteDoctor(c *gin.Context) {
-	idParam := c.Param("id")
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id := c.Param("id")
+
+	// Parse the string to a UUID
+	doctorID, err := uuid.Parse(id)
 	if err != nil {
-		log.Printf("Invalid doctor DoctorID: %v", idParam)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid doctor DoctorID"})
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid doctor ID"})
 		return
 	}
 
-	err = dc.DoctorService.DeleteDoctor(uint(id))
+	err = dc.DoctorService.DeleteDoctor(doctorID)
 	if err != nil {
 		log.Printf("Failed to delete doctor: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete doctor"})
