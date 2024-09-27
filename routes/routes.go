@@ -10,11 +10,12 @@ import (
 )
 
 const (
-	DoctorsResource            = "doctors"
-	ComorbiditiesResource      = "comorbidities"
-	MedicationsResource        = "medications"
-	BiometricsResource         = "biometrics"
-	ComputerDiagnosticResource = "computer-diagnostics"
+	DoctorsResource             = "doctors"
+	ComorbiditiesResource       = "comorbidities"
+	MedicationsResource         = "medications"
+	BiometricsResource          = "biometrics"
+	ComputerDiagnosticsResource = "computer-diagnostics"
+	MonitoringDevicesResource   = "monitoring-devices"
 )
 
 // registerCrudRoutes registers CRUD routes for a given resource
@@ -101,11 +102,27 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	// Register computer diagnostic routes
 	registerCrudRoutes(
 		router,
-		ComputerDiagnosticResource,
+		ComputerDiagnosticsResource,
 		computerDiagnosticController.CreateComputerDiagnostic,
 		computerDiagnosticController.GetComputerDiagnosticByID,
 		computerDiagnosticController.GetAllComputerDiagnostics,
 		computerDiagnosticController.UpdateComputerDiagnostic,
 		computerDiagnosticController.DeleteComputerDiagnostic,
+	)
+
+	// MonitoringDevice
+	monitoringDeviceRepo := repository.NewMonitoringDeviceRepository(db)
+	monitoringDeviceService := service.NewMonitoringDeviceService(monitoringDeviceRepo)
+	monitoringDeviceController := controller.NewMonitoringDeviceController(monitoringDeviceService)
+
+	// Register monitoring device routes
+	registerCrudRoutes(
+		router,
+		MonitoringDevicesResource,
+		monitoringDeviceController.CreateMonitoringDevice,
+		monitoringDeviceController.GetMonitoringDeviceByID,
+		monitoringDeviceController.GetAllMonitoringDevices,
+		monitoringDeviceController.UpdateMonitoringDevice,
+		monitoringDeviceController.DeleteMonitoringDevice,
 	)
 }
