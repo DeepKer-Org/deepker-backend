@@ -163,7 +163,7 @@ func (s *alertService) DeleteAlert(id uuid.UUID) error {
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Println("Alert not found with AlertID:", id)
-			return nil
+			return errors.New("alert not found")
 		}
 		log.Printf("Failed to delete alert: %v", err)
 		return err

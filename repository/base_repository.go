@@ -60,7 +60,14 @@ func (r *baseRepository[T]) Update(entity *T, primaryKey string, id interface{})
 
 // Delete a record by its primary key, with a variable primary key name
 func (r *baseRepository[T]) Delete(id interface{}, primaryKey string) error {
-	if err := r.db.Model(new(T)).Where(primaryKey+" = ?", id).Update("deleted_at", gorm.Expr("NOW()")).Error; err != nil {
+	entity, err := r.GetByID(id, primaryKey)
+	if err != nil {
+		return err
+	}
+	if entity == nil {
+		return gorm.ErrRecordNotFound
+	}
+	if err := r.db.Where(primaryKey+" = ?", id).Delete(new(T)).Error; err != nil {
 		return err
 	}
 	return nil

@@ -12,7 +12,8 @@ type Alert struct {
 	Room                string                `gorm:"size:100" json:"room"`
 	AlertTimestamp      time.Time             `gorm:"not null" json:"alert_timestamp"`
 	AttendedTimestamp   *time.Time            `json:"attended_timestamp"`
-	AttendedBy          uuid.UUID             `gorm:"type:uuid" json:"attended_by"`
+	AttendedByID        uuid.UUID             `gorm:"type:uuid"`
+	AttendedBy          *Doctor               `gorm:"foreignKey:AttendedByID"`
 	PatientID           uuid.UUID             `gorm:"type:uuid;not null" json:"patient_id"`
 	Biometrics          []*Biometric          `json:"biometrics"`
 	ComputerDiagnostics []*ComputerDiagnostic `json:"computer_diagnostics"`

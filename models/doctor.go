@@ -13,4 +13,5 @@ type Doctor struct {
 	Specialization string     `gorm:"size:100" json:"specialization"`
 	Alerts         []*Alert   `gorm:"many2many:doctor_alerts" json:"alerts"`
 	Patients       []*Patient `gorm:"many2many:doctor_patients" json:"patients"`
+	AttendedAlerts []*Alert   `gorm:"foreignKey:AttendedByID" json:"attended_alerts"`
 }
