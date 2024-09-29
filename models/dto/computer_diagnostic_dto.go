@@ -21,19 +21,15 @@ type ComputerDiagnosticUpdateDTO struct {
 
 // ComputerDiagnosticDTO is used for retrieving a computer diagnosis
 type ComputerDiagnosticDTO struct {
-	DiagnosisID uuid.UUID `json:"diagnosis_id"`
-	AlertID     uuid.UUID `json:"alert_id"`
-	Diagnosis   string    `json:"diagnosis"`
-	Percentage  float64   `json:"percentage"`
+	Diagnosis  string  `json:"diagnosis"`
+	Percentage float64 `json:"percentage"`
 }
 
 // MapComputerDiagnosticToDTO maps a ComputerDiagnostic model to a ComputerDiagnosisDTO
 func MapComputerDiagnosticToDTO(diagnosis *models.ComputerDiagnostic) *ComputerDiagnosticDTO {
 	return &ComputerDiagnosticDTO{
-		DiagnosisID: diagnosis.DiagnosisID,
-		AlertID:     diagnosis.AlertID,
-		Diagnosis:   diagnosis.Diagnosis,
-		Percentage:  diagnosis.Percentage,
+		Diagnosis:  diagnosis.Diagnosis,
+		Percentage: diagnosis.Percentage,
 	}
 }
 

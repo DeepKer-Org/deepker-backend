@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"log"
+	"strings"
 )
 
 type AlertService interface {
@@ -16,6 +17,7 @@ type AlertService interface {
 	GetAllAlerts() ([]*dto.AlertDTO, error)
 	UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) error
 	DeleteAlert(id uuid.UUID) error
+	GetAllAlertsByStatus(status string) ([]*dto.AlertDTO, error)
 }
 
 type alertService struct {
@@ -69,16 +71,18 @@ func (s *alertService) GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error) {
 		return nil, err
 	}
 
+	/* Reconsider whether to include doctors in alerts
 	doctors, err := s.doctorRepo.GetDoctorsByAlertID(id)
 	if err != nil {
 		log.Printf("Error retrieving doctors for alert: %v", err)
 		return nil, err
 	}
+	*/
 
 	// Map related entities to DTOs
 	alertDTO := dto.MapAlertToDTO(alert)
 	alertDTO.ComputerDiagnostics = dto.MapComputerDiagnosticsToDTOs(computerDiagnostics)
-	alertDTO.Doctors = dto.MapDoctorsToDTOs(doctors)
+	//alertDTO.Doctors = dto.MapDoctorsToDTOs(doctors)
 
 	log.Println("Alert fetched successfully with AlertID:", id)
 	return alertDTO, nil
@@ -103,12 +107,13 @@ func (s *alertService) GetAllAlerts() ([]*dto.AlertDTO, error) {
 		}
 		alertDTO.ComputerDiagnostics = dto.MapComputerDiagnosticsToDTOs(computerDiagnostics)
 
-		doctors, err := s.doctorRepo.GetDoctorsByAlertID(alertDTO.AlertID)
-		if err != nil {
-			log.Printf("Error retrieving doctors for alert: %v", err)
-			return nil, err
-		}
-		alertDTO.Doctors = dto.MapDoctorsToDTOs(doctors)
+		/*
+			doctors, err := s.doctorRepo.GetDoctorsByAlertID(alertDTO.AlertID)
+			if err != nil {
+				log.Printf("Error retrieving doctors for alert: %v", err)
+				return nil, err
+			}
+			alertDTO.Doctors = dto.MapDoctorsToDTOs(doctors)*/
 	}
 
 	log.Println("Alerts fetched successfully, total count:", len(alertDTOs))
@@ -155,4 +160,45 @@ func (s *alertService) DeleteAlert(id uuid.UUID) error {
 	}
 	log.Println("Alert deleted successfully with AlertID:", id)
 	return nil
+}
+
+func (s *alertService) GetAllAlertsByStatus(status string) ([]*dto.AlertDTO, error) {
+	status = strings.ToLower(status)
+	log.Println("Fetching alerts with status:", status)
+
+	var alerts []*models.Alert
+	var err error
+
+	switch status {
+	case "attended":
+		alerts, err = s.alertRepo.GetAttendedAlerts()
+	case "unattended":
+		alerts, err = s.alertRepo.GetUnattendedAlerts()
+	default:
+		log.Printf("Invalid status: %s", status)
+		return nil, errors.New("invalid status: must be 'attended' or 'unattended'")
+	}
+
+	if err != nil {
+		log.Printf("Error retrieving alerts: %v", err)
+		return nil, err
+	}
+
+	alertDTOs := []*dto.AlertDTO{}
+
+	if len(alerts) > 0 {
+		alertDTOs = dto.MapAlertsToDTOs(alerts)
+	}
+	// Fetch related entities for each alert
+	for _, alertDTO := range alertDTOs {
+		computerDiagnostics, err := s.computerDiagnosticRepo.GetComputerDiagnosticsByAlertID(alertDTO.AlertID)
+		if err != nil {
+			log.Printf("Error retrieving computer diagnostics for alert: %v", err)
+			return nil, err
+		}
+		alertDTO.ComputerDiagnostics = dto.MapComputerDiagnosticsToDTOs(computerDiagnostics)
+	}
+
+	log.Println("Alerts fetched successfully with status:", status)
+	return alertDTOs, nil
 }
