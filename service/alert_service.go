@@ -69,16 +69,18 @@ func (s *alertService) GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error) {
 		return nil, err
 	}
 
+	/* Reconsider whether to include doctors in alerts
 	doctors, err := s.doctorRepo.GetDoctorsByAlertID(id)
 	if err != nil {
 		log.Printf("Error retrieving doctors for alert: %v", err)
 		return nil, err
 	}
+	*/
 
 	// Map related entities to DTOs
 	alertDTO := dto.MapAlertToDTO(alert)
 	alertDTO.ComputerDiagnostics = dto.MapComputerDiagnosticsToDTOs(computerDiagnostics)
-	alertDTO.Doctors = dto.MapDoctorsToDTOs(doctors)
+	//alertDTO.Doctors = dto.MapDoctorsToDTOs(doctors)
 
 	log.Println("Alert fetched successfully with AlertID:", id)
 	return alertDTO, nil
@@ -103,12 +105,13 @@ func (s *alertService) GetAllAlerts() ([]*dto.AlertDTO, error) {
 		}
 		alertDTO.ComputerDiagnostics = dto.MapComputerDiagnosticsToDTOs(computerDiagnostics)
 
-		doctors, err := s.doctorRepo.GetDoctorsByAlertID(alertDTO.AlertID)
-		if err != nil {
-			log.Printf("Error retrieving doctors for alert: %v", err)
-			return nil, err
-		}
-		alertDTO.Doctors = dto.MapDoctorsToDTOs(doctors)
+		/*
+			doctors, err := s.doctorRepo.GetDoctorsByAlertID(alertDTO.AlertID)
+			if err != nil {
+				log.Printf("Error retrieving doctors for alert: %v", err)
+				return nil, err
+			}
+			alertDTO.Doctors = dto.MapDoctorsToDTOs(doctors)*/
 	}
 
 	log.Println("Alerts fetched successfully, total count:", len(alertDTOs))

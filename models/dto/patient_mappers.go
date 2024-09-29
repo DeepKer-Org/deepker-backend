@@ -37,6 +37,16 @@ func MapPatientsToDTOs(patients []*models.Patient) []*PatientDTO {
 	return patientDTOs
 }
 
+func MapPatientToPatientForAlertDTO(patient *models.Patient) *PatientForAlertDTO {
+	return &PatientForAlertDTO{
+		DNI:            patient.DNI,
+		Name:           patient.Name,
+		Location:       patient.Location,
+		FinalDiagnosis: patient.FinalDiagnosis,
+		Doctors:        MapDoctorsToNames(patient.Doctors),
+	}
+}
+
 func MapCreateDTOToPatient(dto *PatientCreateDTO) *models.Patient {
 	return &models.Patient{
 		DNI:            dto.DNI,

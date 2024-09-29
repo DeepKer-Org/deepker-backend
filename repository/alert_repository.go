@@ -30,6 +30,7 @@ func (r *alertRepository) GetByID(id interface{}, primaryKey string) (*models.Al
 	if err := r.db.Preload("BiometricData").
 		Preload("AttendedBy").
 		Preload("Patient").
+		Preload("Patient.Doctors").
 		Where(primaryKey+" = ?", id).First(&alert).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -48,6 +49,7 @@ func (r *alertRepository) GetAll() ([]*models.Alert, error) {
 	if err := r.db.Preload("BiometricData").
 		Preload("AttendedBy").
 		Preload("Patient").
+		Preload("Patient.Doctors").
 		Find(&alerts).Error; err != nil {
 		return nil, err
 	}
