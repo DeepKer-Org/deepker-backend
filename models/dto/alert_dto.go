@@ -62,6 +62,9 @@ func MapAlertToDTO(alert *models.Alert) *AlertDTO {
 
 // MapAlertsToDTOs maps a list of Alert models to a list of AlertDTOs
 func MapAlertsToDTOs(alerts []*models.Alert) []*AlertDTO {
+	if alerts == nil {
+		return []*AlertDTO{}
+	}
 	var alertDTOs []*AlertDTO
 	for _, alert := range alerts {
 		alertDTOs = append(alertDTOs, MapAlertToDTO(alert))

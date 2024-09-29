@@ -67,7 +67,13 @@ func (ac *AlertController) GetAlertByID(c *gin.Context) {
 
 // GetAllAlerts handles retrieving all alerts
 func (ac *AlertController) GetAllAlerts(c *gin.Context) {
-	alerts, err := ac.AlertService.GetAllAlerts()
+	status := c.Query("status")
+	alerts, err := func() ([]*dto.AlertDTO, error) {
+		if status == "" {
+			return ac.AlertService.GetAllAlerts()
+		}
+		return ac.AlertService.GetAllAlertsByStatus(status)
+	}()
 	if err != nil {
 		log.Printf("Error retrieving alerts: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve alerts"})

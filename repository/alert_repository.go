@@ -6,25 +6,29 @@ import (
 	"gorm.io/gorm"
 )
 
-// AlertRepository define los métodos específicos para la entidad Alert
+// AlertRepository includes specific methods for the Alert entity and embeds BaseRepository
 type AlertRepository interface {
-	BaseRepository[models.Alert] // Incluir métodos del repositorio base
+	BaseRepository[models.Alert]
+	GetAttendedAlerts() ([]*models.Alert, error)
+	GetUnattendedAlerts() ([]*models.Alert, error)
 }
 
-// alertRepository implementa AlertRepository
+// alertRepository struct embeds baseRepository for common CRUD operations
 type alertRepository struct {
-	baseRepo BaseRepository[models.Alert] // Delegamos los métodos al baseRepository
-	db       *gorm.DB
+	BaseRepository[models.Alert]
+	db *gorm.DB
 }
 
-// NewAlertRepository crea una nueva instancia de AlertRepository
+// NewAlertRepository creates a new instance of AlertRepository
 func NewAlertRepository(db *gorm.DB) AlertRepository {
+	baseRepo := NewBaseRepository[models.Alert](db)
 	return &alertRepository{
-		baseRepo: NewBaseRepository[models.Alert](db), // Inicializamos el baseRepo
-		db:       db,
+		BaseRepository: baseRepo,
+		db:             db,
 	}
 }
 
+// GetByID retrieves an alert by its ID.
 func (r *alertRepository) GetByID(id interface{}, primaryKey string) (*models.Alert, error) {
 	var alert models.Alert
 	if err := r.db.Preload("BiometricData").
@@ -40,10 +44,7 @@ func (r *alertRepository) GetByID(id interface{}, primaryKey string) (*models.Al
 	return &alert, nil
 }
 
-func (r *alertRepository) Create(entity *models.Alert) error {
-	return r.baseRepo.Create(entity)
-}
-
+// GetAll retrieves all alerts.
 func (r *alertRepository) GetAll() ([]*models.Alert, error) {
 	var alerts []*models.Alert
 	if err := r.db.Preload("BiometricData").
@@ -56,10 +57,28 @@ func (r *alertRepository) GetAll() ([]*models.Alert, error) {
 	return alerts, nil
 }
 
-func (r *alertRepository) Update(entity *models.Alert, primaryKey string, id interface{}) error {
-	return r.baseRepo.Update(entity, primaryKey, id)
+// GetAttendedAlerts retrieves alerts that have been attended (attended_timestamp is not null).
+func (r *alertRepository) GetAttendedAlerts() ([]*models.Alert, error) {
+	var alerts []*models.Alert
+	if err := r.db.Preload("BiometricData").
+		Preload("AttendedBy").
+		Preload("Patient").
+		Preload("Patient.Doctors").
+		Where("attended_timestamp IS NOT NULL").Find(&alerts).Error; err != nil {
+		return nil, err
+	}
+	return alerts, nil
 }
 
-func (r *alertRepository) Delete(id interface{}, primaryKey string) error {
-	return r.baseRepo.Delete(id, primaryKey)
+// GetUnattendedAlerts retrieves alerts that have not been attended (attended_timestamp is null).
+func (r *alertRepository) GetUnattendedAlerts() ([]*models.Alert, error) {
+	var alerts []*models.Alert
+	if err := r.db.Preload("BiometricData").
+		Preload("AttendedBy").
+		Preload("Patient").
+		Preload("Patient.Doctors").
+		Where("attended_timestamp IS NULL").Find(&alerts).Error; err != nil {
+		return nil, err
+	}
+	return alerts, nil
 }
