@@ -66,3 +66,12 @@ func MapUpdateDTOToDoctor(dto *DoctorUpdateDTO, doctor *models.Doctor) *models.D
 	doctor.Specialization = dto.Specialization
 	return doctor
 }
+
+// MapDoctorsToNames maps a list of Doctor models to a list of strings (names of doctors)
+func MapDoctorsToNames(doctors []*models.Doctor) []string {
+	var doctorNames []string
+	for _, doctor := range doctors {
+		doctorNames = append(doctorNames, doctor.Name)
+	}
+	return doctorNames
+}

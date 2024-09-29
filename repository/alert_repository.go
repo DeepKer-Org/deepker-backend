@@ -3,7 +3,6 @@ package repository
 import (
 	"biometric-data-backend/models"
 	"errors"
-	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -27,16 +26,16 @@ func NewAlertRepository(db *gorm.DB) AlertRepository {
 }
 
 func (r *alertRepository) GetByID(id interface{}, primaryKey string) (*models.Alert, error) {
-	fmt.Printf("PIPIPIPIPI")
 	var alert models.Alert
-	if err := r.db.Preload("AttendedBy").Where(primaryKey+" = ?", id).First(&alert).Error; err != nil {
+	if err := r.db.Preload("BiometricData").
+		Preload("AttendedBy").
+		Preload("Patient").
+		Where(primaryKey+" = ?", id).First(&alert).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	fmt.Printf("Alerta : %v\n", alert)
-	fmt.Printf("Alerta attended by: %v\n", alert.AttendedBy)
 	return &alert, nil
 }
 
@@ -45,7 +44,14 @@ func (r *alertRepository) Create(entity *models.Alert) error {
 }
 
 func (r *alertRepository) GetAll() ([]*models.Alert, error) {
-	return r.baseRepo.GetAll()
+	var alerts []*models.Alert
+	if err := r.db.Preload("BiometricData").
+		Preload("AttendedBy").
+		Preload("Patient").
+		Find(&alerts).Error; err != nil {
+		return nil, err
+	}
+	return alerts, nil
 }
 
 func (r *alertRepository) Update(entity *models.Alert, primaryKey string, id interface{}) error {

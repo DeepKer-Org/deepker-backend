@@ -10,109 +10,107 @@ import (
 	"log"
 )
 
-type BiometricService interface {
-	CreateBiometric(biometricDTO *dto.BiometricCreateDTO) error
-	GetBiometricByID(id uuid.UUID) (*dto.BiometricDTO, error)
-	GetAllBiometrics() ([]*dto.BiometricDTO, error)
-	UpdateBiometric(id uuid.UUID, biometricDTO *dto.BiometricUpdateDTO) error
-	DeleteBiometric(id uuid.UUID) error
+type BiometricDataService interface {
+	CreateBiometricData(biometricDTO *dto.BiometricDataCreateDTO) error
+	GetBiometricDataByID(id uuid.UUID) (*dto.BiometricDataDTO, error)
+	GetAllBiometricRecords() ([]*dto.BiometricDataDTO, error)
+	UpdateBiometricData(id uuid.UUID, biometricDTO *dto.BiometricDataUpdateDTO) error
+	DeleteBiometricData(id uuid.UUID) error
 }
 
 type biometricService struct {
-	repo repository.BiometricRepository
+	repo repository.BiometricDataRepository
 }
 
-func NewBiometricService(repo repository.BiometricRepository) BiometricService {
+func NewBiometricDataService(repo repository.BiometricDataRepository) BiometricDataService {
 	return &biometricService{repo: repo}
 }
 
-func (s *biometricService) CreateBiometric(biometricDTO *dto.BiometricCreateDTO) error {
-	biometric := &models.Biometric{
-		AlertID:                biometricDTO.AlertID,
+func (s *biometricService) CreateBiometricData(biometricDTO *dto.BiometricDataCreateDTO) error {
+	biometric := &models.BiometricData{
 		O2Saturation:           biometricDTO.O2Saturation,
 		HeartRate:              biometricDTO.HeartRate,
 		SystolicBloodPressure:  biometricDTO.SystolicBloodPressure,
 		DiastolicBloodPressure: biometricDTO.DiastolicBloodPressure,
 	}
 
-	err := s.repo.CreateBiometric(biometric)
+	err := s.repo.CreateBiometricData(biometric)
 	if err != nil {
 		log.Printf("Failed to create biometric: %v", err)
 		return err
 	}
-	log.Println("Biometric created successfully with BiometricsID:", biometric.BiometricsID)
+	log.Println("BiometricDataData created successfully with BiometricDataID:", biometric.BiometricDataID)
 	return nil
 }
 
-func (s *biometricService) GetBiometricByID(id uuid.UUID) (*dto.BiometricDTO, error) {
-	log.Println("Fetching biometric with BiometricsID:", id)
-	biometric, err := s.repo.GetBiometricByID(id)
+func (s *biometricService) GetBiometricDataByID(id uuid.UUID) (*dto.BiometricDataDTO, error) {
+	log.Println("Fetching biometric with BiometricRecordsID:", id)
+	biometric, err := s.repo.GetBiometricDataByID(id)
 	if err != nil {
 		log.Printf("Error retrieving biometric: %v", err)
 		return nil, err
 	}
 	if biometric == nil {
-		log.Println("No biometric found with BiometricsID:", id)
+		log.Println("No biometric found with BiometricRecordsID:", id)
 		return nil, nil
 	}
 
-	biometricDTO := dto.MapBiometricToDTO(biometric)
-	log.Println("Biometric fetched successfully with BiometricsID:", id)
+	biometricDTO := dto.MapBiometricDataToDTO(biometric)
+	log.Println("BiometricDataData fetched successfully with BiometricRecordsID:", id)
 	return biometricDTO, nil
 }
 
-func (s *biometricService) GetAllBiometrics() ([]*dto.BiometricDTO, error) {
+func (s *biometricService) GetAllBiometricRecords() ([]*dto.BiometricDataDTO, error) {
 	log.Println("Fetching all biometrics")
-	biometrics, err := s.repo.GetAllBiometrics()
+	biometrics, err := s.repo.GetAllBiometricRecords()
 	if err != nil {
 		log.Printf("Error retrieving biometrics: %v", err)
 		return nil, err
 	}
 
-	biometricDTOs := dto.MapBiometricsToDTOs(biometrics)
-	log.Println("Biometrics fetched successfully, total count:", len(biometricDTOs))
+	biometricDTOs := dto.MapBiometricRecordsToDTOs(biometrics)
+	log.Println("BiometricRecords fetched successfully, total count:", len(biometricDTOs))
 	return biometricDTOs, nil
 }
 
-func (s *biometricService) UpdateBiometric(id uuid.UUID, biometricDTO *dto.BiometricUpdateDTO) error {
-	log.Println("Updating biometric with BiometricsID:", id)
+func (s *biometricService) UpdateBiometricData(id uuid.UUID, biometricDTO *dto.BiometricDataUpdateDTO) error {
+	log.Println("Updating biometric with  BiometricDataID:", id)
 
-	biometric, err := s.repo.GetBiometricByID(id)
+	biometric, err := s.repo.GetBiometricDataByID(id)
 	if err != nil {
 		log.Printf("Error retrieving biometric: %v", err)
 		return err
 	}
 	if biometric == nil {
-		log.Printf("Biometric not found with BiometricsID: %v", id)
+		log.Printf("BiometricDataData not found with BiometricDataID: %v", id)
 		return gorm.ErrRecordNotFound
 	}
 
-	biometric.AlertID = biometricDTO.AlertID
 	biometric.O2Saturation = biometricDTO.O2Saturation
 	biometric.HeartRate = biometricDTO.HeartRate
 	biometric.SystolicBloodPressure = biometricDTO.SystolicBloodPressure
 	biometric.DiastolicBloodPressure = biometricDTO.DiastolicBloodPressure
 
-	err = s.repo.UpdateBiometric(biometric)
+	err = s.repo.UpdateBiometricData(biometric)
 	if err != nil {
 		log.Printf("Failed to update biometric: %v", err)
 		return err
 	}
-	log.Println("Biometric updated successfully with BiometricsID:", biometric.BiometricsID)
+	log.Println("BiometricDataData updated successfully with BiometricDataID:", biometric.BiometricDataID)
 	return nil
 }
 
-func (s *biometricService) DeleteBiometric(id uuid.UUID) error {
-	log.Println("Deleting biometric with BiometricsID:", id)
-	err := s.repo.DeleteBiometric(id)
+func (s *biometricService) DeleteBiometricData(id uuid.UUID) error {
+	log.Println("Deleting biometric with BiometricRecordsID:", id)
+	err := s.repo.DeleteBiometricData(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Println("Biometric not found with BiometricsID:", id)
+			log.Println("BiometricDataData not found with BiometricDataID:", id)
 			return nil
 		}
 		log.Printf("Failed to delete biometric: %v", err)
 		return err
 	}
-	log.Println("Biometric deleted successfully with BiometricsID:", id)
+	log.Println("BiometricDataData deleted successfully with BiometricDataID:", id)
 	return nil
 }
