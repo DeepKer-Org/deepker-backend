@@ -27,7 +27,7 @@ func NewComorbidityService(repo repository.ComorbidityRepository) ComorbiditySer
 
 func (s *comorbidityService) CreateComorbidity(comorbidityDTO *dto.ComorbidityCreateDTO) error {
 	comorbidity := dto.MapCreateDTOToComorbidity(comorbidityDTO)
-	err := s.repo.CreateComorbidity(comorbidity)
+	err := s.repo.Create(comorbidity)
 	if err != nil {
 		log.Printf("Failed to create comorbidity: %v", err)
 		return err
@@ -38,7 +38,7 @@ func (s *comorbidityService) CreateComorbidity(comorbidityDTO *dto.ComorbidityCr
 
 func (s *comorbidityService) GetComorbidityByID(id uuid.UUID) (*dto.ComorbidityDTO, error) {
 	log.Println("Fetching comorbidity with ComorbidityID:", id)
-	comorbidity, err := s.repo.GetComorbidityByID(id)
+	comorbidity, err := s.repo.GetByID(id, "comorbidity_id")
 	if err != nil {
 		log.Printf("Error fetching comorbidity: %v", err)
 		return nil, err
@@ -53,7 +53,7 @@ func (s *comorbidityService) GetComorbidityByID(id uuid.UUID) (*dto.ComorbidityD
 
 func (s *comorbidityService) GetAllComorbidities() ([]*dto.ComorbidityDTO, error) {
 	log.Println("Fetching all comorbidities")
-	comorbidities, err := s.repo.GetAllComorbidities()
+	comorbidities, err := s.repo.GetAll()
 	if err != nil {
 		log.Printf("Error fetching comorbidities: %v", err)
 		return nil, err
@@ -65,7 +65,7 @@ func (s *comorbidityService) GetAllComorbidities() ([]*dto.ComorbidityDTO, error
 func (s *comorbidityService) UpdateComorbidity(id uuid.UUID, comorbidityDTO *dto.ComorbidityUpdateDTO) error {
 	log.Println("Updating comorbidity with ComorbidityID:", id)
 
-	comorbidity, err := s.repo.GetComorbidityByID(id)
+	comorbidity, err := s.repo.GetByID(id, "comorbidity_id")
 	if err != nil {
 		log.Printf("Error fetching comorbidity: %v", err)
 		return err
@@ -76,7 +76,7 @@ func (s *comorbidityService) UpdateComorbidity(id uuid.UUID, comorbidityDTO *dto
 	}
 
 	comorbidity = dto.MapUpdateDTOToComorbidity(comorbidityDTO, comorbidity)
-	err = s.repo.UpdateComorbidity(comorbidity)
+	err = s.repo.Update(comorbidity, "comorbidity_id", id)
 	if err != nil {
 		log.Printf("Failed to update comorbidity: %v", err)
 		return err
@@ -87,7 +87,7 @@ func (s *comorbidityService) UpdateComorbidity(id uuid.UUID, comorbidityDTO *dto
 
 func (s *comorbidityService) DeleteComorbidity(id uuid.UUID) error {
 	log.Println("Deleting comorbidity with ComorbidityID:", id)
-	err := s.repo.DeleteComorbidity(id)
+	err := s.repo.Delete(id, "comorbidity_id")
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Println("Comorbidity not found with ComorbidityID:", id)

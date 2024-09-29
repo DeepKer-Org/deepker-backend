@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"biometric-data-backend/models"
+	"biometric-data-backend/models/dto"
 	"biometric-data-backend/service"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -21,21 +21,21 @@ func NewDoctorController(doctorService service.DoctorService) *DoctorController 
 
 // CreateDoctor handles the creation of a new doctor
 func (dc *DoctorController) CreateDoctor(c *gin.Context) {
-	var doctor models.Doctor
-	if err := c.ShouldBindJSON(&doctor); err != nil {
+	var doctorDTO dto.DoctorCreateDTO
+	if err := c.ShouldBindJSON(&doctorDTO); err != nil {
 		log.Printf("Error binding JSON: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
-	err := dc.DoctorService.CreateDoctor(&doctor)
+	err := dc.DoctorService.CreateDoctor(&doctorDTO)
 	if err != nil {
 		log.Printf("Failed to create doctor: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create doctor"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Doctor created successfully", "doctor": doctor})
+	c.JSON(http.StatusCreated, gin.H{"message": "Doctor created successfully", "doctor": doctorDTO})
 }
 
 // GetDoctorByID handles retrieving a doctor by their DoctorID
@@ -45,6 +45,28 @@ func (dc *DoctorController) GetDoctorByID(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"doctor": doctor})
+}
+
+// GetDoctorsByAlertID handles retrieving all doctors associated with an alert
+func (dc *DoctorController) GetDoctorsByAlertID(c *gin.Context) {
+	alertID := c.Param("alertID")
+
+	// Parse the string to a UUID
+	alertUUID, err := uuid.Parse(alertID)
+	if err != nil {
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid alert ID"})
+		return
+	}
+
+	doctors, err := dc.DoctorService.GetDoctorsByAlertID(alertUUID)
+	if err != nil {
+		log.Printf("Error retrieving doctors: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve doctors"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"doctors": doctors})
 }
 
 // GetShortDoctorByID handles retrieving a doctor by their DoctorID and returning a DTO
@@ -70,21 +92,30 @@ func (dc *DoctorController) GetAllDoctors(c *gin.Context) {
 
 // UpdateDoctor handles updating an existing doctor
 func (dc *DoctorController) UpdateDoctor(c *gin.Context) {
-	var doctor models.Doctor
-	if err := c.ShouldBindJSON(&doctor); err != nil {
+	id := c.Param("id")
+
+	doctorID, err := uuid.Parse(id)
+	if err != nil {
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid doctor ID"})
+		return
+	}
+
+	var doctorDTO dto.DoctorUpdateDTO
+	if err := c.ShouldBindJSON(&doctorDTO); err != nil {
 		log.Printf("Error binding JSON: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
-	err := dc.DoctorService.UpdateDoctor(&doctor)
+	err = dc.DoctorService.UpdateDoctor(doctorID, &doctorDTO)
 	if err != nil {
 		log.Printf("Failed to update doctor: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update doctor"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Doctor updated successfully", "doctor": doctor})
+	c.JSON(http.StatusOK, gin.H{"message": "Doctor updated successfully", "doctor": doctorDTO})
 }
 
 // DeleteDoctor handles deleting a doctor by their DoctorID
