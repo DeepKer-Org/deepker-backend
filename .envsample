@@ -1,5 +1,5 @@
-DB_USER=root
+DB_USER=postgres
 DB_PASSWORD=root
 DB_HOST=localhost
-DB_PORT=9042
-DB_KEYSPACE=deepker_keyspace
+DB_PORT=5432
+DB_NAME=deepker
