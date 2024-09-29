@@ -10,7 +10,6 @@ CREATE TABLE patients (
                           location VARCHAR(100),
                           current_state VARCHAR(50),
                           final_diagnosis VARCHAR(100),
-                          last_alert_id UUID,  -- Reference to the last alert, but not a foreign key.
                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                           deleted_at TIMESTAMP

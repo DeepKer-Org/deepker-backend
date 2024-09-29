@@ -33,20 +33,34 @@ type PatientUpdateDTO struct {
 
 // PatientDTO is used for retrieving a patient
 type PatientDTO struct {
-	PatientID      uuid.UUID `json:"patient_id"`
-	DNI            string    `json:"dni"`
-	Name           string    `json:"name"`
-	Age            int       `json:"age"`
-	Weight         float64   `json:"weight"`
-	Height         float64   `json:"height"`
-	Sex            string    `json:"sex"`
-	Location       string    `json:"location"`
-	CurrentState   string    `json:"current_state"`
-	FinalDiagnosis string    `json:"final_diagnosis"`
+	PatientID      uuid.UUID  `json:"patient_id"`
+	DNI            string     `json:"dni"`
+	Name           string     `json:"name"`
+	Age            int        `json:"age"`
+	Weight         float64    `json:"weight"`
+	Height         float64    `json:"height"`
+	Sex            string     `json:"sex"`
+	Location       string     `json:"location"`
+	CurrentState   string     `json:"current_state"`
+	FinalDiagnosis string     `json:"final_diagnosis"`
+	LastAlertID    *uuid.UUID `json:"last_alert_id,omitempty"`
+	Comorbidities  []string   `json:"comorbidities"`
+	Doctors        []string   `json:"doctors"`
+	Medications    []string   `json:"medications"`
 }
 
 // MapPatientToDTO maps a Patient model to a PatientDTO
 func MapPatientToDTO(patient *models.Patient) *PatientDTO {
+	var lastAlertId *uuid.UUID
+	if patient.Comorbidities == nil {
+		patient.Comorbidities = []*models.Comorbidity{}
+	}
+	if patient.Medications == nil {
+		patient.Medications = []*models.Medication{}
+	}
+	if patient.Alerts != nil {
+		lastAlertId = &patient.Alerts[len(patient.Alerts)-1].AlertID
+	}
 	return &PatientDTO{
 		PatientID:      patient.PatientID,
 		DNI:            patient.DNI,
@@ -58,6 +72,10 @@ func MapPatientToDTO(patient *models.Patient) *PatientDTO {
 		Location:       patient.Location,
 		CurrentState:   patient.CurrentState,
 		FinalDiagnosis: patient.FinalDiagnosis,
+		LastAlertID:    lastAlertId,
+		Comorbidities:  MapComorbiditiesToNames(patient.Comorbidities),
+		Medications:    MapMedicationsToMedicationsDetails(patient.Medications),
+		Doctors:        MapDoctorsToNames(patient.Doctors),
 	}
 }
 

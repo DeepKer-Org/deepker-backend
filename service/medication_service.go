@@ -29,7 +29,7 @@ func NewMedicationService(repo repository.MedicationRepository) MedicationServic
 func (s *medicationService) CreateMedication(medicationDTO *dto.MedicationCreateDTO) error {
 	medication := &models.Medication{
 		PatientID:   medicationDTO.PatientID,
-		Medication:  medicationDTO.Medication,
+		Name:        medicationDTO.Name,
 		StartDate:   medicationDTO.StartDate,
 		EndDate:     medicationDTO.EndDate,
 		Dosage:      medicationDTO.Dosage,
@@ -89,7 +89,7 @@ func (s *medicationService) UpdateMedication(id uuid.UUID, medicationDTO *dto.Me
 	}
 
 	medication.PatientID = medicationDTO.PatientID
-	medication.Medication = medicationDTO.Medication
+	medication.Name = medicationDTO.Name
 	medication.StartDate = medicationDTO.StartDate
 	medication.EndDate = medicationDTO.EndDate
 	medication.Dosage = medicationDTO.Dosage
