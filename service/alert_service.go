@@ -42,7 +42,7 @@ func (s *alertService) CreateAlert(alertDTO *dto.AlertCreateDTO) error {
 		PatientID:      alertDTO.PatientID,
 	}
 
-	err := s.alertRepo.CreateAlert(alert)
+	err := s.alertRepo.Create(alert)
 	if err != nil {
 		log.Printf("Failed to create alert: %v", err)
 		return err
@@ -53,7 +53,7 @@ func (s *alertService) CreateAlert(alertDTO *dto.AlertCreateDTO) error {
 
 func (s *alertService) GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error) {
 	log.Println("Fetching alert with AlertID:", id)
-	alert, err := s.alertRepo.GetAlertByID(id)
+	alert, err := s.alertRepo.GetByID(id, "alert_id")
 	if err != nil {
 		log.Printf("Error retrieving alert: %v", err)
 		return nil, err
@@ -94,7 +94,7 @@ func (s *alertService) GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error) {
 
 func (s *alertService) GetAllAlerts() ([]*dto.AlertDTO, error) {
 	log.Println("Fetching all alerts")
-	alerts, err := s.alertRepo.GetAllAlerts()
+	alerts, err := s.alertRepo.GetAll()
 	if err != nil {
 		log.Printf("Error retrieving alerts: %v", err)
 		return nil, err
@@ -133,7 +133,7 @@ func (s *alertService) GetAllAlerts() ([]*dto.AlertDTO, error) {
 func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) error {
 	log.Println("Updating alert with AlertID:", id)
 
-	alert, err := s.alertRepo.GetAlertByID(id)
+	alert, err := s.alertRepo.GetByID(id, "alert_id")
 	if err != nil {
 		log.Printf("Error retrieving alert: %v", err)
 		return err
@@ -148,7 +148,7 @@ func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) e
 	alert.AttendedTimestamp = alertDTO.AttendedTimestamp
 	alert.PatientID = alertDTO.PatientID
 
-	err = s.alertRepo.UpdateAlert(alert)
+	err = s.alertRepo.Update(alert, "alert_id", id)
 	if err != nil {
 		log.Printf("Failed to update alert: %v", err)
 		return err
@@ -159,11 +159,11 @@ func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) e
 
 func (s *alertService) DeleteAlert(id uuid.UUID) error {
 	log.Println("Deleting alert with AlertID:", id)
-	err := s.alertRepo.DeleteAlert(id)
+	err := s.alertRepo.Delete(id, "alert_id")
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Println("Alert not found with AlertID:", id)
-			return nil
+			return errors.New("alert not found")
 		}
 		log.Printf("Failed to delete alert: %v", err)
 		return err

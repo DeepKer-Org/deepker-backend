@@ -1,9 +1,12 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type BaseModel struct {
-	CreatedAt time.Time  `json:"-" gorm:"autoCreateTime"`
-	UpdatedAt time.Time  `json:"-" gorm:"autoUpdateTime"`
-	DeletedAt *time.Time `json:"-,omitempty" gorm:"index"`
+	CreatedAt time.Time      `json:"-" gorm:"autoCreateTime"`
+	UpdatedAt time.Time      `json:"-" gorm:"autoUpdateTime"`
+	DeletedAt gorm.DeletedAt `json:"-,omitempty" gorm:"index"`
 }

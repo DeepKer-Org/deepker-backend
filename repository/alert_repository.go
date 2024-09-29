@@ -3,81 +3,55 @@ package repository
 import (
 	"biometric-data-backend/models"
 	"errors"
-	"github.com/google/uuid"
+	"fmt"
 	"gorm.io/gorm"
 )
 
+// AlertRepository define los métodos específicos para la entidad Alert
 type AlertRepository interface {
-	CreateAlert(alert *models.Alert) error
-	GetAlertByID(id uuid.UUID) (*models.Alert, error)
-	GetAllAlerts() ([]*models.Alert, error)
-	UpdateAlert(alert *models.Alert) error
-	DeleteAlert(id uuid.UUID) error
+	BaseRepository[models.Alert] // Incluir métodos del repositorio base
 }
 
+// alertRepository implementa AlertRepository
 type alertRepository struct {
-	db *gorm.DB
+	baseRepo BaseRepository[models.Alert] // Delegamos los métodos al baseRepository
+	db       *gorm.DB
 }
 
+// NewAlertRepository crea una nueva instancia de AlertRepository
 func NewAlertRepository(db *gorm.DB) AlertRepository {
-	return &alertRepository{db}
-}
-
-// CreateAlert creates a new alert record in the database.
-func (r *alertRepository) CreateAlert(alert *models.Alert) error {
-	if err := r.db.Create(alert).Error; err != nil {
-		return err
+	return &alertRepository{
+		baseRepo: NewBaseRepository[models.Alert](db), // Inicializamos el baseRepo
+		db:       db,
 	}
-	return nil
 }
 
-/* old code
-// GetAlertByID retrieves an alert by their AlertID.
-func (r *alertRepository) GetAlertByID(id uuid.UUID) (*models.Alert, error) {
+func (r *alertRepository) GetByID(id interface{}, primaryKey string) (*models.Alert, error) {
+	fmt.Printf("PIPIPIPIPI")
 	var alert models.Alert
-	if err := r.db.First(&alert).Error; err != nil {
+	if err := r.db.Preload("AttendedBy").Where(primaryKey+" = ?", id).First(&alert).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	return &alert, nil
-}
-*/
-// GetAlertByID retrieves an alert by its AlertID.
-func (r *alertRepository) GetAlertByID(id uuid.UUID) (*models.Alert, error) {
-	var alert models.Alert
-	// Explicitly search by the alert_id field
-	if err := r.db.Where("alert_id = ?", id).First(&alert).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
+	fmt.Printf("Alerta : %v\n", alert)
+	fmt.Printf("Alerta attended by: %v\n", alert.AttendedBy)
 	return &alert, nil
 }
 
-// GetAllAlerts retrieves all alerts from the database.
-func (r *alertRepository) GetAllAlerts() ([]*models.Alert, error) {
-	var alerts []*models.Alert
-	if err := r.db.Find(&alerts).Error; err != nil {
-		return nil, err
-	}
-	return alerts, nil
+func (r *alertRepository) Create(entity *models.Alert) error {
+	return r.baseRepo.Create(entity)
 }
 
-// UpdateAlert updates an existing alert record in the database.
-func (r *alertRepository) UpdateAlert(alert *models.Alert) error {
-	if err := r.db.Save(alert).Error; err != nil {
-		return err
-	}
-	return nil
+func (r *alertRepository) GetAll() ([]*models.Alert, error) {
+	return r.baseRepo.GetAll()
 }
 
-// DeleteAlert deletes a alert by their AlertID.
-func (r *alertRepository) DeleteAlert(id uuid.UUID) error {
-	if err := r.db.Delete(&models.Alert{}).Error; err != nil {
-		return err
-	}
-	return nil
+func (r *alertRepository) Update(entity *models.Alert, primaryKey string, id interface{}) error {
+	return r.baseRepo.Update(entity, primaryKey, id)
+}
+
+func (r *alertRepository) Delete(id interface{}, primaryKey string) error {
+	return r.baseRepo.Delete(id, primaryKey)
 }

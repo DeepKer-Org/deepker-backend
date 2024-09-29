@@ -1,16 +1,38 @@
 package dto
 
-import "biometric-data-backend/models"
+import (
+	"biometric-data-backend/models"
+	"github.com/google/uuid"
+)
 
-type DoctorDTO struct {
+// DoctorCreateDTO is used for creating a new doctor
+type DoctorCreateDTO struct {
 	DNI            string `json:"dni"`
 	Name           string `json:"name"`
+	Password       string `json:"password"`
 	Specialization string `json:"specialization"`
+}
+
+// DoctorUpdateDTO is used for updating an existing doctor
+type DoctorUpdateDTO struct {
+	DNI            string `json:"dni"`
+	Name           string `json:"name"`
+	Password       string `json:"password"`
+	Specialization string `json:"specialization"`
+}
+
+// DoctorDTO is used for retrieving a doctor
+type DoctorDTO struct {
+	DoctorID       uuid.UUID `json:"doctor_id"`
+	DNI            string    `json:"dni"`
+	Name           string    `json:"name"`
+	Specialization string    `json:"specialization"`
 }
 
 // MapDoctorToDTO maps a Doctor model to a DoctorDTO
 func MapDoctorToDTO(doctor *models.Doctor) *DoctorDTO {
 	return &DoctorDTO{
+		DoctorID:       doctor.DoctorID,
 		DNI:            doctor.DNI,
 		Name:           doctor.Name,
 		Specialization: doctor.Specialization,
@@ -24,4 +46,23 @@ func MapDoctorsToDTOs(doctors []*models.Doctor) []*DoctorDTO {
 		doctorDTOs = append(doctorDTOs, MapDoctorToDTO(doctor))
 	}
 	return doctorDTOs
+}
+
+// MapCreateDTOToDoctor maps a DoctorCreateDTO to a Doctor model
+func MapCreateDTOToDoctor(dto *DoctorCreateDTO) *models.Doctor {
+	return &models.Doctor{
+		DNI:            dto.DNI,
+		Name:           dto.Name,
+		Password:       dto.Password,
+		Specialization: dto.Specialization,
+	}
+}
+
+// MapUpdateDTOToDoctor maps a DoctorUpdateDTO to a Doctor model
+func MapUpdateDTOToDoctor(dto *DoctorUpdateDTO, doctor *models.Doctor) *models.Doctor {
+	doctor.DNI = dto.DNI
+	doctor.Name = dto.Name
+	doctor.Password = dto.Password
+	doctor.Specialization = dto.Specialization
+	return doctor
 }
