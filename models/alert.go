@@ -7,15 +7,17 @@ import (
 
 type Alert struct {
 	BaseModel
-	AlertID             uuid.UUID             `gorm:"type:uuid;default:uuid_generate_v4();primaryKey" json:"alert_id"`
-	AlertStatus         string                `gorm:"size:50;not null" json:"alert_status"`
-	Room                string                `gorm:"size:100" json:"room"`
-	AlertTimestamp      time.Time             `gorm:"not null" json:"alert_timestamp"`
-	AttendedTimestamp   *time.Time            `json:"attended_timestamp"`
-	AttendedByID        uuid.UUID             `gorm:"type:uuid"`
-	AttendedBy          *Doctor               `gorm:"foreignKey:AttendedByID"`
-	PatientID           uuid.UUID             `gorm:"type:uuid;not null" json:"patient_id"`
-	Biometrics          []*Biometric          `json:"biometrics"`
-	ComputerDiagnostics []*ComputerDiagnostic `json:"computer_diagnostics"`
-	Doctors             []*Doctor             `gorm:"many2many:doctor_alerts" json:"doctors"`
+	AttendedTimestamp   *time.Time
+	AlertID             uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	AlertStatus         string         `gorm:"size:50;not null"`
+	Room                string         `gorm:"size:100"`
+	AlertTimestamp      time.Time      `gorm:"not null"`
+	AttendedByID        uuid.UUID      `gorm:"type:uuid"`
+	AttendedBy          *Doctor        `gorm:"foreignKey:AttendedByID"`
+	PatientID           uuid.UUID      `gorm:"type:uuid;not null"`
+	Patient             *Patient       `gorm:"foreignKey:PatientID;references:PatientID"`
+	BiometricDataID     uuid.UUID      `gorm:"type:uuid;not null"`
+	BiometricData       *BiometricData `gorm:"foreignKey:BiometricDataID;references:BiometricDataID"`
+	Doctors             []*Doctor      `gorm:"many2many:doctor_alerts"`
+	ComputerDiagnostics []*ComputerDiagnostic
 }

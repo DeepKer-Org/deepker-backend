@@ -13,10 +13,11 @@ const (
 	DoctorsResource             = "doctors"
 	ComorbiditiesResource       = "comorbidities"
 	MedicationsResource         = "medications"
-	BiometricsResource          = "biometrics"
+	BiometricRecordsResource    = "biometrics"
 	ComputerDiagnosticsResource = "computer-diagnostics"
 	MonitoringDevicesResource   = "monitoring-devices"
 	AlertsResource              = "alerts"
+	PatientsResource            = "patients"
 )
 
 // registerCrudRoutes registers CRUD routes for a given resource
@@ -47,6 +48,22 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	// Additional doctor-specific route
 	router.GET("/"+DoctorsResource+"/:id/short", doctorController.GetShortDoctorByID)
 	router.GET("/"+DoctorsResource+"/alertID/:alertID", doctorController.GetDoctorsByAlertID)
+
+	// Patient
+	patientRepo := repository.NewPatientRepository(db)
+	patientService := service.NewPatientService(patientRepo)
+	patientController := controller.NewPatientController(patientService)
+
+	// Register patient routes
+	registerCrudRoutes(
+		router,
+		PatientsResource,
+		patientController.CreatePatient,
+		patientController.GetPatientByID,
+		patientController.GetAllPatients,
+		patientController.UpdatePatient,
+		patientController.DeletePatient,
+	)
 
 	// Comorbidity
 	comorbidityRepo := repository.NewComorbidityRepository(db)
@@ -80,20 +97,20 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		medicationController.DeleteMedication,
 	)
 
-	// Biometric
-	biometricRepo := repository.NewBiometricRepository(db)
-	biometricService := service.NewBiometricService(biometricRepo)
-	biometricController := controller.NewBiometricController(biometricService)
+	// BiometricData
+	biometricRepo := repository.NewBiometricDataRepository(db)
+	biometricService := service.NewBiometricDataService(biometricRepo)
+	biometricController := controller.NewBiometricDataController(biometricService)
 
 	// Register biometric routes
 	registerCrudRoutes(
 		router,
-		BiometricsResource,
-		biometricController.CreateBiometric,
-		biometricController.GetBiometricByID,
-		biometricController.GetAllBiometrics,
-		biometricController.UpdateBiometric,
-		biometricController.DeleteBiometric,
+		BiometricRecordsResource,
+		biometricController.CreateBiometricData,
+		biometricController.GetBiometricDataByID,
+		biometricController.GetAllBiometricRecords,
+		biometricController.UpdateBiometricData,
+		biometricController.DeleteBiometricData,
 	)
 
 	// ComputerDiagnostic

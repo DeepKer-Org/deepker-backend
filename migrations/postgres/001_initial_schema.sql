@@ -16,6 +16,18 @@ CREATE TABLE patients (
                           deleted_at TIMESTAMP
 );
 
+-- Biometrics table: Stores biometric data related to an alert.
+CREATE TABLE biometric_records (
+                                   biometric_data_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                   o2_saturation INT,
+                                   heart_rate INT,
+                                   systolic_blood_pressure INT,
+                                   diastolic_blood_pressure INT,
+                                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                   deleted_at TIMESTAMP
+);
+
 -- Alerts table: Stores alert information, including patient reference.
 CREATE TABLE alerts (
                         alert_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -24,22 +36,10 @@ CREATE TABLE alerts (
                         alert_timestamp TIMESTAMP NOT NULL,
                         attended_timestamp TIMESTAMP,
                         patient_id UUID REFERENCES patients(patient_id),
+                        biometric_data_id UUID REFERENCES biometric_records(biometric_data_id),
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         deleted_at TIMESTAMP
-);
-
--- Biometrics table: Stores biometric data related to an alert.
-CREATE TABLE biometrics (
-                            biometric_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                            alert_id UUID REFERENCES alerts(alert_id),
-                            o2_saturation INT,
-                            heart_rate INT,
-                            systolic_blood_pressure INT,
-                            diastolic_blood_pressure INT,
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                            deleted_at TIMESTAMP
 );
 
 -- Computer Diagnostics table: Stores automated diagnostics related to an alert.

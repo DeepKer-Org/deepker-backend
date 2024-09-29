@@ -25,13 +25,13 @@ type AlertUpdateDTO struct {
 // AlertDTO is used for retrieving an alert along with related entities
 type AlertDTO struct {
 	AlertID             uuid.UUID                `json:"alert_id"`
+	AlertTimestamp      time.Time                `json:"alert_timestamp"`
 	AlertStatus         string                   `json:"alert_status"`
 	Room                string                   `json:"room"`
-	AlertTimestamp      time.Time                `json:"alert_timestamp"`
 	AttendedTimestamp   *time.Time               `json:"attended_timestamp,omitempty"`
 	AttendedBy          string                   `json:"attended_by,omitempty"`
-	PatientID           uuid.UUID                `json:"patient_id"`
-	Biometrics          []*BiometricDTO          `json:"biometrics"`
+	Patient             *PatientDTO              `json:"patient"`
+	BiometricData       *BiometricDataDTO        `json:"biometric_data"`
 	ComputerDiagnostics []*ComputerDiagnosticDTO `json:"computer_diagnoses"`
 	Doctors             []*DoctorDTO             `json:"doctors"`
 }
@@ -42,6 +42,12 @@ func MapAlertToDTO(alert *models.Alert) *AlertDTO {
 	if alert.AttendedBy != nil {
 		doctorName = alert.AttendedBy.Name
 	}
+	if alert.BiometricData == nil {
+		alert.BiometricData = &models.BiometricData{}
+	}
+	if alert.Patient == nil {
+		alert.Patient = &models.Patient{}
+	}
 	return &AlertDTO{
 		AlertID:             alert.AlertID,
 		AlertStatus:         alert.AlertStatus,
@@ -49,8 +55,8 @@ func MapAlertToDTO(alert *models.Alert) *AlertDTO {
 		AlertTimestamp:      alert.AlertTimestamp,
 		AttendedTimestamp:   alert.AttendedTimestamp,
 		AttendedBy:          doctorName,
-		PatientID:           alert.PatientID,
-		Biometrics:          MapBiometricsToDTOs(alert.Biometrics),
+		Patient:             MapPatientToDTO(alert.Patient),
+		BiometricData:       MapBiometricDataToDTO(alert.BiometricData),
 		ComputerDiagnostics: MapComputerDiagnosticsToDTOs(alert.ComputerDiagnostics),
 		Doctors:             MapDoctorsToDTOs(alert.Doctors),
 	}

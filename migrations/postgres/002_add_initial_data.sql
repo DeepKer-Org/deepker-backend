@@ -5,19 +5,19 @@ VALUES
     ('22222222-2222-2222-2222-222222222222', '0987654321', 'Jane Smith', 52, 60.2, 162.4, 'F', 'Room 202', 'Critical', 'Heart Failure', NULL),
     ('33333333-3333-3333-3333-333333333333', '1122334455', 'Emily White', 30, 65.7, 168.9, 'F', 'Room 303', 'Recovering', 'Arrhythmia', NULL);
 
--- Insert into alerts table
-INSERT INTO alerts (alert_id, alert_status, room, alert_timestamp, patient_id)
-VALUES
-    ('75dd34b4-992e-4fb1-b8be-0025ae2e3893', 'Unattended', 'Room 101', '2023-09-25 14:00:00', '11111111-1111-1111-1111-111111111111'),
-    ('9153da69-9fda-46a3-bdcb-fc164e47a84a', 'Attended', 'Room 202', '2023-09-25 15:30:00', '22222222-2222-2222-2222-222222222222'),
-    ('183824dd-dbb6-479e-a9cf-3f1fcc0368d9', 'Unattended', 'Room 303', '2023-09-26 09:15:00', '33333333-3333-3333-3333-333333333333');
-
 -- Insert into biometrics table
-INSERT INTO biometrics (biometric_id, alert_id, o2_saturation, heart_rate, systolic_blood_pressure, diastolic_blood_pressure)
+INSERT INTO biometric_records (biometric_data_id, o2_saturation, heart_rate, systolic_blood_pressure, diastolic_blood_pressure)
 VALUES
-    (gen_random_uuid(), '75dd34b4-992e-4fb1-b8be-0025ae2e3893', 98, 75, 120, 80),
-    (gen_random_uuid(), '9153da69-9fda-46a3-bdcb-fc164e47a84a', 95, 85, 130, 90),
-    (gen_random_uuid(), '183824dd-dbb6-479e-a9cf-3f1fcc0368d9', 90, 95, 140, 100);
+    ('55555555-5555-5555-5555-555555555555', 98, 75, 120, 80),
+    ('66666666-6666-6666-6666-666666666666', 95, 85, 130, 90),
+    ('cccccccc-cccc-cccc-cccc-cccccccccccc', 70, 95, 140, 100);
+
+-- Insert into alerts table
+INSERT INTO alerts (alert_id, alert_status, room, alert_timestamp, patient_id, biometric_data_id)
+VALUES
+    ('75dd34b4-992e-4fb1-b8be-0025ae2e3893', 'Unattended', 'Room 101', '2023-09-25 14:00:00', '11111111-1111-1111-1111-111111111111', '55555555-5555-5555-5555-555555555555'),
+    ('9153da69-9fda-46a3-bdcb-fc164e47a84a', 'Attended', 'Room 202', '2023-09-25 15:30:00', '22222222-2222-2222-2222-222222222222', '66666666-6666-6666-6666-666666666666'),
+    ('183824dd-dbb6-479e-a9cf-3f1fcc0368d9', 'Unattended', 'Room 303', '2023-09-26 09:15:00', '33333333-3333-3333-3333-333333333333','cccccccc-cccc-cccc-cccc-cccccccccccc');
 
 -- Insert into computer_diagnostics table
 INSERT INTO computer_diagnostics (diagnostic_id, alert_id, diagnosis, percentage)

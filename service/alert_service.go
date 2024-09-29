@@ -20,12 +20,12 @@ type AlertService interface {
 
 type alertService struct {
 	alertRepo              repository.AlertRepository
-	biometricRepo          repository.BiometricRepository
+	biometricRepo          repository.BiometricDataRepository
 	computerDiagnosticRepo repository.ComputerDiagnosticRepository
 	doctorRepo             repository.DoctorRepository
 }
 
-func NewAlertService(alertRepo repository.AlertRepository, biometricRepo repository.BiometricRepository, computerDiagnosticRepo repository.ComputerDiagnosticRepository, doctorRepo repository.DoctorRepository) AlertService {
+func NewAlertService(alertRepo repository.AlertRepository, biometricRepo repository.BiometricDataRepository, computerDiagnosticRepo repository.ComputerDiagnosticRepository, doctorRepo repository.DoctorRepository) AlertService {
 	return &alertService{
 		alertRepo:              alertRepo,
 		biometricRepo:          biometricRepo,
@@ -63,13 +63,6 @@ func (s *alertService) GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error) {
 		return nil, nil
 	}
 
-	// Fetch related entities: Biometrics, Computer Diagnostics, and Doctors
-	biometrics, err := s.biometricRepo.GetBiometricsByAlertID(id)
-	if err != nil {
-		log.Printf("Error retrieving biometrics for alert: %v", err)
-		return nil, err
-	}
-
 	computerDiagnostics, err := s.computerDiagnosticRepo.GetComputerDiagnosticsByAlertID(id)
 	if err != nil {
 		log.Printf("Error retrieving computer diagnostics for alert: %v", err)
@@ -84,7 +77,6 @@ func (s *alertService) GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error) {
 
 	// Map related entities to DTOs
 	alertDTO := dto.MapAlertToDTO(alert)
-	alertDTO.Biometrics = dto.MapBiometricsToDTOs(biometrics)
 	alertDTO.ComputerDiagnostics = dto.MapComputerDiagnosticsToDTOs(computerDiagnostics)
 	alertDTO.Doctors = dto.MapDoctorsToDTOs(doctors)
 
@@ -104,13 +96,6 @@ func (s *alertService) GetAllAlerts() ([]*dto.AlertDTO, error) {
 
 	// Fetch related entities for each alert
 	for _, alertDTO := range alertDTOs {
-		biometrics, err := s.biometricRepo.GetBiometricsByAlertID(alertDTO.AlertID)
-		if err != nil {
-			log.Printf("Error retrieving biometrics for alert: %v", err)
-			return nil, err
-		}
-		alertDTO.Biometrics = dto.MapBiometricsToDTOs(biometrics)
-
 		computerDiagnostics, err := s.computerDiagnosticRepo.GetComputerDiagnosticsByAlertID(alertDTO.AlertID)
 		if err != nil {
 			log.Printf("Error retrieving computer diagnostics for alert: %v", err)

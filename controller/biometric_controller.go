@@ -9,45 +9,45 @@ import (
 	"net/http"
 )
 
-type BiometricController struct {
-	BiometricService service.BiometricService
+type BiometricDataController struct {
+	BiometricDataService service.BiometricDataService
 }
 
-func NewBiometricController(biometricService service.BiometricService) *BiometricController {
-	return &BiometricController{
-		BiometricService: biometricService,
+func NewBiometricDataController(biometricService service.BiometricDataService) *BiometricDataController {
+	return &BiometricDataController{
+		BiometricDataService: biometricService,
 	}
 }
 
-// CreateBiometric handles the creation of a new biometric record
-func (bc *BiometricController) CreateBiometric(c *gin.Context) {
-	var biometricDTO dto.BiometricCreateDTO
+// CreateBiometricData handles the creation of a new biometric record
+func (bc *BiometricDataController) CreateBiometricData(c *gin.Context) {
+	var biometricDTO dto.BiometricDataCreateDTO
 	if !bindJSON(c, &biometricDTO) {
 		return
 	}
 
-	err := bc.BiometricService.CreateBiometric(&biometricDTO)
+	err := bc.BiometricDataService.CreateBiometricData(&biometricDTO)
 	if err != nil {
 		log.Printf("Failed to create biometric: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create biometric"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Biometric created successfully", "biometric": biometricDTO})
+	c.JSON(http.StatusCreated, gin.H{"message": "BiometricData created successfully", "biometric": biometricDTO})
 }
 
-// GetBiometricByID handles retrieving a biometric record by its BiometricsID
-func (bc *BiometricController) GetBiometricByID(c *gin.Context) {
-	biometric, err := getByID(c, "id", bc.BiometricService.GetBiometricByID, "Biometric not found with BiometricsID: %v")
+// GetBiometricDataByID handles retrieving a biometric record by its BiometricDatasID
+func (bc *BiometricDataController) GetBiometricDataByID(c *gin.Context) {
+	biometric, err := getByID(c, "id", bc.BiometricDataService.GetBiometricDataByID, "BiometricData not found with BiometricDatasID: %v")
 	if err != nil || biometric == nil {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"biometric": biometric})
 }
 
-// GetAllBiometrics handles retrieving all biometric records
-func (bc *BiometricController) GetAllBiometrics(c *gin.Context) {
-	biometrics, err := bc.BiometricService.GetAllBiometrics()
+// GetAllBiometricRecords handles retrieving all biometric records
+func (bc *BiometricDataController) GetAllBiometricRecords(c *gin.Context) {
+	biometrics, err := bc.BiometricDataService.GetAllBiometricRecords()
 	if err != nil {
 		log.Printf("Error retrieving biometrics: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve biometrics"})
@@ -57,8 +57,8 @@ func (bc *BiometricController) GetAllBiometrics(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"biometrics": biometrics})
 }
 
-// UpdateBiometric handles updating an existing biometric record
-func (bc *BiometricController) UpdateBiometric(c *gin.Context) {
+// UpdateBiometricData handles updating an existing biometric record
+func (bc *BiometricDataController) UpdateBiometricData(c *gin.Context) {
 	id := c.Param("id")
 
 	// Parse the string to a UUID
@@ -69,23 +69,23 @@ func (bc *BiometricController) UpdateBiometric(c *gin.Context) {
 		return
 	}
 
-	var biometricDTO dto.BiometricUpdateDTO
+	var biometricDTO dto.BiometricDataUpdateDTO
 	if !bindJSON(c, &biometricDTO) {
 		return
 	}
 
-	err = bc.BiometricService.UpdateBiometric(biometricID, &biometricDTO)
+	err = bc.BiometricDataService.UpdateBiometricData(biometricID, &biometricDTO)
 	if err != nil {
 		log.Printf("Failed to update biometric: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update biometric"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Biometric updated successfully", "biometric": biometricDTO})
+	c.JSON(http.StatusOK, gin.H{"message": "BiometricData updated successfully", "biometric": biometricDTO})
 }
 
-// DeleteBiometric handles deleting a biometric record by its BiometricsID
-func (bc *BiometricController) DeleteBiometric(c *gin.Context) {
+// DeleteBiometricData handles deleting a biometric record by its BiometricDatasID
+func (bc *BiometricDataController) DeleteBiometricData(c *gin.Context) {
 	id := c.Param("id")
 
 	// Parse the string to a UUID
@@ -96,12 +96,12 @@ func (bc *BiometricController) DeleteBiometric(c *gin.Context) {
 		return
 	}
 
-	err = bc.BiometricService.DeleteBiometric(biometricID)
+	err = bc.BiometricDataService.DeleteBiometricData(biometricID)
 	if err != nil {
 		log.Printf("Failed to delete biometric: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete biometric"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Biometric deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "BiometricData deleted successfully"})
 }
