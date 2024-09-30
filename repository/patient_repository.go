@@ -32,7 +32,7 @@ func (r *patientRepository) GetByID(id interface{}, primaryKey string) (*models.
 		Preload("Alerts").
 		Where(primaryKey+" = ?", id).First(&patient).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return nil, err
 		}
 		return nil, err
 	}

@@ -28,14 +28,19 @@ func (ac *AlertController) CreateAlert(c *gin.Context) {
 		return
 	}
 
-	err := ac.AlertService.CreateAlert(&alertDTO)
+	alertResponse, err := ac.AlertService.CreateAlert(&alertDTO)
 	if err != nil {
 		log.Printf("Failed to create alert: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create alert"})
+		switch err.Error() {
+		case "record not found":
+			c.JSON(http.StatusNotFound, alertResponse)
+		default:
+			c.JSON(http.StatusInternalServerError, alertResponse)
+		}
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Alert created successfully", "alert": alertDTO})
+	c.JSON(http.StatusCreated, alertResponse) //gin.H{"message": "Alert created successfully", "alert": alertDTO})
 }
 
 // GetAlertByID handles retrieving an alert by its AlertID

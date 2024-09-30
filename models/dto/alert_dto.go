@@ -13,6 +13,11 @@ type AlertCreateDTO struct {
 	PatientID             uuid.UUID   `json:"patient_id"`
 }
 
+type AlertCreateResponseDTO struct {
+	AlertID string `json:"alert_id,omitempty"`
+	Message string `json:"message"`
+}
+
 // AlertUpdateDTO is used for updating an existing alert
 type AlertUpdateDTO struct {
 	Room              string     `json:"room"`
