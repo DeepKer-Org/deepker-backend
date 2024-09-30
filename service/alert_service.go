@@ -104,7 +104,7 @@ func (s *alertService) GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error) {
 	}
 	if alert == nil {
 		log.Println("No alert found with AlertID:", id)
-		return nil, nil
+		return nil, err
 	}
 
 	computerDiagnostics, err := s.computerDiagnosticRepo.GetComputerDiagnosticsByAlertID(id)
