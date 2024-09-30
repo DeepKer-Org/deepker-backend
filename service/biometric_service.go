@@ -34,7 +34,7 @@ func (s *biometricService) CreateBiometricData(biometricDTO *dto.BiometricDataCr
 		DiastolicBloodPressure: biometricDTO.DiastolicBloodPressure,
 	}
 
-	err := s.repo.CreateBiometricData(biometric)
+	err := s.repo.Create(biometric)
 	if err != nil {
 		log.Printf("Failed to create biometric: %v", err)
 		return err
@@ -45,7 +45,7 @@ func (s *biometricService) CreateBiometricData(biometricDTO *dto.BiometricDataCr
 
 func (s *biometricService) GetBiometricDataByID(id uuid.UUID) (*dto.BiometricDataDTO, error) {
 	log.Println("Fetching biometric with BiometricRecordsID:", id)
-	biometric, err := s.repo.GetBiometricDataByID(id)
+	biometric, err := s.repo.GetByID(id, "biometric_data_id")
 	if err != nil {
 		log.Printf("Error retrieving biometric: %v", err)
 		return nil, err
@@ -62,7 +62,7 @@ func (s *biometricService) GetBiometricDataByID(id uuid.UUID) (*dto.BiometricDat
 
 func (s *biometricService) GetAllBiometricRecords() ([]*dto.BiometricDataDTO, error) {
 	log.Println("Fetching all biometrics")
-	biometrics, err := s.repo.GetAllBiometricRecords()
+	biometrics, err := s.repo.GetAll()
 	if err != nil {
 		log.Printf("Error retrieving biometrics: %v", err)
 		return nil, err
@@ -76,7 +76,7 @@ func (s *biometricService) GetAllBiometricRecords() ([]*dto.BiometricDataDTO, er
 func (s *biometricService) UpdateBiometricData(id uuid.UUID, biometricDTO *dto.BiometricDataUpdateDTO) error {
 	log.Println("Updating biometric with  BiometricDataID:", id)
 
-	biometric, err := s.repo.GetBiometricDataByID(id)
+	biometric, err := s.repo.GetByID(id, "biometric_data_id")
 	if err != nil {
 		log.Printf("Error retrieving biometric: %v", err)
 		return err
@@ -91,7 +91,7 @@ func (s *biometricService) UpdateBiometricData(id uuid.UUID, biometricDTO *dto.B
 	biometric.SystolicBloodPressure = biometricDTO.SystolicBloodPressure
 	biometric.DiastolicBloodPressure = biometricDTO.DiastolicBloodPressure
 
-	err = s.repo.UpdateBiometricData(biometric)
+	err = s.repo.Update(biometric, "biometric_data_id", id)
 	if err != nil {
 		log.Printf("Failed to update biometric: %v", err)
 		return err
@@ -102,7 +102,7 @@ func (s *biometricService) UpdateBiometricData(id uuid.UUID, biometricDTO *dto.B
 
 func (s *biometricService) DeleteBiometricData(id uuid.UUID) error {
 	log.Println("Deleting biometric with BiometricRecordsID:", id)
-	err := s.repo.DeleteBiometricData(id)
+	err := s.repo.Delete(id, "biometric_data_id")
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Println("BiometricDataData not found with BiometricDataID:", id)

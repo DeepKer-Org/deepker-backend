@@ -2,46 +2,26 @@ package repository
 
 import (
 	"biometric-data-backend/models"
-	"errors"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type ComputerDiagnosticRepository interface {
-	CreateComputerDiagnostic(computerDiagnosis *models.ComputerDiagnostic) error
-	GetComputerDiagnosticByID(id uuid.UUID) (*models.ComputerDiagnostic, error)
+	BaseRepository[models.ComputerDiagnostic]
 	GetComputerDiagnosticsByAlertID(alertID uuid.UUID) ([]*models.ComputerDiagnostic, error)
-	GetAllComputerDiagnostics() ([]*models.ComputerDiagnostic, error)
-	UpdateComputerDiagnostic(computerDiagnosis *models.ComputerDiagnostic) error
-	DeleteComputerDiagnostic(id uuid.UUID) error
 }
 
 type computerDiagnosticRepository struct {
+	BaseRepository[models.ComputerDiagnostic]
 	db *gorm.DB
 }
 
 func NewComputerDiagnosticRepository(db *gorm.DB) ComputerDiagnosticRepository {
-	return &computerDiagnosticRepository{db}
-}
-
-// CreateComputerDiagnostic creates a new computerDiagnosis record in the database.
-func (r *computerDiagnosticRepository) CreateComputerDiagnostic(computerDiagnosis *models.ComputerDiagnostic) error {
-	if err := r.db.Create(computerDiagnosis).Error; err != nil {
-		return err
+	baseRepo := NewBaseRepository[models.ComputerDiagnostic](db)
+	return &computerDiagnosticRepository{
+		BaseRepository: baseRepo,
+		db:             db,
 	}
-	return nil
-}
-
-// GetComputerDiagnosticByID retrieves a computerDiagnosis by their ComputerDiagnosticID.
-func (r *computerDiagnosticRepository) GetComputerDiagnosticByID(id uuid.UUID) (*models.ComputerDiagnostic, error) {
-	var computerDiagnosis models.ComputerDiagnostic
-	if err := r.db.First(&computerDiagnosis).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &computerDiagnosis, nil
 }
 
 // GetComputerDiagnosticsByAlertID retrieves a computerDiagnosis by their AlertID.
@@ -51,29 +31,4 @@ func (r *computerDiagnosticRepository) GetComputerDiagnosticsByAlertID(alertID u
 		return nil, err
 	}
 	return computerDiagnostics, nil
-}
-
-// GetAllComputerDiagnostics retrieves all computerDiagnostics from the database.
-func (r *computerDiagnosticRepository) GetAllComputerDiagnostics() ([]*models.ComputerDiagnostic, error) {
-	var computerDiagnostics []*models.ComputerDiagnostic
-	if err := r.db.Find(&computerDiagnostics).Error; err != nil {
-		return nil, err
-	}
-	return computerDiagnostics, nil
-}
-
-// UpdateComputerDiagnostic updates an existing computerDiagnosis record in the database.
-func (r *computerDiagnosticRepository) UpdateComputerDiagnostic(computerDiagnosis *models.ComputerDiagnostic) error {
-	if err := r.db.Save(computerDiagnosis).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-// DeleteComputerDiagnostic deletes a computerDiagnosis by their ComputerDiagnosticID.
-func (r *computerDiagnosticRepository) DeleteComputerDiagnostic(id uuid.UUID) error {
-	if err := r.db.Delete(&models.ComputerDiagnostic{}).Error; err != nil {
-		return err
-	}
-	return nil
 }

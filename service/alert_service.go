@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"strings"
+	"time"
 )
 
 type AlertService interface {
@@ -22,29 +23,54 @@ type AlertService interface {
 
 type alertService struct {
 	alertRepo              repository.AlertRepository
+	patientRepo            repository.PatientRepository
 	biometricRepo          repository.BiometricDataRepository
 	computerDiagnosticRepo repository.ComputerDiagnosticRepository
 	doctorRepo             repository.DoctorRepository
 }
 
-func NewAlertService(alertRepo repository.AlertRepository, biometricRepo repository.BiometricDataRepository, computerDiagnosticRepo repository.ComputerDiagnosticRepository, doctorRepo repository.DoctorRepository) AlertService {
+func NewAlertService(alertRepo repository.AlertRepository, biometricRepo repository.BiometricDataRepository, computerDiagnosticRepo repository.ComputerDiagnosticRepository, doctorRepo repository.DoctorRepository, patientRepo repository.PatientRepository) AlertService {
 	return &alertService{
 		alertRepo:              alertRepo,
 		biometricRepo:          biometricRepo,
 		computerDiagnosticRepo: computerDiagnosticRepo,
 		doctorRepo:             doctorRepo,
+		patientRepo:            patientRepo,
 	}
 }
 
 func (s *alertService) CreateAlert(alertDTO *dto.AlertCreateDTO) error {
-	alert := &models.Alert{
-		AlertStatus:    alertDTO.AlertStatus,
-		Room:           alertDTO.Room,
-		AlertTimestamp: alertDTO.AlertTimestamp,
-		PatientID:      alertDTO.PatientID,
+	biometricData, err := s.biometricRepo.GetByID(alertDTO.BiometricDataID, "biometric_data_id")
+	if err != nil {
+		log.Printf("Error retrieving biometric data: %v", err)
+		return err
+	}
+	patient, err := s.patientRepo.GetByID(alertDTO.PatientID, "patient_id")
+	if err != nil {
+		log.Printf("Error retrieving patient: %v", err)
+		return err
 	}
 
-	err := s.alertRepo.Create(alert)
+	computerDiagnosticIDs := convertUUIDsToInterface(alertDTO.ComputerDiagnosticIDs)
+	computerDiagnostics, err := s.computerDiagnosticRepo.GetByIDs(computerDiagnosticIDs, "diagnostic_id")
+	if err != nil {
+		log.Printf("Error retrieving computer diagnostics: %v", err)
+		return err
+	}
+
+	alert := &models.Alert{
+		AlertTimestamp:      time.Now(),
+		AttendedTimestamp:   nil,
+		AttendedBy:          nil,
+		BiometricDataID:     alertDTO.BiometricDataID,
+		BiometricData:       biometricData,
+		PatientID:           alertDTO.PatientID,
+		Patient:             patient,
+		Room:                patient.Location,
+		ComputerDiagnostics: computerDiagnostics,
+	}
+
+	err = s.alertRepo.Create(alert)
 	if err != nil {
 		log.Printf("Failed to create alert: %v", err)
 		return err
@@ -133,10 +159,8 @@ func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) e
 		return gorm.ErrRecordNotFound
 	}
 
-	alert.AlertStatus = alertDTO.AlertStatus
 	alert.Room = alertDTO.Room
 	alert.AttendedTimestamp = alertDTO.AttendedTimestamp
-	alert.PatientID = alertDTO.PatientID
 
 	err = s.alertRepo.Update(alert, "alert_id", id)
 	if err != nil {
@@ -201,4 +225,13 @@ func (s *alertService) GetAllAlertsByStatus(status string) ([]*dto.AlertDTO, err
 
 	log.Println("Alerts fetched successfully with status:", status)
 	return alertDTOs, nil
+}
+
+// Convert uuid slice to []interface{}
+func convertUUIDsToInterface(uuids []uuid.UUID) []interface{} {
+	interfaceSlice := make([]interface{}, len(uuids))
+	for i, v := range uuids {
+		interfaceSlice[i] = v
+	}
+	return interfaceSlice
 }

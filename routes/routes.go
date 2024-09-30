@@ -147,7 +147,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 
 	// Alert
 	alertRepo := repository.NewAlertRepository(db)
-	alertService := service.NewAlertService(alertRepo, biometricRepo, computerDiagnosticRepo, doctorRepo)
+	alertService := service.NewAlertService(alertRepo, biometricRepo, computerDiagnosticRepo, doctorRepo, patientRepo)
 	alertController := controller.NewAlertController(alertService)
 
 	// Register alert routes

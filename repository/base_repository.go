@@ -8,6 +8,7 @@ import (
 type BaseRepository[T any] interface {
 	Create(entity *T) error
 	GetByID(id interface{}, primaryKey string) (*T, error)
+	GetByIDs(ids []interface{}, primaryKey string) ([]*T, error)
 	GetAll() ([]*T, error)
 	Update(entity *T, primaryKey string, id interface{}) error
 	Delete(id interface{}, primaryKey string) error
@@ -39,6 +40,15 @@ func (r *baseRepository[T]) GetByID(id interface{}, primaryKey string) (*T, erro
 		return nil, err
 	}
 	return &entity, nil
+}
+
+// GetByIDs ignoring logically deleted records (default behavior)
+func (r *baseRepository[T]) GetByIDs(ids []interface{}, primaryKey string) ([]*T, error) {
+	var entities []*T
+	if err := r.db.Where(primaryKey+" IN (?)", ids).Find(&entities).Error; err != nil {
+		return nil, err
+	}
+	return entities, nil
 }
 
 // GetAll ignoring logically deleted records (default behavior)
