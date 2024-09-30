@@ -33,18 +33,18 @@ func (s *computerDiagnosticService) CreateComputerDiagnostic(diagnosisDTO *dto.C
 		Percentage: diagnosisDTO.Percentage,
 	}
 
-	err := s.repo.CreateComputerDiagnostic(diagnosis)
+	err := s.repo.Create(diagnosis)
 	if err != nil {
 		log.Printf("Failed to create computer diagnosis: %v", err)
 		return err
 	}
-	log.Println("Computer diagnosis created successfully with DiagnosisID:", diagnosis.DiagnosisID)
+	log.Println("Computer diagnosis created successfully with DiagnosisID:", diagnosis.DiagnosticID)
 	return nil
 }
 
 func (s *computerDiagnosticService) GetComputerDiagnosticByID(id uuid.UUID) (*dto.ComputerDiagnosticDTO, error) {
 	log.Println("Fetching computer diagnosis with DiagnosisID:", id)
-	diagnosis, err := s.repo.GetComputerDiagnosticByID(id)
+	diagnosis, err := s.repo.GetByID(id, "diagnostic_id")
 	if err != nil {
 		log.Printf("Error retrieving computer diagnosis: %v", err)
 		return nil, err
@@ -61,7 +61,7 @@ func (s *computerDiagnosticService) GetComputerDiagnosticByID(id uuid.UUID) (*dt
 
 func (s *computerDiagnosticService) GetAllComputerDiagnostics() ([]*dto.ComputerDiagnosticDTO, error) {
 	log.Println("Fetching all computer diagnostics")
-	diagnostics, err := s.repo.GetAllComputerDiagnostics()
+	diagnostics, err := s.repo.GetAll()
 	if err != nil {
 		log.Printf("Error retrieving computer diagnostics: %v", err)
 		return nil, err
@@ -75,7 +75,7 @@ func (s *computerDiagnosticService) GetAllComputerDiagnostics() ([]*dto.Computer
 func (s *computerDiagnosticService) UpdateComputerDiagnostic(id uuid.UUID, diagnosisDTO *dto.ComputerDiagnosticUpdateDTO) error {
 	log.Println("Updating computer diagnosis with DiagnosisID:", id)
 
-	diagnosis, err := s.repo.GetComputerDiagnosticByID(id)
+	diagnosis, err := s.repo.GetByID(id, "diagnostic_id")
 	if err != nil {
 		log.Printf("Error retrieving computer diagnosis: %v", err)
 		return err
@@ -89,18 +89,18 @@ func (s *computerDiagnosticService) UpdateComputerDiagnostic(id uuid.UUID, diagn
 	diagnosis.Diagnosis = diagnosisDTO.Diagnosis
 	diagnosis.Percentage = diagnosisDTO.Percentage
 
-	err = s.repo.UpdateComputerDiagnostic(diagnosis)
+	err = s.repo.Update(diagnosis, "diagnostic_id", id)
 	if err != nil {
 		log.Printf("Failed to update computer diagnosis: %v", err)
 		return err
 	}
-	log.Println("Computer diagnosis updated successfully with DiagnosisID:", diagnosis.DiagnosisID)
+	log.Println("Computer diagnosis updated successfully with DiagnosisID:", diagnosis.DiagnosticID)
 	return nil
 }
 
 func (s *computerDiagnosticService) DeleteComputerDiagnostic(id uuid.UUID) error {
 	log.Println("Deleting computer diagnosis with DiagnosisID:", id)
-	err := s.repo.DeleteComputerDiagnostic(id)
+	err := s.repo.Delete(id, "diagnostic_id")
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Println("Computer diagnosis not found with DiagnosisID:", id)

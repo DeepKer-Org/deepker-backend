@@ -8,18 +8,21 @@ import (
 
 // AlertCreateDTO is used for creating a new alert
 type AlertCreateDTO struct {
-	AlertStatus    string    `json:"alert_status"`
-	Room           string    `json:"room"`
-	AlertTimestamp time.Time `json:"alert_timestamp"`
-	PatientID      uuid.UUID `json:"patient_id"`
+	BiometricDataID       uuid.UUID   `json:"biometric_data_id"`
+	ComputerDiagnosticIDs []uuid.UUID `json:"computer_diagnostic_ids"`
+	PatientID             uuid.UUID   `json:"patient_id"`
+}
+
+type AlertCreateResponseDTO struct {
+	AlertID string `json:"alert_id,omitempty"`
+	Message string `json:"message"`
 }
 
 // AlertUpdateDTO is used for updating an existing alert
 type AlertUpdateDTO struct {
-	AlertStatus       string     `json:"alert_status"`
 	Room              string     `json:"room"`
 	AttendedTimestamp *time.Time `json:"attended_timestamp"`
-	PatientID         uuid.UUID  `json:"patient_id"`
+	AttendedByID      uuid.UUID  `json:"attended_by_id"`
 }
 
 // AlertDTO is used for retrieving an alert along with related entities
@@ -27,7 +30,6 @@ type AlertDTO struct {
 	AlertID             uuid.UUID                `json:"alert_id"`
 	AlertTimestamp      time.Time                `json:"alert_timestamp"`
 	Room                string                   `json:"room"`
-	AlertStatus         string                   `json:"alert_status"`
 	AttendedBy          string                   `json:"attended_by,omitempty"`
 	AttendedTimestamp   *time.Time               `json:"attended_timestamp,omitempty"`
 	BiometricData       *BiometricDataDTO        `json:"biometric_data"`
@@ -49,7 +51,6 @@ func MapAlertToDTO(alert *models.Alert) *AlertDTO {
 	}
 	return &AlertDTO{
 		AlertID:             alert.AlertID,
-		AlertStatus:         alert.AlertStatus,
 		Room:                alert.Room,
 		AlertTimestamp:      alert.AlertTimestamp,
 		AttendedTimestamp:   alert.AttendedTimestamp,
@@ -70,4 +71,11 @@ func MapAlertsToDTOs(alerts []*models.Alert) []*AlertDTO {
 		alertDTOs = append(alertDTOs, MapAlertToDTO(alert))
 	}
 	return alertDTOs
+}
+
+func MapCreateDTOToAlert(dto *AlertCreateDTO) *models.Alert {
+	return &models.Alert{
+		BiometricDataID: dto.BiometricDataID,
+		PatientID:       dto.PatientID,
+	}
 }
