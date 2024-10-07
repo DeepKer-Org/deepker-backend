@@ -35,6 +35,7 @@ func (r *alertRepository) GetByID(id interface{}, primaryKey string) (*models.Al
 		Preload("AttendedBy").
 		Preload("Patient").
 		Preload("Patient.Doctors").
+		Preload("ComputerDiagnostics").
 		Where(primaryKey+" = ?", id).First(&alert).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -51,6 +52,7 @@ func (r *alertRepository) GetAll() ([]*models.Alert, error) {
 		Preload("AttendedBy").
 		Preload("Patient").
 		Preload("Patient.Doctors").
+		Preload("ComputerDiagnostics").
 		Find(&alerts).Error; err != nil {
 		return nil, err
 	}
@@ -64,6 +66,7 @@ func (r *alertRepository) GetAttendedAlerts() ([]*models.Alert, error) {
 		Preload("AttendedBy").
 		Preload("Patient").
 		Preload("Patient.Doctors").
+		Preload("ComputerDiagnostics").
 		Where("attended_timestamp IS NOT NULL").Find(&alerts).Error; err != nil {
 		return nil, err
 	}
@@ -77,6 +80,7 @@ func (r *alertRepository) GetUnattendedAlerts() ([]*models.Alert, error) {
 		Preload("AttendedBy").
 		Preload("Patient").
 		Preload("Patient.Doctors").
+		Preload("ComputerDiagnostics").
 		Where("attended_timestamp IS NULL").Find(&alerts).Error; err != nil {
 		return nil, err
 	}

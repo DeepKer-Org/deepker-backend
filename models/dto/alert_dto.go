@@ -30,8 +30,9 @@ type AlertDTO struct {
 	AlertID             uuid.UUID                `json:"alert_id"`
 	AlertTimestamp      time.Time                `json:"alert_timestamp"`
 	Room                string                   `json:"room"`
-	AttendedBy          string                   `json:"attended_by,omitempty"`
-	AttendedTimestamp   *time.Time               `json:"attended_timestamp,omitempty"`
+	AttendedBy          string                   `json:"attended_by"`
+	AttendedTimestamp   string                   `json:"attended_timestamp"`
+	AlertStatus         string                   `json:"alert_status"`
 	BiometricData       *BiometricDataDTO        `json:"biometric_data"`
 	ComputerDiagnostics []*ComputerDiagnosticDTO `json:"computer_diagnoses"`
 	Patient             *PatientForAlertDTO      `json:"patient"`
@@ -49,11 +50,20 @@ func MapAlertToDTO(alert *models.Alert) *AlertDTO {
 	if alert.Patient == nil {
 		alert.Patient = &models.Patient{}
 	}
+
+	attendedTimestamp := ""
+	alertStatus := "Unattended"
+	if alert.AttendedTimestamp != nil {
+		attendedTimestamp = alert.AttendedTimestamp.Format(time.RFC3339)
+		alertStatus = "Attended"
+	}
+
 	return &AlertDTO{
 		AlertID:             alert.AlertID,
 		Room:                alert.Room,
 		AlertTimestamp:      alert.AlertTimestamp,
-		AttendedTimestamp:   alert.AttendedTimestamp,
+		AttendedTimestamp:   attendedTimestamp,
+		AlertStatus:         alertStatus,
 		AttendedBy:          doctorName,
 		BiometricData:       MapBiometricDataToDTO(alert.BiometricData),
 		ComputerDiagnostics: MapComputerDiagnosticsToDTOs(alert.ComputerDiagnostics),
@@ -63,10 +73,7 @@ func MapAlertToDTO(alert *models.Alert) *AlertDTO {
 
 // MapAlertsToDTOs maps a list of Alert models to a list of AlertDTOs
 func MapAlertsToDTOs(alerts []*models.Alert) []*AlertDTO {
-	if alerts == nil {
-		return []*AlertDTO{}
-	}
-	var alertDTOs []*AlertDTO
+	alertDTOs := make([]*AlertDTO, 0)
 	for _, alert := range alerts {
 		alertDTOs = append(alertDTOs, MapAlertToDTO(alert))
 	}
