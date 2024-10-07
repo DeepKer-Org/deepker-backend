@@ -106,28 +106,8 @@ func (s *alertService) GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error) {
 		log.Println("No alert found with AlertID:", id)
 		return nil, err
 	}
-
-	computerDiagnostics, err := s.computerDiagnosticRepo.GetComputerDiagnosticsByAlertID(id)
-	if err != nil {
-		log.Printf("Error retrieving computer diagnostics for alert: %v", err)
-		return nil, err
-	}
-
-	/* Reconsider whether to include doctors in alerts
-	doctors, err := s.doctorRepo.GetDoctorsByAlertID(id)
-	if err != nil {
-		log.Printf("Error retrieving doctors for alert: %v", err)
-		return nil, err
-	}
-	*/
-
-	// Map related entities to DTOs
-	alertDTO := dto.MapAlertToDTO(alert)
-	alertDTO.ComputerDiagnostics = dto.MapComputerDiagnosticsToDTOs(computerDiagnostics)
-	//alertDTO.Doctors = dto.MapDoctorsToDTOs(doctors)
-
 	log.Println("Alert fetched successfully with AlertID:", id)
-	return alertDTO, nil
+	return dto.MapAlertToDTO(alert), nil
 }
 
 func (s *alertService) GetAllAlerts() ([]*dto.AlertDTO, error) {
@@ -137,29 +117,8 @@ func (s *alertService) GetAllAlerts() ([]*dto.AlertDTO, error) {
 		log.Printf("Error retrieving alerts: %v", err)
 		return nil, err
 	}
-
-	alertDTOs := dto.MapAlertsToDTOs(alerts)
-
-	// Fetch related entities for each alert
-	for _, alertDTO := range alertDTOs {
-		computerDiagnostics, err := s.computerDiagnosticRepo.GetComputerDiagnosticsByAlertID(alertDTO.AlertID)
-		if err != nil {
-			log.Printf("Error retrieving computer diagnostics for alert: %v", err)
-			return nil, err
-		}
-		alertDTO.ComputerDiagnostics = dto.MapComputerDiagnosticsToDTOs(computerDiagnostics)
-
-		/*
-			doctors, err := s.doctorRepo.GetDoctorsByAlertID(alertDTO.AlertID)
-			if err != nil {
-				log.Printf("Error retrieving doctors for alert: %v", err)
-				return nil, err
-			}
-			alertDTO.Doctors = dto.MapDoctorsToDTOs(doctors)*/
-	}
-
-	log.Println("Alerts fetched successfully, total count:", len(alertDTOs))
-	return alertDTOs, nil
+	log.Println("Alerts fetched successfully, total count:", len(alerts))
+	return dto.MapAlertsToDTOs(alerts), nil
 }
 
 func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) error {
@@ -223,24 +182,8 @@ func (s *alertService) GetAllAlertsByStatus(status string) ([]*dto.AlertDTO, err
 		log.Printf("Error retrieving alerts: %v", err)
 		return nil, err
 	}
-
-	alertDTOs := []*dto.AlertDTO{}
-
-	if len(alerts) > 0 {
-		alertDTOs = dto.MapAlertsToDTOs(alerts)
-	}
-	// Fetch related entities for each alert
-	for _, alertDTO := range alertDTOs {
-		computerDiagnostics, err := s.computerDiagnosticRepo.GetComputerDiagnosticsByAlertID(alertDTO.AlertID)
-		if err != nil {
-			log.Printf("Error retrieving computer diagnostics for alert: %v", err)
-			return nil, err
-		}
-		alertDTO.ComputerDiagnostics = dto.MapComputerDiagnosticsToDTOs(computerDiagnostics)
-	}
-
 	log.Println("Alerts fetched successfully with status:", status)
-	return alertDTOs, nil
+	return dto.MapAlertsToDTOs(alerts), nil
 }
 
 // Convert uuid slice to []interface{}

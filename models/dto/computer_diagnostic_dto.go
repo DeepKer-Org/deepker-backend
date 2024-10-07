@@ -35,7 +35,7 @@ func MapComputerDiagnosticToDTO(diagnosis *models.ComputerDiagnostic) *ComputerD
 
 // MapComputerDiagnosticsToDTOs maps a list of ComputerDiagnostic models to a list of ComputerDiagnosisDTOs
 func MapComputerDiagnosticsToDTOs(diagnoses []*models.ComputerDiagnostic) []*ComputerDiagnosticDTO {
-	var diagnosisDTOs []*ComputerDiagnosticDTO
+	diagnosisDTOs := make([]*ComputerDiagnosticDTO, 0)
 	for _, diagnosis := range diagnoses {
 		diagnosisDTOs = append(diagnosisDTOs, MapComputerDiagnosticToDTO(diagnosis))
 	}
