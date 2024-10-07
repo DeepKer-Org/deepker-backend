@@ -12,6 +12,7 @@ import (
 type PatientService interface {
 	CreatePatient(patientDTO *dto.PatientCreateDTO) error
 	GetPatientByID(id uuid.UUID) (*dto.PatientDTO, error)
+	GetPatientByDNI(dni string) (*dto.PatientDTO, error)
 	GetAllPatients() ([]*dto.PatientDTO, error)
 	UpdatePatient(id uuid.UUID, patientDTO *dto.PatientUpdateDTO) error
 	DeletePatient(id uuid.UUID) error
@@ -45,6 +46,21 @@ func (s *patientService) GetPatientByID(id uuid.UUID) (*dto.PatientDTO, error) {
 	}
 	if patient == nil {
 		log.Println("No patient found with PatientID:", id)
+		return nil, nil
+	}
+
+	return dto.MapPatientToDTO(patient), nil
+}
+
+func (s *patientService) GetPatientByDNI(dni string) (*dto.PatientDTO, error) {
+	log.Println("Fetching patient with DNI:", dni)
+	patient, err := s.repo.GetPatientByDNI(dni)
+	if err != nil {
+		log.Printf("Error fetching patient: %v", err)
+		return nil, err
+	}
+	if patient == nil {
+		log.Println("No patient found with DNI:", dni)
 		return nil, nil
 	}
 
