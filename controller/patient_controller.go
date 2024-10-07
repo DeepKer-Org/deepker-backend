@@ -65,6 +65,26 @@ func (pc *PatientController) GetPatientByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"patient": patient})
 }
 
+// GetPatientByDNI handles retrieving a patient by their DNI
+func (pc *PatientController) GetPatientByDNI(c *gin.Context) {
+	dni := c.Param("dni")
+
+	patient, err := pc.PatientService.GetPatientByDNI(dni)
+	if err != nil {
+		log.Printf("Error retrieving patient: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve patient"})
+		return
+	}
+
+	if patient == nil {
+		log.Printf("Patient not found with DNI: %v", dni)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Patient not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"patient": patient})
+}
+
 // GetAllPatients handles retrieving all patients
 func (pc *PatientController) GetAllPatients(c *gin.Context) {
 	patients, err := pc.PatientService.GetAllPatients()

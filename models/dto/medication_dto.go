@@ -88,7 +88,7 @@ func MapMedicationsToDTOs(medications []*models.Medication) []*MedicationDTO {
 }
 
 func MapMedicationsToMedicationsDetails(medications []*models.Medication) []string {
-	var medicationDetails []string
+	medicationDetails := make([]string, 0)
 	for _, medication := range medications {
 		medicationDetails = append(medicationDetails, medication.Name+" - "+medication.Dosage+" - "+medication.Periodicity)
 	}
