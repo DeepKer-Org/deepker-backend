@@ -2,13 +2,12 @@ package dto
 
 import (
 	"biometric-data-backend/models"
-	"github.com/google/uuid"
 )
 
 func MapPatientToDTO(patient *models.Patient) *PatientDTO {
-	var lastAlertId *uuid.UUID
+	lastAlertId := ""
 	if len(patient.Alerts) > 0 {
-		lastAlertId = &patient.Alerts[len(patient.Alerts)-1].AlertID
+		lastAlertId = patient.Alerts[len(patient.Alerts)-1].AlertID.String()
 	}
 
 	return &PatientDTO{
@@ -22,10 +21,10 @@ func MapPatientToDTO(patient *models.Patient) *PatientDTO {
 		Location:       patient.Location,
 		CurrentState:   patient.CurrentState,
 		FinalDiagnosis: patient.FinalDiagnosis,
-		LastAlertID:    lastAlertId,
 		Comorbidities:  MapComorbiditiesToNames(patient.Comorbidities),
 		Medications:    MapMedicationsToMedicationsDetails(patient.Medications),
 		Doctors:        MapDoctorsToNames(patient.Doctors),
+		LastAlertID:    lastAlertId,
 	}
 }
 

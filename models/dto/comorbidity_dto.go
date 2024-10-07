@@ -59,7 +59,7 @@ func MapUpdateDTOToComorbidity(dto *ComorbidityUpdateDTO, comorbidity *models.Co
 
 // MapComorbiditiesToNames maps a list of Comorbidity models to a list of strings (names of comorbidities)
 func MapComorbiditiesToNames(comorbidities []*models.Comorbidity) []string {
-	var comorbidityNames []string
+	comorbidityNames := make([]string, 0)
 	for _, comorbidity := range comorbidities {
 		comorbidityNames = append(comorbidityNames, comorbidity.Comorbidity)
 	}

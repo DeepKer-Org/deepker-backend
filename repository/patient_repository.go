@@ -9,6 +9,7 @@ import (
 // PatientRepository interface includes the specific methods and embeds BaseRepository
 type PatientRepository interface {
 	BaseRepository[models.Patient]
+	GetPatientByDNI(dni string) (*models.Patient, error)
 }
 
 type patientRepository struct {
@@ -17,8 +18,9 @@ type patientRepository struct {
 }
 
 func NewPatientRepository(db *gorm.DB) PatientRepository {
+	baseRepo := NewBaseRepository[models.Patient](db)
 	return &patientRepository{
-		BaseRepository: NewBaseRepository[models.Patient](db),
+		BaseRepository: baseRepo,
 		db:             db,
 	}
 }
@@ -51,4 +53,21 @@ func (r *patientRepository) GetAll() ([]*models.Patient, error) {
 		return nil, err
 	}
 	return patients, nil
+}
+
+func (r *patientRepository) GetPatientByDNI(dni string) (*models.Patient, error) {
+	var patient models.Patient
+	if err := r.db.
+		Preload("Comorbidities").
+		Preload("Medications").
+		Preload("Doctors").
+		Preload("Alerts").
+		Where("dni = ?", dni).First(&patient).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
+		}
+		return nil, err
+	}
+
+	return &patient, nil
 }
