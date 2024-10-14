@@ -1,20 +1,20 @@
-# Biometric data backend
+# Deepker Backend
 
-This is a Go project that uses the Gin framework for routing and GORM for database interaction. Swagger is used for API documentation.
+The Deepker Backend is a high-performance server-side application developed in Go (Golang). It serves as the backbone of the Deepker platform, providing robust and scalable APIs for biometric data processing and analysis. Leveraging modern technologies like the Gin web framework and GORM ORM, it ensures efficient handling of HTTP requests and seamless interactions with a PostgreSQL database.
 
 ## Requirements
 
 - Go 1.18 or higher
 - Docker
-- MySQL
+- **PostgreSQL**
 
 ## Project Setup
 
 ### Step 1: Clone the Repository
 
 ```sh
-git clone https://github.com/Kudas-AI/biometric-data-backend.git
-cd biometric-data-backend
+git clone https://github.com/DeepKer-Org/deepker-backend.git
+cd deepker-backend
 ```
 
 ### Step 2: Configure the `.env` File
@@ -22,28 +22,14 @@ cd biometric-data-backend
 Create a `.env` file in the root of the project with the following content:
 
 ```env
-DB_USER=root
+DB_USER=postgres
 DB_PASSWORD=root
-DB_NAME=go_db
 DB_HOST=localhost
-DB_PORT=3306
+DB_PORT=5432
+DB_NAME=deepker
 ```
 
-### Step 3: Initialize the Database
-
-Use Docker to start a MySQL container with the following command:
-
-```sh
-docker run -d --name mysql-container -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 mysql:8.0.37 --default-authentication-plugin=mysql_native_password --bind-address=0.0.0.0
-```
-
-Connect to the MySQL container and create the `go_db` database:
-
-```sh
-docker exec -it mysql-container mysql -u root -proot -e "CREATE DATABASE go_db;"
-```
-
-### Step 4: Install Dependencies
+### Step 3: Install Dependencies
 
 Run the following command to install project dependencies:
 
@@ -51,7 +37,25 @@ Run the following command to install project dependencies:
 go mod tidy
 ```
 
-### Step 5: Generate Swagger Documentation (optional)
+This command downloads the necessary Go modules specified in the `go.mod` file.
+
+### Step 4: Initialize the Database
+
+Use Docker to start a PostgreSQL container with the following command:
+
+```sh
+docker run --name postgres-deepker -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=root -e POSTGRES_DB=deepker -p 5432:5432 -d postgres
+```
+
+### Step 5: Run Migrations to Create the Tables
+
+Now that the dependencies are installed and the database is running, you can run the migrations:
+
+```sh
+go run cmd/migrate/main.go
+```
+
+### Step 6: Generate Swagger Documentation (Optional)
 
 Install Swagger if you haven't already:
 
@@ -65,7 +69,7 @@ Generate the Swagger documentation:
 swag init
 ```
 
-### Step 6: Run the Project
+### Step 7: Run the Project
 
 Run the project:
 
@@ -73,7 +77,7 @@ Run the project:
 go run main.go
 ```
 
-### Step 7: View the API Documentation (if the documentation was generated)
+### Step 8: View the API Documentation (If Generated)
 
 Open your browser and visit the following link to view the API documentation:
 
@@ -89,3 +93,5 @@ The project follows a standard structure for Go applications, with the following
 - `services`: Contains the business logic.
 - `routes`: Contains the route configuration.
 - `config`: Contains the database configuration and environment variable loading.
+- `migrations`: Contains SQL files for database migrations.
+- `cmd/migrate`: Contains the migration script to run the migrations.
