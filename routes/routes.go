@@ -4,6 +4,10 @@ import (
 	"biometric-data-backend/controller"
 	"biometric-data-backend/repository"
 	"biometric-data-backend/service"
+	"github.com/joho/godotenv"
+	"log"
+	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -20,6 +24,32 @@ const (
 	PatientsResource            = "patients"
 )
 
+func CORSMiddleware() gin.HandlerFunc {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No .env file found, using default configuration")
+	}
+
+	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
+	if allowedOrigin == "" {
+		allowedOrigin = "http://localhost:3000"
+	}
+
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		if c.Request.Method == http.MethodOptions {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+
+		c.Next()
+	}
+}
+
 // registerCrudRoutes registers CRUD routes for a given resource
 func registerCrudRoutes(router *gin.Engine, resource string, createFunc gin.HandlerFunc, getByIdFunc gin.HandlerFunc, getAllFunc gin.HandlerFunc, updateFunc gin.HandlerFunc, deleteFunc gin.HandlerFunc) {
 	router.POST("/"+resource, createFunc)
@@ -30,6 +60,9 @@ func registerCrudRoutes(router *gin.Engine, resource string, createFunc gin.Hand
 }
 
 func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
+	// Apply CORS middleware to the router
+	router.Use(CORSMiddleware())
+
 	// Doctor
 	doctorRepo := repository.NewDoctorRepository(db)
 	doctorService := service.NewDoctorService(doctorRepo)

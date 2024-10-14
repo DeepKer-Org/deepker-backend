@@ -30,7 +30,7 @@ type AlertDTO struct {
 	AlertID             uuid.UUID                `json:"alert_id"`
 	AlertTimestamp      time.Time                `json:"alert_timestamp"`
 	Room                string                   `json:"room"`
-	AttendedBy          string                   `json:"attended_by"`
+	AttendedBy          *DoctorDTO               `json:"attended_by"`
 	AttendedTimestamp   string                   `json:"attended_timestamp"`
 	AlertStatus         string                   `json:"alert_status"`
 	BiometricData       *BiometricDataDTO        `json:"biometric_data"`
@@ -40,15 +40,15 @@ type AlertDTO struct {
 
 // MapAlertToDTO maps an Alert model to an AlertDTO
 func MapAlertToDTO(alert *models.Alert) *AlertDTO {
-	var doctorName string
-	if alert.AttendedBy != nil {
-		doctorName = alert.AttendedBy.Name
-	}
 	if alert.BiometricData == nil {
 		alert.BiometricData = &models.BiometricData{}
 	}
 	if alert.Patient == nil {
 		alert.Patient = &models.Patient{}
+	}
+
+	if alert.AttendedBy == nil {
+		alert.AttendedBy = &models.Doctor{}
 	}
 
 	attendedTimestamp := ""
@@ -64,7 +64,7 @@ func MapAlertToDTO(alert *models.Alert) *AlertDTO {
 		AlertTimestamp:      alert.AlertTimestamp,
 		AttendedTimestamp:   attendedTimestamp,
 		AlertStatus:         alertStatus,
-		AttendedBy:          doctorName,
+		AttendedBy:          MapDoctorToDTO(alert.AttendedBy),
 		BiometricData:       MapBiometricDataToDTO(alert.BiometricData),
 		ComputerDiagnostics: MapComputerDiagnosticsToDTOs(alert.ComputerDiagnostics),
 		Patient:             MapPatientToPatientForAlertDTO(alert.Patient),

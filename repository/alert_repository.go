@@ -9,8 +9,9 @@ import (
 // AlertRepository includes specific methods for the Alert entity and embeds BaseRepository
 type AlertRepository interface {
 	BaseRepository[models.Alert]
-	GetAttendedAlerts() ([]*models.Alert, error)
-	GetUnattendedAlerts() ([]*models.Alert, error)
+	GetAttendedAlerts(offset int, limit int) ([]*models.Alert, error)
+	GetUnattendedAlerts(offset int, limit int) ([]*models.Alert, error)
+	CountAlertsByStatus(status string, count *int64) error
 }
 
 // alertRepository struct embeds baseRepository for common CRUD operations
@@ -59,30 +60,46 @@ func (r *alertRepository) GetAll() ([]*models.Alert, error) {
 	return alerts, nil
 }
 
-// GetAttendedAlerts retrieves alerts that have been attended (attended_timestamp is not null).
-func (r *alertRepository) GetAttendedAlerts() ([]*models.Alert, error) {
+// GetAttendedAlerts retrieves attended alerts with pagination (attended_timestamp is not null).
+func (r *alertRepository) GetAttendedAlerts(offset int, limit int) ([]*models.Alert, error) {
 	var alerts []*models.Alert
 	if err := r.db.Preload("BiometricData").
 		Preload("AttendedBy").
 		Preload("Patient").
 		Preload("Patient.Doctors").
 		Preload("ComputerDiagnostics").
-		Where("attended_timestamp IS NOT NULL").Find(&alerts).Error; err != nil {
+		Where("attended_timestamp IS NOT NULL").
+		Offset(offset).
+		Limit(limit).
+		Find(&alerts).Error; err != nil {
 		return nil, err
 	}
 	return alerts, nil
 }
 
-// GetUnattendedAlerts retrieves alerts that have not been attended (attended_timestamp is null).
-func (r *alertRepository) GetUnattendedAlerts() ([]*models.Alert, error) {
+// GetUnattendedAlerts retrieves unattended alerts with pagination (attended_timestamp is null).
+func (r *alertRepository) GetUnattendedAlerts(offset int, limit int) ([]*models.Alert, error) {
 	var alerts []*models.Alert
 	if err := r.db.Preload("BiometricData").
 		Preload("AttendedBy").
 		Preload("Patient").
 		Preload("Patient.Doctors").
 		Preload("ComputerDiagnostics").
-		Where("attended_timestamp IS NULL").Find(&alerts).Error; err != nil {
+		Where("attended_timestamp IS NULL").
+		Offset(offset).
+		Limit(limit).
+		Find(&alerts).Error; err != nil {
 		return nil, err
 	}
 	return alerts, nil
+}
+
+func (r *alertRepository) CountAlertsByStatus(status string, count *int64) error {
+	var condition string
+	if status == "attended" {
+		condition = "attended_timestamp IS NOT NULL"
+	} else {
+		condition = "attended_timestamp IS NULL"
+	}
+	return r.db.Model(&models.Alert{}).Where(condition).Count(count).Error
 }

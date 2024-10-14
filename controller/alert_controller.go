@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type AlertController struct {
@@ -70,17 +71,45 @@ func (ac *AlertController) GetAlertByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"alert": alert})
 }
 
-// GetAllAlerts handles retrieving all alerts
+// GetAllAlerts handles retrieving all alerts with optional status filtering and pagination
 func (ac *AlertController) GetAllAlerts(c *gin.Context) {
 	status := c.Query("status")
-	alerts, err := func() ([]*dto.AlertDTO, error) {
-		if status == "" {
-			return ac.AlertService.GetAllAlerts()
+
+	var alerts []*dto.AlertDTO
+	var totalCount int
+	var err error
+
+	if status != "" {
+		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+		if err != nil || page < 1 {
+			page = 1
 		}
-		return ac.AlertService.GetAllAlertsByStatus(status)
-	}()
+
+		limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+		if err != nil || limit < 1 {
+			limit = 10
+		}
+
+		// Fetch paginated alerts and total count by status
+		alerts, totalCount, err = ac.AlertService.GetAllAlertsByStatus(status, page, limit)
+		if err != nil {
+			log.Printf("Error retrieving alerts by status: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve alerts by status"})
+			return
+		}
+
+		// Include totalCount in the response for status-specific queries
+		c.JSON(http.StatusOK, gin.H{
+			"alerts":     alerts,
+			"totalCount": totalCount,
+		})
+		return
+	}
+
+	// Handle case without status if needed (currently returns all alerts without pagination)
+	alerts, err = ac.AlertService.GetAllAlerts()
 	if err != nil {
-		log.Printf("Error retrieving alerts: %v", err)
+		log.Printf("Error retrieving all alerts: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve alerts"})
 		return
 	}

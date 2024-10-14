@@ -19,7 +19,7 @@ type AlertService interface {
 	GetAllAlerts() ([]*dto.AlertDTO, error)
 	UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) error
 	DeleteAlert(id uuid.UUID) error
-	GetAllAlertsByStatus(status string) ([]*dto.AlertDTO, error)
+	GetAllAlertsByStatus(status string, page int, limit int) ([]*dto.AlertDTO, int, error)
 }
 
 type alertService struct {
@@ -161,29 +161,42 @@ func (s *alertService) DeleteAlert(id uuid.UUID) error {
 	return nil
 }
 
-func (s *alertService) GetAllAlertsByStatus(status string) ([]*dto.AlertDTO, error) {
+func (s *alertService) GetAllAlertsByStatus(status string, page int, limit int) ([]*dto.AlertDTO, int, error) {
 	status = strings.ToLower(status)
-	log.Println("Fetching alerts with status:", status)
+	log.Printf("Fetching alerts with status: %s, page: %d, limit: %d", status, page, limit)
 
+	offset := (page - 1) * limit
 	var alerts []*models.Alert
+	var totalCount int64
 	var err error
 
+	// Count total alerts with the given status and fetch paginated results
 	switch status {
 	case "attended":
-		alerts, err = s.alertRepo.GetAttendedAlerts()
+		// Count attended alerts and then fetch paginated results if no error
+		err = s.alertRepo.CountAlertsByStatus("attended", &totalCount)
+		if err == nil {
+			alerts, err = s.alertRepo.GetAttendedAlerts(offset, limit)
+		}
 	case "unattended":
-		alerts, err = s.alertRepo.GetUnattendedAlerts()
+		// Count unattended alerts and then fetch paginated results if no error
+		err = s.alertRepo.CountAlertsByStatus("unattended", &totalCount)
+		if err == nil {
+			alerts, err = s.alertRepo.GetUnattendedAlerts(offset, limit)
+		}
 	default:
 		log.Printf("Invalid status: %s", status)
-		return nil, errors.New("invalid status: must be 'attended' or 'unattended'")
+		return nil, 0, errors.New("invalid status: must be 'attended' or 'unattended'")
 	}
 
 	if err != nil {
 		log.Printf("Error retrieving alerts: %v", err)
-		return nil, err
+		return nil, 0, err
 	}
-	log.Println("Alerts fetched successfully with status:", status)
-	return dto.MapAlertsToDTOs(alerts), nil
+
+	alertDTOs := dto.MapAlertsToDTOs(alerts)
+	log.Printf("Alerts fetched successfully with status: %s, count: %d", status, len(alerts))
+	return alertDTOs, int(totalCount), nil
 }
 
 // Convert uuid slice to []interface{}
