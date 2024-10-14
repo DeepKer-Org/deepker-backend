@@ -54,6 +54,13 @@ Now that the dependencies are installed and the database is running, you can run
 ```sh
 go run cmd/migrate/main.go
 ```
+If any new migrations are added, you can run the migration script again to apply them.
+
+**Note**: To execute the rollback, run the migration script with the `--reset` flag:
+
+```sh
+go run cmd/migrate/main.go --reset
+```
 
 ### Step 6: Generate Swagger Documentation (Optional)
 
@@ -74,7 +81,7 @@ swag init
 Run the project:
 
 ```sh
-go run main.go
+go run cmd/server/main.go
 ```
 
 ### Step 8: View the API Documentation (If Generated)
