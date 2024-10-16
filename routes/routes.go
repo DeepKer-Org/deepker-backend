@@ -4,6 +4,10 @@ import (
 	"biometric-data-backend/controller"
 	"biometric-data-backend/repository"
 	"biometric-data-backend/service"
+	"github.com/joho/godotenv"
+	"log"
+	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -20,16 +24,52 @@ const (
 	PatientsResource            = "patients"
 )
 
+func CORSMiddleware() gin.HandlerFunc {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No .env file found, using default configuration")
+	}
+
+	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
+	if allowedOrigin == "" {
+		allowedOrigin = "http://localhost:3000"
+	}
+
+	return func(c *gin.Context) {
+		origin := c.Request.Header.Get("Origin")
+		appOrigin := c.Request.Header.Get("X-App-Origin")
+
+		// Allow the specific origin from environment variable or React Native app (with custom header)
+		if origin == allowedOrigin || appOrigin == "ReactNativeApp" {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
+
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, X-App-Origin")
+
+		if c.Request.Method == http.MethodOptions {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+
+		c.Next()
+	}
+}
+
 // registerCrudRoutes registers CRUD routes for a given resource
 func registerCrudRoutes(router *gin.Engine, resource string, createFunc gin.HandlerFunc, getByIdFunc gin.HandlerFunc, getAllFunc gin.HandlerFunc, updateFunc gin.HandlerFunc, deleteFunc gin.HandlerFunc) {
 	router.POST("/"+resource, createFunc)
 	router.GET("/"+resource+"/:id", getByIdFunc)
 	router.GET("/"+resource, getAllFunc)
-	router.PUT("/"+resource+"/:id", updateFunc)
+	router.PATCH("/"+resource+"/:id", updateFunc)
 	router.DELETE("/"+resource+"/:id", deleteFunc)
 }
 
 func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
+	// Apply CORS middleware to the router
+	router.Use(CORSMiddleware())
+
 	// Doctor
 	doctorRepo := repository.NewDoctorRepository(db)
 	doctorService := service.NewDoctorService(doctorRepo)

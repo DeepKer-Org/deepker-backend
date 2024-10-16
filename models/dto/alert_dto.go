@@ -20,7 +20,6 @@ type AlertCreateResponseDTO struct {
 
 // AlertUpdateDTO is used for updating an existing alert
 type AlertUpdateDTO struct {
-	Room              string     `json:"room"`
 	AttendedTimestamp *time.Time `json:"attended_timestamp"`
 	AttendedByID      uuid.UUID  `json:"attended_by_id"`
 }
@@ -29,10 +28,10 @@ type AlertUpdateDTO struct {
 type AlertDTO struct {
 	AlertID             uuid.UUID                `json:"alert_id"`
 	AlertTimestamp      time.Time                `json:"alert_timestamp"`
-	Room                string                   `json:"room"`
-	AttendedBy          string                   `json:"attended_by"`
+	AttendedBy          *DoctorDTO               `json:"attended_by"`
 	AttendedTimestamp   string                   `json:"attended_timestamp"`
 	AlertStatus         string                   `json:"alert_status"`
+	FinalDiagnosis      string                   `json:"final_diagnosis"`
 	BiometricData       *BiometricDataDTO        `json:"biometric_data"`
 	ComputerDiagnostics []*ComputerDiagnosticDTO `json:"computer_diagnoses"`
 	Patient             *PatientForAlertDTO      `json:"patient"`
@@ -40,15 +39,15 @@ type AlertDTO struct {
 
 // MapAlertToDTO maps an Alert model to an AlertDTO
 func MapAlertToDTO(alert *models.Alert) *AlertDTO {
-	var doctorName string
-	if alert.AttendedBy != nil {
-		doctorName = alert.AttendedBy.Name
-	}
 	if alert.BiometricData == nil {
 		alert.BiometricData = &models.BiometricData{}
 	}
 	if alert.Patient == nil {
 		alert.Patient = &models.Patient{}
+	}
+
+	if alert.AttendedBy == nil {
+		alert.AttendedBy = &models.Doctor{}
 	}
 
 	attendedTimestamp := ""
@@ -60,11 +59,11 @@ func MapAlertToDTO(alert *models.Alert) *AlertDTO {
 
 	return &AlertDTO{
 		AlertID:             alert.AlertID,
-		Room:                alert.Room,
 		AlertTimestamp:      alert.AlertTimestamp,
 		AttendedTimestamp:   attendedTimestamp,
 		AlertStatus:         alertStatus,
-		AttendedBy:          doctorName,
+		AttendedBy:          MapDoctorToDTO(alert.AttendedBy),
+		FinalDiagnosis:      alert.FinalDiagnosis,
 		BiometricData:       MapBiometricDataToDTO(alert.BiometricData),
 		ComputerDiagnostics: MapComputerDiagnosticsToDTOs(alert.ComputerDiagnostics),
 		Patient:             MapPatientToPatientForAlertDTO(alert.Patient),

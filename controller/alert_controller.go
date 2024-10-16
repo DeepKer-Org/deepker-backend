@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type AlertController struct {
@@ -70,22 +71,69 @@ func (ac *AlertController) GetAlertByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"alert": alert})
 }
 
-// GetAllAlerts handles retrieving all alerts
+// GetAllAlerts handles retrieving all alerts with optional status filtering and pagination
 func (ac *AlertController) GetAllAlerts(c *gin.Context) {
 	status := c.Query("status")
-	alerts, err := func() ([]*dto.AlertDTO, error) {
-		if status == "" {
-			return ac.AlertService.GetAllAlerts()
+	timezone := c.Query("timezone")
+
+	var alerts []*dto.AlertDTO
+	var totalCount int
+	var err error
+
+	if status != "" {
+		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+		if err != nil || page < 1 {
+			page = 1
 		}
-		return ac.AlertService.GetAllAlertsByStatus(status)
-	}()
-	if err != nil {
-		log.Printf("Error retrieving alerts: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve alerts"})
+
+		limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+		if err != nil || limit < 1 {
+			limit = 10
+		}
+
+		// Fetch paginated alerts and total count by status
+		alerts, totalCount, err = ac.AlertService.GetAllAlertsByStatus(status, page, limit)
+		if err != nil {
+			log.Printf("Error retrieving alerts by status: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve alerts by status"})
+			return
+		}
+
+		// Include totalCount in the response for status-specific queries
+		c.JSON(http.StatusOK, gin.H{
+			"alerts":     alerts,
+			"totalCount": totalCount,
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"alerts": alerts})
+	// Handle case without status if needed (currently returns all alerts without pagination)
+	if timezone != "" {
+		// Fetch alerts from today
+		alerts, err = ac.AlertService.GetAllAlertsByTimezone(timezone)
+		if err != nil {
+			log.Printf("Error retrieving today's timezone alerts: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve today's timezone alerts"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"alerts": alerts,
+		})
+	} else {
+		alerts, err = ac.AlertService.GetAllAlerts()
+		if err != nil {
+			log.Printf("Error retrieving all alerts: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve alerts"})
+			return
+		}
+		totalCount = len(alerts)
+
+		c.JSON(http.StatusOK, gin.H{
+			"alerts":     alerts,
+			"totalCount": totalCount,
+		})
+	}
+
 }
 
 // UpdateAlert handles updating an existing alert

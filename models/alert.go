@@ -9,10 +9,10 @@ type Alert struct {
 	BaseModel
 	AttendedTimestamp   *time.Time
 	AlertID             uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	Room                string         `gorm:"size:100"`
 	AlertTimestamp      time.Time      `gorm:"not null"`
 	AttendedByID        uuid.NullUUID  `gorm:"type:uuid"`
 	AttendedBy          *Doctor        `gorm:"foreignKey:AttendedByID"`
+	FinalDiagnosis      string         `gorm:"size:100;default:null"`
 	PatientID           uuid.UUID      `gorm:"type:uuid;not null"`
 	Patient             *Patient       `gorm:"foreignKey:PatientID;references:PatientID"`
 	BiometricDataID     uuid.UUID      `gorm:"type:uuid;not null"`
