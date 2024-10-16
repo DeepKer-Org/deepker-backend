@@ -12,6 +12,7 @@ type Alert struct {
 	AlertTimestamp      time.Time      `gorm:"not null"`
 	AttendedByID        uuid.NullUUID  `gorm:"type:uuid"`
 	AttendedBy          *Doctor        `gorm:"foreignKey:AttendedByID"`
+	FinalDiagnosis      string         `gorm:"size:100;default:null"`
 	PatientID           uuid.UUID      `gorm:"type:uuid;not null"`
 	Patient             *Patient       `gorm:"foreignKey:PatientID;references:PatientID"`
 	BiometricDataID     uuid.UUID      `gorm:"type:uuid;not null"`

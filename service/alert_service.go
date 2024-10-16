@@ -20,6 +20,7 @@ type AlertService interface {
 	UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) error
 	DeleteAlert(id uuid.UUID) error
 	GetAllAlertsByStatus(status string, page int, limit int) ([]*dto.AlertDTO, int, error)
+	GetAllAlertsByTimezone(timezone string) ([]*dto.AlertDTO, error)
 }
 
 type alertService struct {
@@ -133,9 +134,6 @@ func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) e
 		return gorm.ErrRecordNotFound
 	}
 
-	log.Println("This is my alertDTO: ", alertDTO)
-	log.Println("This is my alert: ", alert)
-
 	if alert.AttendedByID.Valid == false && alertDTO.AttendedByID == uuid.Nil {
 		log.Printf("AttendedByID must be set before updating other fields")
 		return errors.New("attendedById must be set before updating other fields")
@@ -151,7 +149,8 @@ func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) e
 
 	// Only allow updates to other fields if AttendedByID is set
 	if alert.AttendedByID.Valid {
-		alert.AttendedTimestamp = alertDTO.AttendedTimestamp
+		utcTimestamp := alertDTO.AttendedTimestamp.UTC()
+		alert.AttendedTimestamp = &utcTimestamp
 	} else {
 		log.Println("Cannot update fields other than AttendedByID as it has not been set.")
 		return errors.New("other fields cannot be updated until attendedById is set")
@@ -217,6 +216,22 @@ func (s *alertService) GetAllAlertsByStatus(status string, page int, limit int) 
 	alertDTOs := dto.MapAlertsToDTOs(alerts)
 	log.Printf("Alerts fetched successfully with status: %s, count: %d", status, len(alerts))
 	return alertDTOs, int(totalCount), nil
+}
+
+func (s *alertService) GetAllAlertsByTimezone(timezone string) ([]*dto.AlertDTO, error) {
+	var err error
+	var alerts []*models.Alert
+
+	alerts, err = s.alertRepo.GetAlertsByTimezone(timezone)
+
+	if err != nil {
+		log.Printf("Error retrieving alerts for the timezone: %v", err)
+		return nil, err
+	}
+
+	alertDTOs := dto.MapAlertsToDTOs(alerts)
+	log.Printf("Alerts fetched successfully with count: %d", len(alerts))
+	return alertDTOs, nil
 }
 
 // Convert uuid slice to []interface{}

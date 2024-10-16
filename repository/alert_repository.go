@@ -4,6 +4,8 @@ import (
 	"biometric-data-backend/models"
 	"errors"
 	"gorm.io/gorm"
+	"log"
+	"time"
 )
 
 // AlertRepository includes specific methods for the Alert entity and embeds BaseRepository
@@ -12,6 +14,7 @@ type AlertRepository interface {
 	GetAttendedAlerts(offset int, limit int) ([]*models.Alert, error)
 	GetUnattendedAlerts(offset int, limit int) ([]*models.Alert, error)
 	CountAlertsByStatus(status string, count *int64) error
+	GetAlertsByTimezone(timezone string) ([]*models.Alert, error)
 }
 
 // alertRepository struct embeds baseRepository for common CRUD operations
@@ -99,6 +102,35 @@ func (r *alertRepository) GetUnattendedAlerts(offset int, limit int) ([]*models.
 		Find(&alerts).Error; err != nil {
 		return nil, err
 	}
+	return alerts, nil
+}
+
+func (r *alertRepository) GetAlertsByTimezone(timezone string) ([]*models.Alert, error) {
+	loc, err := time.LoadLocation(timezone)
+	if err != nil {
+		log.Printf("Invalid timezone: %v", err)
+		return nil, err
+	}
+
+	// Calculate the start and end of the day in the specified timezone
+	now := time.Now().In(loc)
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+	endOfDay := startOfDay.Add(24 * time.Hour)
+
+	var alerts []*models.Alert
+	if err := r.db.Preload("BiometricData").
+		Preload("AttendedBy").
+		Preload("Patient").
+		Preload("Patient.Comorbidities").
+		Preload("Patient.Medications").
+		Preload("Patient.Doctors").
+		Preload("ComputerDiagnostics").
+		// Convert `alert_timestamp` from UTC to the specified timezone before comparison
+		Where("alert_timestamp AT TIME ZONE 'UTC' AT TIME ZONE ? >= ? AND alert_timestamp AT TIME ZONE 'UTC' AT TIME ZONE ? < ?", timezone, startOfDay, timezone, endOfDay).
+		Find(&alerts).Error; err != nil {
+		return nil, err
+	}
+
 	return alerts, nil
 }
 

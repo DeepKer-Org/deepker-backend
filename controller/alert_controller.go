@@ -74,6 +74,7 @@ func (ac *AlertController) GetAlertByID(c *gin.Context) {
 // GetAllAlerts handles retrieving all alerts with optional status filtering and pagination
 func (ac *AlertController) GetAllAlerts(c *gin.Context) {
 	status := c.Query("status")
+	timezone := c.Query("timezone")
 
 	var alerts []*dto.AlertDTO
 	var totalCount int
@@ -107,14 +108,32 @@ func (ac *AlertController) GetAllAlerts(c *gin.Context) {
 	}
 
 	// Handle case without status if needed (currently returns all alerts without pagination)
-	alerts, err = ac.AlertService.GetAllAlerts()
-	if err != nil {
-		log.Printf("Error retrieving all alerts: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve alerts"})
-		return
+	if timezone != "" {
+		// Fetch alerts from today
+		alerts, err = ac.AlertService.GetAllAlertsByTimezone(timezone)
+		if err != nil {
+			log.Printf("Error retrieving today's timezone alerts: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve today's timezone alerts"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"alerts": alerts,
+		})
+	} else {
+		alerts, err = ac.AlertService.GetAllAlerts()
+		if err != nil {
+			log.Printf("Error retrieving all alerts: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve alerts"})
+			return
+		}
+		totalCount = len(alerts)
+
+		c.JSON(http.StatusOK, gin.H{
+			"alerts":     alerts,
+			"totalCount": totalCount,
+		})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"alerts": alerts})
 }
 
 // UpdateAlert handles updating an existing alert

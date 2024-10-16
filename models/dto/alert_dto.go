@@ -31,6 +31,7 @@ type AlertDTO struct {
 	AttendedBy          *DoctorDTO               `json:"attended_by"`
 	AttendedTimestamp   string                   `json:"attended_timestamp"`
 	AlertStatus         string                   `json:"alert_status"`
+	FinalDiagnosis      string                   `json:"final_diagnosis"`
 	BiometricData       *BiometricDataDTO        `json:"biometric_data"`
 	ComputerDiagnostics []*ComputerDiagnosticDTO `json:"computer_diagnoses"`
 	Patient             *PatientForAlertDTO      `json:"patient"`
@@ -62,6 +63,7 @@ func MapAlertToDTO(alert *models.Alert) *AlertDTO {
 		AttendedTimestamp:   attendedTimestamp,
 		AlertStatus:         alertStatus,
 		AttendedBy:          MapDoctorToDTO(alert.AttendedBy),
+		FinalDiagnosis:      alert.FinalDiagnosis,
 		BiometricData:       MapBiometricDataToDTO(alert.BiometricData),
 		ComputerDiagnostics: MapComputerDiagnosticsToDTOs(alert.ComputerDiagnostics),
 		Patient:             MapPatientToPatientForAlertDTO(alert.Patient),

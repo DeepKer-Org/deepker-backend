@@ -11,20 +11,19 @@ func MapPatientToDTO(patient *models.Patient) *PatientDTO {
 	}
 
 	return &PatientDTO{
-		PatientID:      patient.PatientID,
-		DNI:            patient.DNI,
-		Name:           patient.Name,
-		Age:            patient.Age,
-		Weight:         patient.Weight,
-		Height:         patient.Height,
-		Sex:            patient.Sex,
-		Location:       patient.Location,
-		CurrentState:   patient.CurrentState,
-		FinalDiagnosis: patient.FinalDiagnosis,
-		Comorbidities:  MapComorbiditiesToNames(patient.Comorbidities),
-		Medications:    MapMedicationsToMedicationsDetails(patient.Medications),
-		Doctors:        MapDoctorsToNames(patient.Doctors),
-		LastAlertID:    lastAlertId,
+		PatientID:     patient.PatientID,
+		DNI:           patient.DNI,
+		Name:          patient.Name,
+		Age:           patient.Age,
+		Weight:        patient.Weight,
+		Height:        patient.Height,
+		Sex:           patient.Sex,
+		Location:      patient.Location,
+		CurrentState:  patient.CurrentState,
+		Comorbidities: MapComorbiditiesToNames(patient.Comorbidities),
+		Medications:   MapMedicationsToMedicationsDetails(patient.Medications),
+		Doctors:       MapDoctorsToNames(patient.Doctors),
+		LastAlertID:   lastAlertId,
 	}
 }
 
@@ -42,29 +41,27 @@ func MapPatientToPatientForAlertDTO(patient *models.Patient) *PatientForAlertDTO
 	}
 
 	return &PatientForAlertDTO{
-		DNI:            patient.DNI,
-		Name:           patient.Name,
-		Location:       patient.Location,
-		Age:            patient.Age,
-		Sex:            patient.Sex,
-		FinalDiagnosis: patient.FinalDiagnosis,
-		Doctors:        MapDoctorsToNames(patient.Doctors),
-		Comorbidities:  MapComorbiditiesToNames(patient.Comorbidities),
-		Medications:    MapShortMedicationsToDTOs(patient.Medications),
+		DNI:           patient.DNI,
+		Name:          patient.Name,
+		Location:      patient.Location,
+		Age:           patient.Age,
+		Sex:           patient.Sex,
+		Doctors:       MapDoctorsToNames(patient.Doctors),
+		Comorbidities: MapComorbiditiesToNames(patient.Comorbidities),
+		Medications:   MapShortMedicationsToDTOs(patient.Medications),
 	}
 }
 
 func MapCreateDTOToPatient(dto *PatientCreateDTO) *models.Patient {
 	return &models.Patient{
-		DNI:            dto.DNI,
-		Name:           dto.Name,
-		Age:            dto.Age,
-		Weight:         dto.Weight,
-		Height:         dto.Height,
-		Sex:            dto.Sex,
-		Location:       dto.Location,
-		CurrentState:   dto.CurrentState,
-		FinalDiagnosis: dto.FinalDiagnosis,
+		DNI:          dto.DNI,
+		Name:         dto.Name,
+		Age:          dto.Age,
+		Weight:       dto.Weight,
+		Height:       dto.Height,
+		Sex:          dto.Sex,
+		Location:     dto.Location,
+		CurrentState: dto.CurrentState,
 	}
 }
 
@@ -77,6 +74,5 @@ func MapUpdateDTOToPatient(dto *PatientUpdateDTO, patient *models.Patient) *mode
 	patient.Sex = dto.Sex
 	patient.Location = dto.Location
 	patient.CurrentState = dto.CurrentState
-	patient.FinalDiagnosis = dto.FinalDiagnosis
 	return patient
 }

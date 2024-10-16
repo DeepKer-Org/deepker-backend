@@ -9,7 +9,6 @@ CREATE TABLE patients (
     sex CHAR(1),
     location VARCHAR(100),
     current_state VARCHAR(50),
-    final_diagnosis VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP
@@ -33,6 +32,7 @@ CREATE TABLE alerts (
     alert_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     alert_timestamp TIMESTAMP NOT NULL,
     attended_timestamp TIMESTAMP,
+    final_diagnosis VARCHAR(100),
     patient_id UUID,
     biometric_data_id UUID,
     attended_by_id UUID,
