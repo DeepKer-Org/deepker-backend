@@ -9,6 +9,7 @@ type BiometricData struct {
 	HeartRate              int       `gorm:"not null"`
 	SystolicBloodPressure  int       `gorm:"not null"`
 	DiastolicBloodPressure int       `gorm:"not null"`
+	Temperature            float32   `gorm:"not null"`
 }
 
 func (BiometricData) TableName() string {

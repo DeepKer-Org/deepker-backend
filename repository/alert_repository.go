@@ -35,6 +35,8 @@ func (r *alertRepository) GetByID(id interface{}, primaryKey string) (*models.Al
 	if err := r.db.Preload("BiometricData").
 		Preload("AttendedBy").
 		Preload("Patient").
+		Preload("Patient.Comorbidities").
+		Preload("Patient.Medications").
 		Preload("Patient.Doctors").
 		Preload("ComputerDiagnostics").
 		Where(primaryKey+" = ?", id).First(&alert).Error; err != nil {
@@ -52,6 +54,8 @@ func (r *alertRepository) GetAll() ([]*models.Alert, error) {
 	if err := r.db.Preload("BiometricData").
 		Preload("AttendedBy").
 		Preload("Patient").
+		Preload("Patient.Comorbidities").
+		Preload("Patient.Medications").
 		Preload("Patient.Doctors").
 		Preload("ComputerDiagnostics").
 		Find(&alerts).Error; err != nil {
@@ -66,6 +70,8 @@ func (r *alertRepository) GetAttendedAlerts(offset int, limit int) ([]*models.Al
 	if err := r.db.Preload("BiometricData").
 		Preload("AttendedBy").
 		Preload("Patient").
+		Preload("Patient.Comorbidities").
+		Preload("Patient.Medications").
 		Preload("Patient.Doctors").
 		Preload("ComputerDiagnostics").
 		Where("attended_timestamp IS NOT NULL").
@@ -83,6 +89,8 @@ func (r *alertRepository) GetUnattendedAlerts(offset int, limit int) ([]*models.
 	if err := r.db.Preload("BiometricData").
 		Preload("AttendedBy").
 		Preload("Patient").
+		Preload("Patient.Comorbidities").
+		Preload("Patient.Medications").
 		Preload("Patient.Doctors").
 		Preload("ComputerDiagnostics").
 		Where("attended_timestamp IS NULL").

@@ -20,7 +20,6 @@ type AlertCreateResponseDTO struct {
 
 // AlertUpdateDTO is used for updating an existing alert
 type AlertUpdateDTO struct {
-	Room              string     `json:"room"`
 	AttendedTimestamp *time.Time `json:"attended_timestamp"`
 	AttendedByID      uuid.UUID  `json:"attended_by_id"`
 }
@@ -29,7 +28,6 @@ type AlertUpdateDTO struct {
 type AlertDTO struct {
 	AlertID             uuid.UUID                `json:"alert_id"`
 	AlertTimestamp      time.Time                `json:"alert_timestamp"`
-	Room                string                   `json:"room"`
 	AttendedBy          *DoctorDTO               `json:"attended_by"`
 	AttendedTimestamp   string                   `json:"attended_timestamp"`
 	AlertStatus         string                   `json:"alert_status"`
@@ -60,7 +58,6 @@ func MapAlertToDTO(alert *models.Alert) *AlertDTO {
 
 	return &AlertDTO{
 		AlertID:             alert.AlertID,
-		Room:                alert.Room,
 		AlertTimestamp:      alert.AlertTimestamp,
 		AttendedTimestamp:   attendedTimestamp,
 		AlertStatus:         alertStatus,

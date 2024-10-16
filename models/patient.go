@@ -17,8 +17,8 @@ type Patient struct {
 	CurrentState   string    `gorm:"size:50;default:null"`
 	FinalDiagnosis string    `gorm:"size:100;default:null"`
 	Alerts         []*Alert
-	Comorbidities  []*Comorbidity
-	Medications    []*Medication
+	Comorbidities  []*Comorbidity `gorm:"foreignKey:PatientID;references:PatientID"`
+	Medications    []*Medication  `gorm:"foreignKey:PatientID;references:PatientID"`
 	Devices        []*MonitoringDevice
 	Doctors        []*Doctor `gorm:"many2many:doctor_patients;foreignKey:PatientID;joinForeignKey:PatientID;References:DoctorID;joinReferences:DoctorID"`
 }

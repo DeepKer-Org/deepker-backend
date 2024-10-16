@@ -74,7 +74,6 @@ func (s *alertService) CreateAlert(alertDTO *dto.AlertCreateDTO) (*dto.AlertCrea
 		BiometricData:       biometricData,
 		PatientID:           alertDTO.PatientID,
 		Patient:             patient,
-		Room:                patient.Location,
 		ComputerDiagnostics: computerDiagnostics,
 	}
 
@@ -134,8 +133,29 @@ func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) e
 		return gorm.ErrRecordNotFound
 	}
 
-	alert.Room = alertDTO.Room
-	alert.AttendedTimestamp = alertDTO.AttendedTimestamp
+	log.Println("This is my alertDTO: ", alertDTO)
+	log.Println("This is my alert: ", alert)
+
+	if alert.AttendedByID.Valid == false && alertDTO.AttendedByID == uuid.Nil {
+		log.Printf("AttendedByID must be set before updating other fields")
+		return errors.New("attendedById must be set before updating other fields")
+	}
+
+	// Update AttendedByID if provided
+	if alertDTO.AttendedByID != uuid.Nil {
+		alert.AttendedByID = uuid.NullUUID{
+			UUID:  alertDTO.AttendedByID,
+			Valid: true,
+		}
+	}
+
+	// Only allow updates to other fields if AttendedByID is set
+	if alert.AttendedByID.Valid {
+		alert.AttendedTimestamp = alertDTO.AttendedTimestamp
+	} else {
+		log.Println("Cannot update fields other than AttendedByID as it has not been set.")
+		return errors.New("other fields cannot be updated until attendedById is set")
+	}
 
 	err = s.alertRepo.Update(alert, "alert_id", id)
 	if err != nil {

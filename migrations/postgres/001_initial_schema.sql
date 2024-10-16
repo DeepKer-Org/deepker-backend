@@ -22,6 +22,7 @@ CREATE TABLE biometric_records (
     heart_rate INT,
     systolic_blood_pressure INT,
     diastolic_blood_pressure INT,
+    temperature DECIMAL(4,1),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP
@@ -30,7 +31,6 @@ CREATE TABLE biometric_records (
 -- Creating the alert table
 CREATE TABLE alerts (
     alert_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    room VARCHAR(100),
     alert_timestamp TIMESTAMP NOT NULL,
     attended_timestamp TIMESTAMP,
     patient_id UUID,
@@ -114,4 +114,16 @@ CREATE TABLE doctor_patients (
     doctor_id UUID NOT NULL,
     patient_id UUID NOT NULL,
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Creating the table of medical visits
+CREATE TABLE medical_visits (
+    medical_visit_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    patient_id UUID NOT NULL,
+    reason VARCHAR(100),
+    diagnosis VARCHAR(100),
+    treatment VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
 );

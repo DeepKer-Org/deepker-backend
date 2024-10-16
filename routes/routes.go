@@ -37,7 +37,7 @@ func CORSMiddleware() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 
@@ -55,7 +55,7 @@ func registerCrudRoutes(router *gin.Engine, resource string, createFunc gin.Hand
 	router.POST("/"+resource, createFunc)
 	router.GET("/"+resource+"/:id", getByIdFunc)
 	router.GET("/"+resource, getAllFunc)
-	router.PUT("/"+resource+"/:id", updateFunc)
+	router.PATCH("/"+resource+"/:id", updateFunc)
 	router.DELETE("/"+resource+"/:id", deleteFunc)
 }
 

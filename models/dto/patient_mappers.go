@@ -37,12 +37,20 @@ func MapPatientsToDTOs(patients []*models.Patient) []*PatientDTO {
 }
 
 func MapPatientToPatientForAlertDTO(patient *models.Patient) *PatientForAlertDTO {
+	if patient.Medications == nil {
+		patient.Medications = make([]*models.Medication, 0)
+	}
+
 	return &PatientForAlertDTO{
 		DNI:            patient.DNI,
 		Name:           patient.Name,
 		Location:       patient.Location,
+		Age:            patient.Age,
+		Sex:            patient.Sex,
 		FinalDiagnosis: patient.FinalDiagnosis,
 		Doctors:        MapDoctorsToNames(patient.Doctors),
+		Comorbidities:  MapComorbiditiesToNames(patient.Comorbidities),
+		Medications:    MapShortMedicationsToDTOs(patient.Medications),
 	}
 }
 

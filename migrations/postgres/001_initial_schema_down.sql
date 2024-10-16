@@ -29,3 +29,6 @@ DROP TABLE IF EXISTS doctors;
 
 -- Dropping the patients table
 DROP TABLE IF EXISTS patients;
+
+-- Dropping the medical visits table
+DROP TABLE IF EXISTS medical_visits;

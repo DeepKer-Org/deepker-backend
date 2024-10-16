@@ -62,6 +62,7 @@ func MapComorbiditiesToNames(comorbidities []*models.Comorbidity) []string {
 	comorbidityNames := make([]string, 0)
 	for _, comorbidity := range comorbidities {
 		comorbidityNames = append(comorbidityNames, comorbidity.Comorbidity)
+		println("The name is", comorbidityNames)
 	}
 	return comorbidityNames
 }
