@@ -1,6 +1,7 @@
 package service
 
 import (
+	"biometric-data-backend/models"
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
 	"errors"
@@ -13,7 +14,7 @@ type PatientService interface {
 	CreatePatient(patientDTO *dto.PatientCreateDTO) error
 	GetPatientByID(id uuid.UUID) (*dto.PatientDTO, error)
 	GetPatientByDNI(dni string) (*dto.PatientDTO, error)
-	GetAllPatients() ([]*dto.PatientDTO, error)
+	GetAllPatients(page int, limit int) ([]*dto.PatientDTO, int, error)
 	UpdatePatient(id uuid.UUID, patientDTO *dto.PatientUpdateDTO) error
 	DeletePatient(id uuid.UUID) error
 }
@@ -67,15 +68,26 @@ func (s *patientService) GetPatientByDNI(dni string) (*dto.PatientDTO, error) {
 	return dto.MapPatientToDTO(patient), nil
 }
 
-func (s *patientService) GetAllPatients() ([]*dto.PatientDTO, error) {
+func (s *patientService) GetAllPatients(page int, limit int) ([]*dto.PatientDTO, int, error) {
+	offset := (page - 1) * limit
+	var patients []*models.Patient
+	var totalCount int64
+	var err error
+
 	log.Println("Fetching all patients")
-	patients, err := s.repo.GetAll()
+	err = s.repo.CountPatients(&totalCount)
+	if err != nil {
+		log.Printf("Error counting patients: %v", err)
+		return nil, 0, err
+	}
+	patients, err = s.repo.GetAllPaginated(offset, limit)
+
 	if err != nil {
 		log.Printf("Error fetching patients: %v", err)
-		return nil, err
+		return nil, 0, err
 	}
 
-	return dto.MapPatientsToDTOs(patients), nil
+	return dto.MapPatientsToDTOs(patients), int(totalCount), nil
 }
 
 func (s *patientService) UpdatePatient(id uuid.UUID, patientDTO *dto.PatientUpdateDTO) error {

@@ -61,7 +61,7 @@ func MapShortMedicationToDTO(medication *models.Medication) *ShortMedicationDTO 
 
 // MapShortMedicationsToDTOs maps a list of Medication models to a list of ShortMedicationDTOs
 func MapShortMedicationsToDTOs(medications []*models.Medication) []*ShortMedicationDTO {
-	var medicationDTOs []*ShortMedicationDTO
+	medicationDTOs := make([]*ShortMedicationDTO, 0)
 	for _, medication := range medications {
 		medicationDTOs = append(medicationDTOs, MapShortMedicationToDTO(medication))
 	}
@@ -85,12 +85,4 @@ func MapMedicationsToDTOs(medications []*models.Medication) []*MedicationDTO {
 		medicationDTOs = append(medicationDTOs, MapMedicationToDTO(medication))
 	}
 	return medicationDTOs
-}
-
-func MapMedicationsToMedicationsDetails(medications []*models.Medication) []string {
-	medicationDetails := make([]string, 0)
-	for _, medication := range medications {
-		medicationDetails = append(medicationDetails, medication.Name+" - "+medication.Dosage+" - "+medication.Periodicity)
-	}
-	return medicationDetails
 }

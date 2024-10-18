@@ -123,6 +123,8 @@ CREATE TABLE medical_visits (
     reason VARCHAR(100),
     diagnosis VARCHAR(100),
     treatment VARCHAR(100),
+    entry_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    discharge_date TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP

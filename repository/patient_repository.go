@@ -10,6 +10,8 @@ import (
 type PatientRepository interface {
 	BaseRepository[models.Patient]
 	GetPatientByDNI(dni string) (*models.Patient, error)
+	CountPatients(totalCount *int64) error
+	GetAllPaginated(offset int, limit int) ([]*models.Patient, error)
 }
 
 type patientRepository struct {
@@ -32,6 +34,7 @@ func (r *patientRepository) GetByID(id interface{}, primaryKey string) (*models.
 		Preload("Medications").
 		Preload("Doctors").
 		Preload("Alerts").
+		Preload("MedicalVisits").
 		Where(primaryKey+" = ?", id).First(&patient).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, err
@@ -49,6 +52,23 @@ func (r *patientRepository) GetAll() ([]*models.Patient, error) {
 		Preload("Medications").
 		Preload("Doctors").
 		Preload("Alerts").
+		Preload("MedicalVisits").
+		Find(&patients).Error; err != nil {
+		return nil, err
+	}
+	return patients, nil
+}
+
+func (r *patientRepository) GetAllPaginated(offset int, limit int) ([]*models.Patient, error) {
+	var patients []*models.Patient
+	if err := r.db.
+		Preload("Comorbidities").
+		Preload("Medications").
+		Preload("Doctors").
+		Preload("Alerts").
+		Preload("MedicalVisits").
+		Offset(offset).
+		Limit(limit).
 		Find(&patients).Error; err != nil {
 		return nil, err
 	}
@@ -70,4 +90,11 @@ func (r *patientRepository) GetPatientByDNI(dni string) (*models.Patient, error)
 	}
 
 	return &patient, nil
+}
+
+func (r *patientRepository) CountPatients(totalCount *int64) error {
+	if err := r.db.Model(&models.Patient{}).Count(totalCount).Error; err != nil {
+		return err
+	}
+	return nil
 }

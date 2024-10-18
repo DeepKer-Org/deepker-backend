@@ -41,7 +41,7 @@ func MapDoctorToDTO(doctor *models.Doctor) *DoctorDTO {
 
 // MapDoctorsToDTOs maps a list of Doctor models to a list of DoctorDTOs
 func MapDoctorsToDTOs(doctors []*models.Doctor) []*DoctorDTO {
-	var doctorDTOs []*DoctorDTO
+	doctorDTOs := make([]*DoctorDTO, 0)
 	for _, doctor := range doctors {
 		doctorDTOs = append(doctorDTOs, MapDoctorToDTO(doctor))
 	}

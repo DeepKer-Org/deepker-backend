@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type PatientController struct {
@@ -87,14 +88,32 @@ func (pc *PatientController) GetPatientByDNI(c *gin.Context) {
 
 // GetAllPatients handles retrieving all patients
 func (pc *PatientController) GetAllPatients(c *gin.Context) {
-	patients, err := pc.PatientService.GetAllPatients()
+	var patients []*dto.PatientDTO
+	var totalCount int
+	var err error
+
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	if err != nil || limit < 1 {
+		limit = 10
+	}
+
+	patients, totalCount, err = pc.PatientService.GetAllPatients(page, limit)
 	if err != nil {
 		log.Printf("Error retrieving patients: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve patients"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"patients": patients})
+	c.JSON(http.StatusOK, gin.H{
+		"patients":   patients,
+		"totalCount": totalCount,
+	})
+	return
 }
 
 // UpdatePatient handles updating an existing patient

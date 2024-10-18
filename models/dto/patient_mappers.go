@@ -5,11 +5,6 @@ import (
 )
 
 func MapPatientToDTO(patient *models.Patient) *PatientDTO {
-	lastAlertId := ""
-	if len(patient.Alerts) > 0 {
-		lastAlertId = patient.Alerts[len(patient.Alerts)-1].AlertID.String()
-	}
-
 	return &PatientDTO{
 		PatientID:     patient.PatientID,
 		DNI:           patient.DNI,
@@ -19,11 +14,11 @@ func MapPatientToDTO(patient *models.Patient) *PatientDTO {
 		Height:        patient.Height,
 		Sex:           patient.Sex,
 		Location:      patient.Location,
-		CurrentState:  patient.CurrentState,
+		EntryDate:     FindEntryDate(patient.MedicalVisits),
 		Comorbidities: MapComorbiditiesToNames(patient.Comorbidities),
-		Medications:   MapMedicationsToMedicationsDetails(patient.Medications),
-		Doctors:       MapDoctorsToNames(patient.Doctors),
-		LastAlertID:   lastAlertId,
+		MedicalStaff:  MapDoctorsToDTOs(patient.Doctors),
+		Medications:   MapShortMedicationsToDTOs(patient.Medications),
+		MedicalVisits: MapMedicalVisitsToDTOs(patient.MedicalVisits),
 	}
 }
 
@@ -46,7 +41,6 @@ func MapPatientToPatientForAlertDTO(patient *models.Patient) *PatientForAlertDTO
 		Location:      patient.Location,
 		Age:           patient.Age,
 		Sex:           patient.Sex,
-		Doctors:       MapDoctorsToNames(patient.Doctors),
 		Comorbidities: MapComorbiditiesToNames(patient.Comorbidities),
 		Medications:   MapShortMedicationsToDTOs(patient.Medications),
 	}
@@ -54,14 +48,13 @@ func MapPatientToPatientForAlertDTO(patient *models.Patient) *PatientForAlertDTO
 
 func MapCreateDTOToPatient(dto *PatientCreateDTO) *models.Patient {
 	return &models.Patient{
-		DNI:          dto.DNI,
-		Name:         dto.Name,
-		Age:          dto.Age,
-		Weight:       dto.Weight,
-		Height:       dto.Height,
-		Sex:          dto.Sex,
-		Location:     dto.Location,
-		CurrentState: dto.CurrentState,
+		DNI:      dto.DNI,
+		Name:     dto.Name,
+		Age:      dto.Age,
+		Weight:   dto.Weight,
+		Height:   dto.Height,
+		Sex:      dto.Sex,
+		Location: dto.Location,
 	}
 }
 
@@ -73,6 +66,5 @@ func MapUpdateDTOToPatient(dto *PatientUpdateDTO, patient *models.Patient) *mode
 	patient.Height = dto.Height
 	patient.Sex = dto.Sex
 	patient.Location = dto.Location
-	patient.CurrentState = dto.CurrentState
 	return patient
 }
