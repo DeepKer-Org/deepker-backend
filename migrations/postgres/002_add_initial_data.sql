@@ -89,4 +89,43 @@ INSERT INTO public.patients (patient_id, dni, name, age, weight, height, sex, lo
 INSERT INTO public.patients (patient_id, dni, name, age, weight, height, sex, location, created_at, updated_at, deleted_at) VALUES ('17c32d17-6d9b-4e12-aa1b-34984ae06f1c', 'uwu', 'zzzz', 45, 70.50, 175.30, 'M', 'Room 101',  '2024-09-29 14:45:22.979759', '2024-09-29 14:45:22.979759', null);
 INSERT INTO public.patients (patient_id, dni, name, age, weight, height, sex, location, created_at, updated_at, deleted_at) VALUES ('0f25d62e-85f4-422d-bc29-a1716e8f67c0', 'zzzzzzz', 'New without alerts', 45, 70.50, 175.30, 'M', 'Room 101','2024-10-07 12:50:22.971668', '2024-10-07 12:50:22.971668', null);
 
+-- This section creates and inserts data into the 'medical_visits' table.
+INSERT INTO public.medical_visits (medical_visit_id, patient_id, reason, diagnosis, treatment, entry_date, discharge_date)
+VALUES
+    ('00000000-1111-1111-1111-000000000001', '11111111-1111-1111-1111-111111111111', 'Consulta general', 'Hipertensión', 'Medicamento A', '2024-10-16 10:35:03.380000', '2024-10-17 12:00:00.000000');
 
+INSERT INTO public.medical_visits (medical_visit_id, patient_id, reason, diagnosis, treatment, entry_date, discharge_date)
+VALUES
+    ('00000000-1111-1111-1111-000000000002', '11111111-1111-1111-1111-111111111111', 'Revisión anual', 'Saludable', 'N/A', '2024-10-16 10:35:03.380000', '2024-10-18 09:45:00.000000');
+
+INSERT INTO public.medical_visits (medical_visit_id, patient_id, reason, diagnosis, treatment, entry_date, discharge_date)
+VALUES
+    ('00000000-1111-1111-1111-000000000003', '11111111-1111-1111-1111-111111111111', 'Seguimiento', 'Diabetes Tipo 2', 'Medicamento B', '2024-10-16 10:35:03.380000', '2024-10-19 16:30:00.000000');
+
+INSERT INTO public.medical_visits (medical_visit_id, patient_id, reason, diagnosis, treatment, entry_date, discharge_date)
+VALUES
+    ('00000000-1111-1111-1111-000000000004', '11111111-1111-1111-1111-111111111111', 'Examen de rutina', 'Colesterol alto', 'Cambio de estilo de vida', '2024-10-16 10:35:03.380000', '2024-10-20 08:15:00.000000');
+
+INSERT INTO public.medical_visits (medical_visit_id, patient_id, reason, diagnosis, treatment, entry_date, discharge_date)
+VALUES
+    ('00000000-1111-1111-1111-000000000005', '11111111-1111-1111-1111-111111111111', 'Emergencia', 'Fractura', 'Cirugía', '2024-10-16 10:35:03.380000', '2024-10-21 11:20:00.000000');
+
+INSERT INTO public.medical_visits (medical_visit_id, patient_id, reason, diagnosis, treatment, entry_date, discharge_date)
+VALUES
+    ('00000000-1111-1111-1111-000000000006', '11111111-1111-1111-1111-111111111111', 'Consulta', 'Dolor de espalda', 'Fisioterapia', '2024-10-16 10:35:03.380000', '2024-10-22 15:50:00.000000');
+
+INSERT INTO public.medical_visits (medical_visit_id, patient_id, reason, diagnosis, treatment, entry_date, discharge_date)
+VALUES
+    ('00000000-1111-1111-1111-000000000007', '11111111-1111-1111-1111-111111111111', 'Terapia', 'Ansiedad', 'Consejería', '2024-10-16 10:35:03.380000', '2024-10-23 13:35:00.000000');
+
+INSERT INTO public.medical_visits (medical_visit_id, patient_id, reason, diagnosis, treatment, entry_date)
+VALUES
+    ('00000000-1111-1111-1111-000000000008', '11111111-1111-1111-1111-111111111111', 'Revisión', 'Asma', 'Inhalador', '2024-10-16 10:35:03.380000');
+
+INSERT INTO public.medical_visits (medical_visit_id, patient_id, reason, diagnosis, treatment, entry_date, discharge_date)
+VALUES
+    ('00000000-1111-1111-1111-000000000009', '11111111-1111-1111-1111-111111111111', 'Chequeo preoperatorio', 'Control de glucosa', 'Dieta baja en azúcar', '2024-10-16 10:35:03.380000', '2024-10-24 10:10:00.000000');
+
+INSERT INTO public.medical_visits (medical_visit_id, patient_id, reason, diagnosis, treatment, entry_date, discharge_date)
+VALUES
+    ('00000000-1111-1111-1111-000000000010', '11111111-1111-1111-1111-111111111111', 'Rehabilitación', 'Recuperación de cirugía', 'Ejercicios de recuperación', '2024-10-16 10:35:03.380000', '2024-10-25 14:45:00.000000');

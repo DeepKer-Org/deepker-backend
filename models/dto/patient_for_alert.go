@@ -6,7 +6,6 @@ type PatientForAlertDTO struct {
 	Location      string                `json:"location"`
 	Age           int                   `json:"age"`
 	Sex           string                `json:"sex"`
-	Doctors       []string              `json:"doctors"`
 	Comorbidities []string              `json:"comorbidities"`
 	Medications   []*ShortMedicationDTO `json:"medications"`
 }

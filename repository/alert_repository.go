@@ -78,6 +78,7 @@ func (r *alertRepository) GetAttendedAlerts(offset int, limit int) ([]*models.Al
 		Preload("Patient.Doctors").
 		Preload("ComputerDiagnostics").
 		Where("attended_timestamp IS NOT NULL").
+		Order("alert_timestamp DESC").
 		Offset(offset).
 		Limit(limit).
 		Find(&alerts).Error; err != nil {
@@ -97,6 +98,7 @@ func (r *alertRepository) GetUnattendedAlerts(offset int, limit int) ([]*models.
 		Preload("Patient.Doctors").
 		Preload("ComputerDiagnostics").
 		Where("attended_timestamp IS NULL").
+		Order("alert_timestamp DESC").
 		Offset(offset).
 		Limit(limit).
 		Find(&alerts).Error; err != nil {
@@ -127,6 +129,7 @@ func (r *alertRepository) GetAlertsByTimezone(timezone string) ([]*models.Alert,
 		Preload("ComputerDiagnostics").
 		// Convert `alert_timestamp` from UTC to the specified timezone before comparison
 		Where("alert_timestamp AT TIME ZONE 'UTC' AT TIME ZONE ? >= ? AND alert_timestamp AT TIME ZONE 'UTC' AT TIME ZONE ? < ?", timezone, startOfDay, timezone, endOfDay).
+		Order("alert_timestamp DESC").
 		Find(&alerts).Error; err != nil {
 		return nil, err
 	}

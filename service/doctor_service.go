@@ -61,7 +61,6 @@ func (s *doctorService) GetDoctorByID(id uuid.UUID) (*dto.DoctorDTO, error) {
 
 // Get doctors by AlertID and map to DoctorDTO
 func (s *doctorService) GetDoctorsByAlertID(alertID uuid.UUID) ([]*dto.DoctorDTO, error) {
-	log.Println("Fetching doctors by AlertID:", alertID)
 	doctors, err := s.repo.GetDoctorsByAlertID(alertID)
 	if err != nil {
 		log.Printf("Error fetching doctors: %v", err)

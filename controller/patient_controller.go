@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type PatientController struct {
@@ -87,14 +88,55 @@ func (pc *PatientController) GetPatientByDNI(c *gin.Context) {
 
 // GetAllPatients handles retrieving all patients
 func (pc *PatientController) GetAllPatients(c *gin.Context) {
-	patients, err := pc.PatientService.GetAllPatients()
+	var patients []*dto.PatientDTO
+	var totalCount int
+	var err error
+
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	if err != nil || limit < 1 {
+		limit = 10
+	}
+
+	// Advanced Filters
+	name := c.Query("name")
+	dni := c.Query("dni")
+	age, _ := strconv.Atoi(c.DefaultQuery("age", "0"))
+	doctorID := c.Query("doctor_id")
+	location := c.Query("location")
+	deviceID := c.Query("device_id")
+	comorbidityName := c.Query("comorbidity")
+	entryDate := c.Query("entry_date")
+	dischargeDate := c.Query("discharge_date")
+
+	filters := dto.PatientFilter{
+		Name:            name,
+		DNI:             dni,
+		Age:             age,
+		DoctorID:        doctorID,
+		Location:        location,
+		DeviceID:        deviceID,
+		ComorbidityName: comorbidityName,
+		EntryDate:       entryDate,
+		DischargeDate:   dischargeDate,
+	}
+
+	patients, totalCount, err = pc.PatientService.GetAllPatients(page, limit, filters)
 	if err != nil {
 		log.Printf("Error retrieving patients: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve patients"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"patients": patients})
+	c.JSON(http.StatusOK, gin.H{
+		"patients":   patients,
+		"totalCount": totalCount,
+	})
+	return
 }
 
 // UpdatePatient handles updating an existing patient
