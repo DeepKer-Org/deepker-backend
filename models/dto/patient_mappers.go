@@ -23,7 +23,7 @@ func MapPatientToDTO(patient *models.Patient) *PatientDTO {
 }
 
 func MapPatientsToDTOs(patients []*models.Patient) []*PatientDTO {
-	var patientDTOs []*PatientDTO
+	var patientDTOs = make([]*PatientDTO, 0)
 	for _, patient := range patients {
 		patientDTOs = append(patientDTOs, MapPatientToDTO(patient))
 	}

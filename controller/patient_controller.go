@@ -102,7 +102,30 @@ func (pc *PatientController) GetAllPatients(c *gin.Context) {
 		limit = 10
 	}
 
-	patients, totalCount, err = pc.PatientService.GetAllPatients(page, limit)
+	// Advanced Filters
+	name := c.Query("name")
+	dni := c.Query("dni")
+	age, _ := strconv.Atoi(c.DefaultQuery("age", "0"))
+	doctorID := c.Query("doctor_id")
+	location := c.Query("location")
+	deviceID := c.Query("device_id")
+	comorbidityName := c.Query("comorbidity")
+	entryDate := c.Query("entry_date")
+	dischargeDate := c.Query("discharge_date")
+
+	filters := dto.PatientFilter{
+		Name:            name,
+		DNI:             dni,
+		Age:             age,
+		DoctorID:        doctorID,
+		Location:        location,
+		DeviceID:        deviceID,
+		ComorbidityName: comorbidityName,
+		EntryDate:       entryDate,
+		DischargeDate:   dischargeDate,
+	}
+
+	patients, totalCount, err = pc.PatientService.GetAllPatients(page, limit, filters)
 	if err != nil {
 		log.Printf("Error retrieving patients: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve patients"})

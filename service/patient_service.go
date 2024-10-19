@@ -14,7 +14,7 @@ type PatientService interface {
 	CreatePatient(patientDTO *dto.PatientCreateDTO) error
 	GetPatientByID(id uuid.UUID) (*dto.PatientDTO, error)
 	GetPatientByDNI(dni string) (*dto.PatientDTO, error)
-	GetAllPatients(page int, limit int) ([]*dto.PatientDTO, int, error)
+	GetAllPatients(page int, limit int, filters dto.PatientFilter) ([]*dto.PatientDTO, int, error)
 	UpdatePatient(id uuid.UUID, patientDTO *dto.PatientUpdateDTO) error
 	DeletePatient(id uuid.UUID) error
 }
@@ -68,22 +68,15 @@ func (s *patientService) GetPatientByDNI(dni string) (*dto.PatientDTO, error) {
 	return dto.MapPatientToDTO(patient), nil
 }
 
-func (s *patientService) GetAllPatients(page int, limit int) ([]*dto.PatientDTO, int, error) {
+func (s *patientService) GetAllPatients(page int, limit int, filters dto.PatientFilter) ([]*dto.PatientDTO, int, error) {
 	offset := (page - 1) * limit
 	var patients []*models.Patient
 	var totalCount int64
 	var err error
 
-	log.Println("Fetching all patients")
-	err = s.repo.CountPatients(&totalCount)
+	patients, totalCount, err = s.repo.GetAllPaginatedWithFilters(offset, limit, filters)
 	if err != nil {
-		log.Printf("Error counting patients: %v", err)
-		return nil, 0, err
-	}
-	patients, err = s.repo.GetAllPaginated(offset, limit)
-
-	if err != nil {
-		log.Printf("Error fetching patients: %v", err)
+		log.Printf("Error fetching filtered patients: %v", err)
 		return nil, 0, err
 	}
 

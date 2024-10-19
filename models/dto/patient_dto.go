@@ -19,3 +19,15 @@ type PatientDTO struct {
 	Medications   []*ShortMedicationDTO `json:"medications"`
 	MedicalVisits []*MedicalVisitDTO    `json:"medical_visits"`
 }
+
+type PatientFilter struct {
+	Name            string
+	DNI             string
+	Age             int
+	DoctorID        string
+	Location        string
+	DeviceID        string
+	ComorbidityName string
+	EntryDate       string
+	DischargeDate   string
+}
