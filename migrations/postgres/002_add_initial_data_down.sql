@@ -50,9 +50,9 @@ WHERE medication_id IN (
 -- Deleting data from 'monitoring_devices' table (Parent table)
 DELETE FROM public.monitoring_devices
 WHERE device_id IN (
-                    '13a60054-cc19-4ab4-bc32-ed833be31fa5',
-                    '98fdd982-d90c-440e-818e-fdbf249a3fd1',
-                    '466d20a9-6d98-45fc-a76a-80afabccb481'
+                    'test1',
+                    'test2',
+                    'test3'
     );
 
 -- Deleting data from 'alerts' table (Parent table)

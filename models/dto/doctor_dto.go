@@ -31,6 +31,9 @@ type DoctorDTO struct {
 
 // MapDoctorToDTO maps a Doctor model to a DoctorDTO
 func MapDoctorToDTO(doctor *models.Doctor) *DoctorDTO {
+	if doctor == nil {
+		return &DoctorDTO{}
+	}
 	return &DoctorDTO{
 		DoctorID:       doctor.DoctorID,
 		DNI:            doctor.DNI,

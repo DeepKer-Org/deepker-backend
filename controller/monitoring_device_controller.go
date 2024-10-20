@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type MonitoringDeviceController struct {
@@ -59,19 +60,52 @@ func (mdc *MonitoringDeviceController) GetMonitoringDeviceByID(c *gin.Context) {
 
 // GetAllMonitoringDevices handles retrieving all monitoring devices
 func (mdc *MonitoringDeviceController) GetAllMonitoringDevices(c *gin.Context) {
-	devices, err := mdc.MonitoringDeviceService.GetAllMonitoringDevices()
+	var totalCount int
+	var devices []*dto.MonitoringDeviceDTO
+	var err error
+
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	if err != nil || limit < 1 {
+		limit = 10
+	}
+
+	dni := c.Query("dni")
+	status := c.Query("status") // Add status as a query parameter
+
+	if status != "" {
+		devices, totalCount, err = mdc.MonitoringDeviceService.GetAllMonitoringDevicesByStatus(status)
+	} else {
+		// Build the filters object
+		filters := dto.MonitoringDeviceFilter{
+			DNI: dni,
+		}
+
+		devices, totalCount, err = mdc.MonitoringDeviceService.GetAllMonitoringDevices(page, limit, filters)
+	}
+
 	if err != nil {
 		log.Printf("Error retrieving monitoring devices: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve monitoring devices"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"devices": devices})
+	c.JSON(http.StatusOK, gin.H{
+		"devices":    devices,
+		"totalCount": totalCount,
+	})
+	return
 }
 
 // UpdateMonitoringDevice handles updating an existing monitoring device
 func (mdc *MonitoringDeviceController) UpdateMonitoringDevice(c *gin.Context) {
 	id := c.Param("id")
+
+	log.Println("Updating monitoring device with DeviceID:", id)
 
 	var deviceDTO dto.MonitoringDeviceUpdateDTO
 	if err := c.ShouldBindJSON(&deviceDTO); err != nil {

@@ -12,7 +12,8 @@ import (
 type MonitoringDeviceService interface {
 	CreateMonitoringDevice(deviceDTO *dto.MonitoringDeviceCreateDTO) error
 	GetMonitoringDeviceByID(id string) (*dto.MonitoringDeviceDTO, error)
-	GetAllMonitoringDevices() ([]*dto.MonitoringDeviceDTO, error)
+	GetAllMonitoringDevices(page int, limit int, filters dto.MonitoringDeviceFilter) ([]*dto.MonitoringDeviceDTO, int, error)
+	GetAllMonitoringDevicesByStatus(status string) ([]*dto.MonitoringDeviceDTO, int, error)
 	UpdateMonitoringDevice(id string, deviceDTO *dto.MonitoringDeviceUpdateDTO) error
 	DeleteMonitoringDevice(id string) error
 }
@@ -27,10 +28,8 @@ func NewMonitoringDeviceService(repo repository.MonitoringDeviceRepository) Moni
 
 func (s *monitoringDeviceService) CreateMonitoringDevice(deviceDTO *dto.MonitoringDeviceCreateDTO) error {
 	device := &models.MonitoringDevice{
-		Type:      deviceDTO.Type,
 		Status:    deviceDTO.Status,
-		PatientID: deviceDTO.PatientID,
-		Sensors:   deviceDTO.Sensors,
+		PatientID: &deviceDTO.PatientID,
 	}
 
 	err := s.repo.CreateMonitoringDevice(device)
@@ -59,23 +58,50 @@ func (s *monitoringDeviceService) GetMonitoringDeviceByID(id string) (*dto.Monit
 	return deviceDTO, nil
 }
 
-func (s *monitoringDeviceService) GetAllMonitoringDevices() ([]*dto.MonitoringDeviceDTO, error) {
+func (s *monitoringDeviceService) GetAllMonitoringDevices(page int, limit int, filters dto.MonitoringDeviceFilter) ([]*dto.MonitoringDeviceDTO, int, error) {
+	offset := (page - 1) * limit
+	var devices []*models.MonitoringDevice
+	var totalCount int64
+	var err error
+
 	log.Println("Fetching all monitoring devices")
-	devices, err := s.repo.GetAllMonitoringDevices()
+
+	// Retrieve devices with pagination
+	devices, err = s.repo.GetAllMonitoringDevices(offset, limit, filters)
 	if err != nil {
 		log.Printf("Error retrieving monitoring devices: %v", err)
-		return nil, err
+		return nil, 0, err
 	}
 
+	// Retrieve total count of devices (without pagination)
+	totalCount, err = s.repo.CountAllMonitoringDevices(filters)
+	if err != nil {
+		log.Printf("Error counting monitoring devices: %v", err)
+		return nil, 0, err
+	}
+
+	// Convert the devices to DTOs
 	deviceDTOs := dto.MapMonitoringDevicesToDTOs(devices)
-	log.Println("Monitoring devices fetched successfully, total count:", len(deviceDTOs))
-	return deviceDTOs, nil
+	log.Println("Monitoring devices fetched successfully, total count:", totalCount)
+
+	return deviceDTOs, int(totalCount), nil
+}
+
+func (s *monitoringDeviceService) GetAllMonitoringDevicesByStatus(status string) ([]*dto.MonitoringDeviceDTO, int, error) {
+	devices, err := s.repo.GetDevicesByStatus(status)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Map to DTOs
+	deviceDTOs := dto.MapMonitoringDevicesToDTOs(devices)
+	return deviceDTOs, len(deviceDTOs), nil
 }
 
 func (s *monitoringDeviceService) UpdateMonitoringDevice(id string, deviceDTO *dto.MonitoringDeviceUpdateDTO) error {
 	log.Println("Updating monitoring device with DeviceID:", id)
 
-	device, err := s.repo.GetMonitoringDeviceByID(id)
+	device, err := s.repo.GetMonitoringDeviceByID(id) // Query by correct device_id
 	if err != nil {
 		log.Printf("Error retrieving monitoring device: %v", err)
 		return err
@@ -85,9 +111,12 @@ func (s *monitoringDeviceService) UpdateMonitoringDevice(id string, deviceDTO *d
 		return gorm.ErrRecordNotFound
 	}
 
+	// Update the status (mandatory field)
 	device.Status = deviceDTO.Status
+
+	// Directly assign the pointers for LinkedByID and PatientID from the DTO
+	device.LinkedByID = deviceDTO.LinkedByID
 	device.PatientID = deviceDTO.PatientID
-	device.Sensors = deviceDTO.Sensors
 
 	err = s.repo.UpdateMonitoringDevice(device)
 	if err != nil {

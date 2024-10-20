@@ -2,14 +2,16 @@ package repository
 
 import (
 	"biometric-data-backend/models"
-	"errors"
+	"biometric-data-backend/models/dto"
 	"gorm.io/gorm"
 )
 
 type MonitoringDeviceRepository interface {
 	CreateMonitoringDevice(monitoringDevice *models.MonitoringDevice) error
 	GetMonitoringDeviceByID(id string) (*models.MonitoringDevice, error)
-	GetAllMonitoringDevices() ([]*models.MonitoringDevice, error)
+	GetAllMonitoringDevices(offset int, limit int, filters dto.MonitoringDeviceFilter) ([]*models.MonitoringDevice, error)
+	GetDevicesByStatus(status string) ([]*models.MonitoringDevice, error)
+	CountAllMonitoringDevices(filters dto.MonitoringDeviceFilter) (int64, error)
 	UpdateMonitoringDevice(monitoringDevice *models.MonitoringDevice) error
 	DeleteMonitoringDevice(id string) error
 }
@@ -32,23 +34,63 @@ func (r *monitoringDeviceRepository) CreateMonitoringDevice(monitoringDevice *mo
 
 // GetMonitoringDeviceByID retrieves a monitoringDevice by their MonitoringDeviceID.
 func (r *monitoringDeviceRepository) GetMonitoringDeviceByID(id string) (*models.MonitoringDevice, error) {
-	var monitoringDevice models.MonitoringDevice
-	if err := r.db.First(&monitoringDevice).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
+	var device models.MonitoringDevice
+	// Query by device_id
+	if err := r.db.Where("device_id = ?", id).First(&device).Error; err != nil {
 		return nil, err
 	}
-	return &monitoringDevice, nil
+	return &device, nil
 }
 
-// GetAllMonitoringDevices retrieves all monitoringDevices from the database.
-func (r *monitoringDeviceRepository) GetAllMonitoringDevices() ([]*models.MonitoringDevice, error) {
+func applyMonitoringDeviceFilters(query *gorm.DB, filters dto.MonitoringDeviceFilter) *gorm.DB {
+	// Join the patients table to filter by patient DNI using partial match (LIKE)
+	if filters.DNI != "" {
+		query = query.Joins("JOIN patients ON patients.patient_id = monitoring_devices.patient_id").
+			Where("patients.dni LIKE ?", "%"+filters.DNI+"%")
+	}
+	return query
+}
+
+func (r *monitoringDeviceRepository) GetAllMonitoringDevices(offset int, limit int, filters dto.MonitoringDeviceFilter) ([]*models.MonitoringDevice, error) {
 	var monitoringDevices []*models.MonitoringDevice
-	if err := r.db.Find(&monitoringDevices).Error; err != nil {
+
+	query := r.db.
+		Preload("Patient").
+		Preload("LinkedBy")
+	query = applyMonitoringDeviceFilters(query, filters) // Apply filters
+
+	// Apply pagination
+	if err := query.Offset(offset).Limit(limit).Find(&monitoringDevices).Error; err != nil {
 		return nil, err
 	}
+
 	return monitoringDevices, nil
+}
+
+func (r *monitoringDeviceRepository) GetDevicesByStatus(status string) ([]*models.MonitoringDevice, error) {
+	var devices []*models.MonitoringDevice
+	if err := r.db.
+		Preload("Patient").
+		Preload("LinkedBy").
+		Where("status = ?", status). // Filter by status
+		Find(&devices).Error; err != nil {
+		return nil, err
+	}
+	return devices, nil
+}
+
+func (r *monitoringDeviceRepository) CountAllMonitoringDevices(filters dto.MonitoringDeviceFilter) (int64, error) {
+	var totalCount int64
+
+	query := r.db.Model(&models.MonitoringDevice{})
+	query = applyMonitoringDeviceFilters(query, filters) // Apply filters
+
+	// Count the total number of devices with the filters applied
+	if err := query.Count(&totalCount).Error; err != nil {
+		return 0, err
+	}
+
+	return totalCount, nil
 }
 
 // UpdateMonitoringDevice updates an existing monitoringDevice record in the database.
