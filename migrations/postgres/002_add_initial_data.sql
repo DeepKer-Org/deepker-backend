@@ -73,9 +73,9 @@ INSERT INTO public.medications (medication_id, patient_id, name, start_date, end
 
 -- This section creates and inserts data into the 'monitoring_devices' table.
 
-INSERT INTO public.monitoring_devices (device_id, type, status, patient_id, sensors, created_at, updated_at, deleted_at) VALUES ('13a60054-cc19-4ab4-bc32-ed833be31fa5', 'Heart Monitor', 'In Use', '11111111-1111-1111-1111-111111111111', '{Heart Rate,Oxygen Level}', '2024-09-29 17:16:24.466949', '2024-09-29 17:16:24.466949', null);
-INSERT INTO public.monitoring_devices (device_id, type, status, patient_id, sensors, created_at, updated_at, deleted_at) VALUES ('98fdd982-d90c-440e-818e-fdbf249a3fd1', 'Blood Pressure Monitor', 'Free', null, '{Systolic,Diastolic}', '2024-09-29 17:16:24.466949', '2024-09-29 17:16:24.466949', null);
-INSERT INTO public.monitoring_devices (device_id, type, status, patient_id, sensors, created_at, updated_at, deleted_at) VALUES ('466d20a9-6d98-45fc-a76a-80afabccb481', 'Pulse Oximeter', 'Unavailable', '22222222-2222-2222-2222-222222222222', '{Oxygen Level}', '2024-09-29 17:16:24.466949', '2024-09-29 17:16:24.466949', null);
+INSERT INTO public.monitoring_devices (device_id, status, patient_id, linked_by_id, created_at, updated_at, deleted_at) VALUES ('test1',  'In Use', '11111111-1111-1111-1111-111111111111', '44556677-8888-9999-aaaa-bbbbccccdddd',  '2024-09-29 17:16:24.466949', '2024-09-29 17:16:24.466949', null);
+INSERT INTO public.monitoring_devices (device_id, status, patient_id, linked_by_id, created_at, updated_at, deleted_at) VALUES ('test2',  'Free', null, null, '2024-09-29 17:16:24.466949',  '2024-09-29 17:16:24.466949', null);
+INSERT INTO public.monitoring_devices (device_id, status, patient_id, linked_by_id, created_at, updated_at, deleted_at) VALUES ('test3', 'Unavailable', '22222222-2222-2222-2222-222222222222', '66778899-aaaa-bbbb-cccc-ddddeeeeffff', '2024-09-29 17:16:24.466949', '2024-09-29 17:16:24.466949', null);
 
 
 -- This section creates and inserts data into the 'patients' table.

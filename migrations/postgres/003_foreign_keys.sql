@@ -8,7 +8,8 @@ ALTER TABLE computer_diagnostics
     ADD CONSTRAINT fk_alert_diagnostic FOREIGN KEY (alert_id) REFERENCES alerts(alert_id);
 
 ALTER TABLE monitoring_devices
-    ADD CONSTRAINT fk_patient_device FOREIGN KEY (patient_id) REFERENCES patients(patient_id);
+    ADD CONSTRAINT fk_patient_device FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
+    ADD CONSTRAINT fk_linked_by_device FOREIGN KEY (linked_by_id) REFERENCES doctors(doctor_id);
 
 ALTER TABLE medications
     ADD CONSTRAINT fk_patient_medication FOREIGN KEY (patient_id) REFERENCES patients(patient_id);

@@ -20,7 +20,8 @@ ALTER TABLE medications
 
 -- Dropping foreign key constraint from 'monitoring_devices' table
 ALTER TABLE monitoring_devices
-    DROP CONSTRAINT IF EXISTS fk_patient_device;
+    DROP CONSTRAINT IF EXISTS fk_patient_device,
+    DROP CONSTRAINT IF EXISTS fk_linked_by_device;
 
 -- Dropping foreign key constraint from 'computer_diagnostics' table
 ALTER TABLE computer_diagnostics

@@ -46,6 +46,15 @@ func MapPatientToPatientForAlertDTO(patient *models.Patient) *PatientForAlertDTO
 	}
 }
 
+func MapPatientToPatientForDeviceDTO(patient *models.Patient) *PatientForDeviceDTO {
+
+	return &PatientForDeviceDTO{
+		PatientID: patient.PatientID,
+		DNI:       patient.DNI,
+		Name:      patient.Name,
+	}
+}
+
 func MapCreateDTOToPatient(dto *PatientCreateDTO) *models.Patient {
 	return &models.Patient{
 		DNI:      dto.DNI,

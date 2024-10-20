@@ -54,11 +54,10 @@ CREATE TABLE computer_diagnostics (
 
 -- Creating the monitoring device table
 CREATE TABLE monitoring_devices (
-    device_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    type VARCHAR(50) NOT NULL,
-    status VARCHAR(50) CHECK (status IN ('In Use', 'Free', 'Unavailable')),
+    device_id VARCHAR(10) PRIMARY KEY,
+    status VARCHAR(50) CHECK (status IN ('In Use', 'Free', 'Unavailable', 'Connecting')),
     patient_id UUID,
-    sensors TEXT[],
+    linked_by_id UUID,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP
