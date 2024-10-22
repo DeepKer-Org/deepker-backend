@@ -5,15 +5,14 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
-
-	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 )
 
 func main() {

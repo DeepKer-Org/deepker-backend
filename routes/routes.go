@@ -2,6 +2,8 @@ package routes
 
 import (
 	"biometric-data-backend/controller"
+	"biometric-data-backend/enums"
+	"biometric-data-backend/middleware"
 	"biometric-data-backend/repository"
 	"biometric-data-backend/service"
 	"github.com/joho/godotenv"
@@ -22,6 +24,7 @@ const (
 	MonitoringDevicesResource   = "monitoring-devices"
 	AlertsResource              = "alerts"
 	PatientsResource            = "patients"
+	RolesResource               = "roles"
 )
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -57,18 +60,26 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-// registerCrudRoutes registers CRUD routes for a given resource
-func registerCrudRoutes(router *gin.Engine, resource string, createFunc gin.HandlerFunc, getByIdFunc gin.HandlerFunc, getAllFunc gin.HandlerFunc, updateFunc gin.HandlerFunc, deleteFunc gin.HandlerFunc) {
-	router.POST("/"+resource, createFunc)
-	router.GET("/"+resource+"/:id", getByIdFunc)
-	router.GET("/"+resource, getAllFunc)
-	router.PATCH("/"+resource+"/:id", updateFunc)
-	router.DELETE("/"+resource+"/:id", deleteFunc)
+// registerCrudRoutesWithMiddleware registers CRUD routes for a given resource
+func registerCrudRoutesWithMiddleware(router *gin.Engine, resource string, createFunc gin.HandlerFunc, getByIdFunc gin.HandlerFunc, getAllFunc gin.HandlerFunc, updateFunc gin.HandlerFunc, deleteFunc gin.HandlerFunc, requiredRoles []string) {
+	authorized := router.Group("/")
+	authorized.Use(middleware.RoleAuthorization(requiredRoles))
+
+	authorized.POST("/"+resource, createFunc)
+	authorized.GET("/"+resource+"/:id", getByIdFunc)
+	authorized.GET("/"+resource, getAllFunc)
+	authorized.PATCH("/"+resource+"/:id", updateFunc)
+	authorized.DELETE("/"+resource+"/:id", deleteFunc)
 }
 
 func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	// Apply CORS middleware to the router
 	router.Use(CORSMiddleware())
+	// JWT Auth
+	authController := controller.NewAuthController()
+
+	// Register JWT auth routes
+	router.POST("/generate-token", authController.GenerateTokenEndpoint)
 
 	// Doctor
 	doctorRepo := repository.NewDoctorRepository(db)
@@ -76,7 +87,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	doctorController := controller.NewDoctorController(doctorService)
 
 	// Register doctor routes
-	registerCrudRoutes(
+	registerCrudRoutesWithMiddleware(
 		router,
 		DoctorsResource,
 		doctorController.CreateDoctor,
@@ -84,6 +95,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		doctorController.GetAllDoctors,
 		doctorController.UpdateDoctor,
 		doctorController.DeleteDoctor,
+		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
 	// Additional doctor-specific route
 	router.GET("/"+DoctorsResource+"/:id/short", doctorController.GetShortDoctorByID)
@@ -95,7 +107,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	patientController := controller.NewPatientController(patientService)
 
 	// Register patient routes
-	registerCrudRoutes(
+	registerCrudRoutesWithMiddleware(
 		router,
 		PatientsResource,
 		patientController.CreatePatient,
@@ -103,6 +115,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		patientController.GetAllPatients,
 		patientController.UpdatePatient,
 		patientController.DeletePatient,
+		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
 	// Additional patient-specific route
 	router.GET("/"+PatientsResource+"/dni/:dni", patientController.GetPatientByDNI)
@@ -113,7 +126,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	comorbidityController := controller.NewComorbidityController(comorbidityService)
 
 	// Register comorbidity routes
-	registerCrudRoutes(
+	registerCrudRoutesWithMiddleware(
 		router,
 		ComorbiditiesResource,
 		comorbidityController.CreateComorbidity,
@@ -121,6 +134,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		comorbidityController.GetAllComorbidities,
 		comorbidityController.UpdateComorbidity,
 		comorbidityController.DeleteComorbidity,
+		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
 
 	// Medication
@@ -129,7 +143,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	medicationController := controller.NewMedicationController(medicationService)
 
 	// Register medication routes
-	registerCrudRoutes(
+	registerCrudRoutesWithMiddleware(
 		router,
 		MedicationsResource,
 		medicationController.CreateMedication,
@@ -137,6 +151,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		medicationController.GetAllMedications,
 		medicationController.UpdateMedication,
 		medicationController.DeleteMedication,
+		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
 
 	// BiometricData
@@ -145,7 +160,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	biometricController := controller.NewBiometricDataController(biometricService)
 
 	// Register biometric routes
-	registerCrudRoutes(
+	registerCrudRoutesWithMiddleware(
 		router,
 		BiometricRecordsResource,
 		biometricController.CreateBiometricData,
@@ -153,6 +168,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		biometricController.GetAllBiometricRecords,
 		biometricController.UpdateBiometricData,
 		biometricController.DeleteBiometricData,
+		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
 
 	// ComputerDiagnostic
@@ -161,7 +177,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	computerDiagnosticController := controller.NewComputerDiagnosticController(computerDiagnosticService)
 
 	// Register computer diagnostic routes
-	registerCrudRoutes(
+	registerCrudRoutesWithMiddleware(
 		router,
 		ComputerDiagnosticsResource,
 		computerDiagnosticController.CreateComputerDiagnostic,
@@ -169,6 +185,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		computerDiagnosticController.GetAllComputerDiagnostics,
 		computerDiagnosticController.UpdateComputerDiagnostic,
 		computerDiagnosticController.DeleteComputerDiagnostic,
+		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
 
 	// MonitoringDevice
@@ -177,7 +194,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	monitoringDeviceController := controller.NewMonitoringDeviceController(monitoringDeviceService)
 
 	// Register monitoring device routes
-	registerCrudRoutes(
+	registerCrudRoutesWithMiddleware(
 		router,
 		MonitoringDevicesResource,
 		monitoringDeviceController.CreateMonitoringDevice,
@@ -185,6 +202,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		monitoringDeviceController.GetAllMonitoringDevices,
 		monitoringDeviceController.UpdateMonitoringDevice,
 		monitoringDeviceController.DeleteMonitoringDevice,
+		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
 
 	// Alert
@@ -193,7 +211,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	alertController := controller.NewAlertController(alertService)
 
 	// Register alert routes
-	registerCrudRoutes(
+	registerCrudRoutesWithMiddleware(
 		router,
 		AlertsResource,
 		alertController.CreateAlert,
@@ -201,5 +219,25 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		alertController.GetAllAlerts,
 		alertController.UpdateAlert,
 		alertController.DeleteAlert,
+		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
+
+	// Role
+	roleRepo := repository.NewRoleRepository(db)
+	roleService := service.NewRoleService(roleRepo)
+	roleController := controller.NewRoleController(roleService)
+
+	// Register role routes
+	registerCrudRoutesWithMiddleware(
+		router,
+		RolesResource,
+		roleController.CreateRole,
+		roleController.GetRoleByID,
+		roleController.GetAllRoles,
+		roleController.UpdateRole,
+		roleController.DeleteRole,
+		enums.ToStringArray(enums.Admin),
+	)
+	// Additional role-specific route
+	router.POST("/"+RolesResource+"/names", roleController.GetRolesByNames)
 }
