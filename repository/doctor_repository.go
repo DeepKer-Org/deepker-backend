@@ -11,6 +11,7 @@ type DoctorRepository interface {
 	BaseRepository[models.Doctor]
 	GetDoctorByUserID(userID uuid.UUID) (*models.Doctor, error)
 	GetDoctorsByIDs(ids []uuid.UUID) ([]*models.Doctor, error)
+	GetDoctorByDNI(dni string) (*models.Doctor, error)
 	GetDoctorsByAlertID(alertID uuid.UUID) ([]*models.Doctor, error)
 }
 
@@ -45,6 +46,17 @@ func (r *doctorRepository) GetDoctorsByIDs(ids []uuid.UUID) ([]*models.Doctor, e
 		return nil, err
 	}
 	return doctors, nil
+}
+
+// GetDoctorByDNI retrieves a doctor by their DNI.
+func (r *doctorRepository) GetDoctorByDNI(dni string) (*models.Doctor, error) {
+	var doctor models.Doctor
+	if err := r.db.
+		Preload("User").
+		Where("dni = ?", dni).First(&doctor).Error; err != nil {
+		return nil, err
+	}
+	return &doctor, nil
 }
 
 // GetDoctorsByAlertID retrieves doctors associated with a specific alert ID.

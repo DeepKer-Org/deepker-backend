@@ -130,7 +130,8 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	router.GET("/"+DoctorsResource+"/:id/short", doctorController.GetShortDoctorByID)
 	router.GET("/"+DoctorsResource+"/alertID/:alertID", doctorController.GetDoctorsByAlertID)
 	router.GET("/"+DoctorsResource+"/userID/:userID", doctorController.GetDoctorByUserID)
-
+	// Change password for doctor
+	router.PATCH("/"+AuthorizationResource+"/change-password", doctorController.ChangePassword)
 	// Patient
 	patientRepo := repository.NewPatientRepository(db)
 	patientService := service.NewPatientService(patientRepo)
