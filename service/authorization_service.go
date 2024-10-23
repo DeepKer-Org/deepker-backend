@@ -1,12 +1,11 @@
 package service
 
 import (
-	"biometric-data-backend/enums"
-	"biometric-data-backend/models"
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
 	"errors"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"log"
 )
@@ -31,17 +30,37 @@ func NewUserService(repo repository.AuthorizationRepository, roleRepo repository
 
 // RegisterUser handles user registration
 func (s *userService) RegisterUser(userDTO *dto.UserRegisterDTO) (*uuid.UUID, error) {
+	log.Println("Registering a new user with username:", userDTO.Username)
+
+	// Start a new transaction
+	tx := s.repo.BeginTransaction()
+
 	roles, err := s.roleRepo.GetRolesByNames(userDTO.Roles)
 	if err != nil {
 		log.Printf("Failed to fetch roles: %v", err)
 		return nil, err
 	}
-	user := dto.MapRegisterDTOToUser(userDTO, roles)
-	err = s.repo.Create(user)
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userDTO.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Printf("Failed to register user: %v", err)
+		log.Printf("Failed to hash password: %v", err)
 		return nil, err
 	}
+
+	// Update the DTO with the hashed password
+	userDTO.Password = string(hashedPassword)
+
+	user := dto.MapRegisterDTOToUser(userDTO, roles)
+	err = s.repo.CreateInTransaction(user, tx)
+	if err != nil {
+		log.Printf("Failed to register user: %v", err)
+		tx.Rollback()
+		return nil, err
+	}
+
+	// Commit the transaction
+	tx.Commit()
+
 	log.Println("User registered successfully with UserID:", user.UserID)
 	return &user.UserID, nil
 }
@@ -55,6 +74,14 @@ func (s *userService) RegisterUserInTransaction(userDTO *dto.UserRegisterDTO, tx
 		return nil, err
 	}
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userDTO.Password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Printf("Failed to hash password: %v", err)
+		return nil, err
+	}
+
+	// Update the DTO with the hashed password
+	userDTO.Password = string(hashedPassword)
 	// Map the DTO to the User entity with the roles
 	user := dto.MapRegisterDTOToUser(userDTO, roles)
 
@@ -71,18 +98,21 @@ func (s *userService) RegisterUserInTransaction(userDTO *dto.UserRegisterDTO, tx
 
 // AuthenticateUser handles user authentication
 func (s *userService) AuthenticateUser(loginDTO *dto.UserLoginDTO) (string, error) {
-	user, err := s.repo.GetUserByEmail(loginDTO.Email)
+	user, err := s.repo.GetUserByUsername(loginDTO.Username)
 	if err != nil {
 		log.Printf("Error fetching user: %v", err)
 		return "", err
 	}
 
-	if user.Password != loginDTO.Password {
-		log.Println("Incorrect password for user:", loginDTO.Email)
+	// Compare the provided password with the stored hashed password
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginDTO.Password))
+	if err != nil {
+		log.Println("Incorrect password for user:", loginDTO.Username)
 		return "", errors.New("incorrect password")
 	}
 
-	token, err := GenerateToken(user.Email, dto.MapRolesToNames(user.Roles), map[string]interface{}{
+	// Generate JWT token with user information
+	token, err := GenerateToken(user.Username, dto.MapRolesToNames(user.Roles), map[string]interface{}{
 		"user_id": user.UserID,
 	})
 
@@ -91,16 +121,6 @@ func (s *userService) AuthenticateUser(loginDTO *dto.UserLoginDTO) (string, erro
 		return "", err
 	}
 
-	log.Println("User authenticated successfully:", loginDTO.Email)
+	log.Println("User authenticated successfully:", loginDTO.Username)
 	return token, nil
-}
-
-// hasRole helper function to check if a user has a specific role
-func hasRole(roles []*models.Role, targetRole enums.RoleEnum) bool {
-	for _, role := range roles {
-		if role.RoleName == targetRole {
-			return true
-		}
-	}
-	return false
 }

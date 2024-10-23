@@ -2,15 +2,15 @@ ALTER TABLE "doctors"
     ADD COLUMN user_id UUID;
 
 UPDATE "doctors"
-SET user_id = (SELECT user_id FROM "users" WHERE email = 'admin@example.com')
+SET user_id = (SELECT user_id FROM "users" WHERE username = '4455667788')
 WHERE doctor_id = '44556677-8888-9999-aaaa-bbbbccccdddd';
 
 UPDATE "doctors"
-SET user_id = (SELECT user_id FROM "users" WHERE email = 'doctor@example.com')
+SET user_id = (SELECT user_id FROM "users" WHERE username = '5566778899')
 WHERE doctor_id = '55667788-9999-aaaa-bbbb-ccccdddd1111';
 
 UPDATE "doctors"
-SET user_id = (SELECT user_id FROM "users" WHERE email = 'user@example.com')
+SET user_id = (SELECT user_id FROM "users" WHERE username = '6677889900')
 WHERE doctor_id = '66778899-aaaa-bbbb-cccc-ddddeeeeffff';
 
 

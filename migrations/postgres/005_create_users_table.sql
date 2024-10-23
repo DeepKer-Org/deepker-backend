@@ -1,7 +1,7 @@
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
                                      user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                                     email VARCHAR(100) UNIQUE NOT NULL,
+                                     username VARCHAR(100) UNIQUE NOT NULL,
                                      password VARCHAR(255) NOT NULL
 );
 
@@ -17,14 +17,16 @@ CREATE TABLE IF NOT EXISTS user_roles (
 );
 
 -- Insert example data into users table
-INSERT INTO users (email, password) VALUES
-                                                  ('admin@example.com', 'hashed_password1'),
-                                                  ('doctor@example.com', 'hashed_password2'),
-                                                  ('user@example.com', 'hashed_password3');
+INSERT INTO users (username, password) VALUES
+                                                  ('4455667788', '$2a$10$B5NCzLM5PGwRqPZTLIRPSekumwD.xgWOcKplls2sMiEGe.INAVojm'),
+                                                  ('5566778899', '$2a$10$h5.2YfnHQs/CgyRMyew.j.DCiJMbVwSPlAAuWmgEbNcwNAyp4vrVe'),
+                                                  ('6677889900', '$2a$10$qi.n3zf5C5VBpgcrehsTW.j.7Xu5JZjRhivCha8R6PUd8cl/rU9Ni'),
+                                                  ('admin@example.com', '$2a$10$jgcsnQnqwY9AnUa0zYxMzOcOVi/z1F3k0gvtkGEQDZLMDkyPU0oJ2');
 
 -- Insert example data into user_roles table (assign roles to users)
 INSERT INTO user_roles (user_id, role_id) VALUES
-                                              ((SELECT user_id FROM users WHERE email = 'admin@example.com'), (SELECT role_id FROM roles WHERE role_name = 'admin')),
-                                              ((SELECT user_id FROM users WHERE email = 'doctor@example.com'), (SELECT role_id FROM roles WHERE role_name = 'doctor')),
-                                              ((SELECT user_id FROM users WHERE email = 'user@example.com'), (SELECT role_id FROM roles WHERE role_name = 'test')),
-                                              ((SELECT user_id FROM users WHERE email = 'admin@example.com'), (SELECT role_id FROM roles WHERE role_name = 'doctor')); -- Example of user with multiple roles
+                                              ((SELECT user_id FROM users WHERE username = '4455667788'), (SELECT role_id FROM roles WHERE role_name = 'doctor')),
+                                              ((SELECT user_id FROM users WHERE username = '5566778899'), (SELECT role_id FROM roles WHERE role_name = 'doctor')),
+                                              ((SELECT user_id FROM users WHERE username = '6677889900'), (SELECT role_id FROM roles WHERE role_name = 'doctor')),
+                                              --((SELECT user_id FROM users WHERE username = 'doctor1@example.com'), (SELECT role_id FROM roles WHERE role_name = 'admin')),
+                                              ((SELECT user_id FROM users WHERE username = 'admin@example.com'), (SELECT role_id FROM roles WHERE role_name = 'admin'));

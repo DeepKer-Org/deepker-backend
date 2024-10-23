@@ -46,7 +46,7 @@ func (uc *AuthorizationController) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	err, _ := uc.UserService.RegisterUser(&userDTO)
+	_, err := uc.UserService.RegisterUser(&userDTO)
 	if err != nil {
 		log.Printf("Failed to register user: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register user"})

@@ -7,9 +7,8 @@ import (
 
 // DoctorCreateDTO is used for creating a new doctor
 type DoctorCreateDTO struct {
-	Email          string `json:"username" binding:"required"`
+	DNI            string `json:"dni" binding:"required"`
 	Password       string `json:"password" binding:"required,min=12"`
-	DNI            string `json:"dni"`
 	Name           string `json:"name"`
 	Specialization string `json:"specialization"`
 }

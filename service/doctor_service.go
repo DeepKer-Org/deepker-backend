@@ -44,7 +44,7 @@ func (s *doctorService) CreateDoctor(doctorDTO *dto.DoctorCreateDTO) error {
 
 	// Create the user inside the transaction
 	userRegisterDTO := &dto.UserRegisterDTO{
-		Email:    doctorDTO.Email,
+		Username: doctorDTO.DNI,
 		Password: doctorDTO.Password,
 		Roles:    enums.ToStringArray(enums.Doctor),
 	}
