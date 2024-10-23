@@ -18,7 +18,7 @@ var (
 	DBPort     string
 )
 
-// LoadConfig carga la configuración de la base de datos y establece la conexión con PostgreSQL
+// LoadConfig loads the database configuration and establishes the connection with PostgreSQL
 func LoadConfig() {
 	DBUser = os.Getenv("DB_USER")
 	DBPassword = os.Getenv("DB_PASSWORD")
@@ -30,11 +30,11 @@ func LoadConfig() {
 		log.Fatal("Database configuration not set")
 	}
 
-	// Construir la cadena de conexión para PostgreSQL
+	// Build the connection string for PostgreSQL
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
 		DBHost, DBUser, DBPassword, DBName, DBPort)
 
-	// Conectar a la base de datos
+	// Connect to the database
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
@@ -45,7 +45,7 @@ func LoadConfig() {
 	log.Println("PostgreSQL database connected")
 }
 
-// CloseDB se asegura de cerrar la conexión a la base de datos (si es necesario)
+// CloseDB ensures the database connection is closed (if necessary)
 func CloseDB() {
 	sqlDB, err := DB.DB()
 	if err != nil {

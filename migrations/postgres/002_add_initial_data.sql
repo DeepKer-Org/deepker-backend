@@ -58,9 +58,9 @@ INSERT INTO public.doctor_patients (doctor_patient_id, doctor_id, patient_id, as
 
 -- This section creates and inserts data into the 'doctors' table.
 
-INSERT INTO public.doctors (doctor_id, dni, name, password, specialization, created_at, updated_at, deleted_at) VALUES ('44556677-8888-9999-aaaa-bbbbccccdddd', '4455667788', 'Dr. Alice Brown', 'password123', 'Cardiologist', '2024-09-29 17:16:24.525101', '2024-09-29 17:16:24.525101', null);
-INSERT INTO public.doctors (doctor_id, dni, name, password, specialization, created_at, updated_at, deleted_at) VALUES ('55667788-9999-aaaa-bbbb-ccccdddd1111', '5566778899', 'Dr. Bob Green', 'password456', 'Pulmonologist', '2024-09-29 17:16:24.525101', '2024-09-29 17:16:24.525101', null);
-INSERT INTO public.doctors (doctor_id, dni, name, password, specialization, created_at, updated_at, deleted_at) VALUES ('66778899-aaaa-bbbb-cccc-ddddeeeeffff', '6677889900', 'Dr. Charlie Blue', 'password789', 'General Practitioner', '2024-09-29 17:16:24.525101', '2024-09-29 17:16:24.525101', null);
+INSERT INTO public.doctors (doctor_id, dni, name, specialization, created_at, updated_at, deleted_at) VALUES ('44556677-8888-9999-aaaa-bbbbccccdddd', '4455667788', 'Dr. Alice Brown', 'Cardiologist', '2024-09-29 17:16:24.525101', '2024-09-29 17:16:24.525101', null);
+INSERT INTO public.doctors (doctor_id, dni, name, specialization, created_at, updated_at, deleted_at) VALUES ('55667788-9999-aaaa-bbbb-ccccdddd1111', '5566778899', 'Dr. Bob Green', 'Pulmonologist', '2024-09-29 17:16:24.525101', '2024-09-29 17:16:24.525101', null);
+INSERT INTO public.doctors (doctor_id, dni, name, specialization, created_at, updated_at, deleted_at) VALUES ('66778899-aaaa-bbbb-cccc-ddddeeeeffff', '6677889900', 'Dr. Charlie Blue', 'General Practitioner', '2024-09-29 17:16:24.525101', '2024-09-29 17:16:24.525101', null);
 
 
 -- This section creates and inserts data into the 'medications' table.

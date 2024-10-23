@@ -90,6 +90,15 @@ Open your browser and visit the following link to view the API documentation:
 
 [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 
+## Default Credentials
+- `username`: admin@example.com
+- `password`: hashed_password_admin
+- `role`: admin
+
+- `username`: doctor{1-3}@example.com
+- `password`: hashed_password{1-3}
+- `role`: doctor
+
 ## Project Structure
 
 The project follows a standard structure for Go applications, with the following main directories:

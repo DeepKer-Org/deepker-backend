@@ -40,10 +40,55 @@ func (dc *DoctorController) CreateDoctor(c *gin.Context) {
 
 // GetDoctorByID handles retrieving a doctor by their DoctorID
 func (dc *DoctorController) GetDoctorByID(c *gin.Context) {
-	doctor, err := getByID(c, "id", dc.DoctorService.GetDoctorByID, "Doctor not found with DoctorID: %v")
-	if err != nil || doctor == nil {
+	id := c.Param("id")
+
+	doctorID, err := uuid.Parse(id)
+	if err != nil {
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid doctor ID"})
 		return
 	}
+
+	doctor, err := dc.DoctorService.GetDoctorByID(doctorID)
+	if err != nil {
+		log.Printf("Error retrieving doctor: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve doctor"})
+		return
+	}
+
+	if doctor == nil {
+		log.Printf("Doctor not found with DoctorID: %v", id)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Doctor not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"doctor": doctor})
+}
+
+// GetDoctorByUserID handles retrieving a doctor by their UserID
+func (dc *DoctorController) GetDoctorByUserID(c *gin.Context) {
+	id := c.Param("userID")
+
+	userID, err := uuid.Parse(id)
+	if err != nil {
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	doctor, err := dc.DoctorService.GetDoctorByUserID(userID)
+	if err != nil {
+		log.Printf("Error retrieving doctor: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve doctor"})
+		return
+	}
+
+	if doctor == nil {
+		log.Printf("Doctor not found with UserID: %v", id)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Doctor not found"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"doctor": doctor})
 }
 

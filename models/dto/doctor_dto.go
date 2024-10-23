@@ -7,9 +7,9 @@ import (
 
 // DoctorCreateDTO is used for creating a new doctor
 type DoctorCreateDTO struct {
-	DNI            string `json:"dni"`
+	DNI            string `json:"dni" binding:"required"`
+	Password       string `json:"password" binding:"required,min=12"`
 	Name           string `json:"name"`
-	Password       string `json:"password"`
 	Specialization string `json:"specialization"`
 }
 
@@ -17,7 +17,6 @@ type DoctorCreateDTO struct {
 type DoctorUpdateDTO struct {
 	DNI            string `json:"dni"`
 	Name           string `json:"name"`
-	Password       string `json:"password"`
 	Specialization string `json:"specialization"`
 }
 
@@ -56,7 +55,6 @@ func MapCreateDTOToDoctor(dto *DoctorCreateDTO) *models.Doctor {
 	return &models.Doctor{
 		DNI:            dto.DNI,
 		Name:           dto.Name,
-		Password:       dto.Password,
 		Specialization: dto.Specialization,
 	}
 }
@@ -65,7 +63,6 @@ func MapCreateDTOToDoctor(dto *DoctorCreateDTO) *models.Doctor {
 func MapUpdateDTOToDoctor(dto *DoctorUpdateDTO, doctor *models.Doctor) *models.Doctor {
 	doctor.DNI = dto.DNI
 	doctor.Name = dto.Name
-	doctor.Password = dto.Password
 	doctor.Specialization = dto.Specialization
 	return doctor
 }

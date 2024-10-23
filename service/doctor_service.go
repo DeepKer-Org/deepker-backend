@@ -1,6 +1,7 @@
 package service
 
 import (
+	"biometric-data-backend/enums"
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
 	"errors"
@@ -12,6 +13,7 @@ import (
 type DoctorService interface {
 	CreateDoctor(doctorDTO *dto.DoctorCreateDTO) error
 	GetDoctorByID(id uuid.UUID) (*dto.DoctorDTO, error)
+	GetDoctorByUserID(userID uuid.UUID) (*dto.DoctorDTO, error)
 	GetDoctorsByAlertID(alertID uuid.UUID) ([]*dto.DoctorDTO, error)
 	GetShortDoctorByID(id uuid.UUID) (*dto.DoctorDTO, error)
 	GetAllDoctors() ([]*dto.DoctorDTO, error)
@@ -20,26 +22,57 @@ type DoctorService interface {
 }
 
 type doctorService struct {
-	repo repository.DoctorRepository
+	repo        repository.DoctorRepository
+	authRepo    repository.AuthorizationRepository
+	authService AuthorizationService
 }
 
-func NewDoctorService(repo repository.DoctorRepository) DoctorService {
-	return &doctorService{repo: repo}
+func NewDoctorService(repo repository.DoctorRepository, authRepo repository.AuthorizationRepository, authService AuthorizationService) DoctorService {
+	return &doctorService{
+		repo:        repo,
+		authRepo:    authRepo,
+		authService: authService,
+	}
 }
 
-// Create a new doctor using the DoctorCreateDTO
+// CreateDoctor creates a new doctor using the DoctorCreateDTO
 func (s *doctorService) CreateDoctor(doctorDTO *dto.DoctorCreateDTO) error {
 	log.Println("Creating a new doctor with DNI:", doctorDTO.DNI)
-	// Map the DTO to the Doctor entity
-	doctor := dto.MapCreateDTOToDoctor(doctorDTO)
 
-	err := s.repo.Create(doctor)
+	// Start a new transaction
+	tx := s.repo.BeginTransaction()
+
+	// Create the user inside the transaction
+	userRegisterDTO := &dto.UserRegisterDTO{
+		Username: doctorDTO.DNI,
+		Password: doctorDTO.Password,
+		Roles:    enums.ToStringArray(enums.Doctor),
+	}
+	userID, err := s.authService.RegisterUserInTransaction(userRegisterDTO, tx)
 	if err != nil {
-		log.Printf("Failed to create doctor: %v", err)
+		log.Printf("Failed to register user: %v", err)
+		tx.Rollback() // Rollback the transaction if an error occurs
 		return err
 	}
+
+	// Map the DTO to the Doctor entity
+	doctor := dto.MapCreateDTOToDoctor(doctorDTO)
+	doctor.UserID = *userID // Assign the UserID to the Doctor
+
+	// Create the doctor inside the transaction
+	err = s.repo.CreateInTransaction(doctor, tx)
+	if err != nil {
+		log.Printf("Failed to create doctor: %v", err)
+		tx.Rollback() // Rollback the transaction if an error occurs
+		return err
+	}
+
+	// Commit the transaction if everything is successful
+	tx.Commit()
+
 	log.Println("Doctor created successfully with DoctorID:", doctor.DoctorID)
 	return nil
+
 }
 
 // Get a doctor by ID and map the result to DoctorDTO
@@ -52,6 +85,23 @@ func (s *doctorService) GetDoctorByID(id uuid.UUID) (*dto.DoctorDTO, error) {
 	}
 	if doctor == nil {
 		log.Println("No doctor found with DoctorID:", id)
+		return nil, nil
+	}
+
+	// Map the Doctor entity to the DoctorDTO
+	return dto.MapDoctorToDTO(doctor), nil
+}
+
+// Get a doctor by UserID and map the result to DoctorDTO
+func (s *doctorService) GetDoctorByUserID(userID uuid.UUID) (*dto.DoctorDTO, error) {
+	log.Println("Fetching doctor with UserID:", userID)
+	doctor, err := s.repo.GetDoctorByUserID(userID)
+	if err != nil {
+		log.Printf("Error fetching doctor: %v", err)
+		return nil, err
+	}
+	if doctor == nil {
+		log.Println("No doctor found with UserID:", userID)
 		return nil, nil
 	}
 
