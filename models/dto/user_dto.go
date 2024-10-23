@@ -6,28 +6,35 @@ import (
 
 // UserRegisterDTO is used for registering a new user
 type UserRegisterDTO struct {
-	Username string   `json:"username" binding:"required"`
-	Email    string   `json:"email" binding:"required,email"`
+	Email    string   `json:"username" binding:"required"`
 	Password string   `json:"password" binding:"required,min=12"`
 	Roles    []string `json:"roles" binding:"required"`
 }
 
 // UserLoginDTO is used for authenticating a user
 type UserLoginDTO struct {
-	Username string `json:"username" binding:"required"`
+	Email    string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
 // PasswordResetDTO is used for resetting a user's password
 type PasswordResetDTO struct {
-	Username    string `json:"username" binding:"required"`
-	NewPassword string `json:"new_password" binding:"required,min=8"`
+	Email       string `json:"username" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=12"`
+}
+
+// UserDTO is used for retrieving a user
+type UserDTO struct {
+	UserID string   `json:"user_id"`
+	Email  string   `json:"username"`
+	Roles  []string `json:"roles"`
 }
 
 // MapRegisterDTOToUser maps a UserRegisterDTO to a User model
-func MapRegisterDTOToUser(dto *UserRegisterDTO) *models.User {
+func MapRegisterDTOToUser(dto *UserRegisterDTO, roles []*models.Role) *models.User {
 	return &models.User{
-		Username: dto.Username,
+		Email:    dto.Email,
 		Password: dto.Password,
+		Roles:    roles,
 	}
 }

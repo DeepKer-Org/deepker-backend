@@ -19,7 +19,7 @@ func (ac *AuthController) GenerateTokenEndpoint(c *gin.Context) {
 	roles := c.PostFormArray("roles")
 
 	if username == "" || len(roles) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Username and roles are required"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and roles are required"})
 		return
 	}
 

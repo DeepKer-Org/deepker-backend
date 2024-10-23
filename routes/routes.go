@@ -25,6 +25,7 @@ const (
 	AlertsResource              = "alerts"
 	PatientsResource            = "patients"
 	RolesResource               = "roles"
+	AuthorizationResource       = "authorization"
 )
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -81,9 +82,37 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	// Register JWT auth routes
 	router.POST("/generate-token", authController.GenerateTokenEndpoint)
 
+	// Role
+	roleRepo := repository.NewRoleRepository(db)
+	roleService := service.NewRoleService(roleRepo)
+	roleController := controller.NewRoleController(roleService)
+
+	// Register role routes
+	registerCrudRoutesWithMiddleware(
+		router,
+		RolesResource,
+		roleController.CreateRole,
+		roleController.GetRoleByID,
+		roleController.GetAllRoles,
+		roleController.UpdateRole,
+		roleController.DeleteRole,
+		enums.ToStringArray(enums.Admin),
+	)
+	// Additional role-specific route
+	router.POST("/"+RolesResource+"/names", roleController.GetRolesByNames)
+
+	// Authorization
+	userRepo := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepo, roleRepo)
+	authorizationController := controller.NewAuthorizationController(userService)
+
+	// Register authorization routes
+	router.POST("/"+AuthorizationResource+"/login", authorizationController.AuthenticateUser)
+	router.POST("/"+AuthorizationResource+"/register", authorizationController.RegisterUser)
+
 	// Doctor
 	doctorRepo := repository.NewDoctorRepository(db)
-	doctorService := service.NewDoctorService(doctorRepo)
+	doctorService := service.NewDoctorService(doctorRepo, userRepo, userService)
 	doctorController := controller.NewDoctorController(doctorService)
 
 	// Register doctor routes
@@ -221,23 +250,4 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		alertController.DeleteAlert,
 		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
-
-	// Role
-	roleRepo := repository.NewRoleRepository(db)
-	roleService := service.NewRoleService(roleRepo)
-	roleController := controller.NewRoleController(roleService)
-
-	// Register role routes
-	registerCrudRoutesWithMiddleware(
-		router,
-		RolesResource,
-		roleController.CreateRole,
-		roleController.GetRoleByID,
-		roleController.GetAllRoles,
-		roleController.UpdateRole,
-		roleController.DeleteRole,
-		enums.ToStringArray(enums.Admin),
-	)
-	// Additional role-specific route
-	router.POST("/"+RolesResource+"/names", roleController.GetRolesByNames)
 }

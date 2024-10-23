@@ -2,6 +2,8 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/migrations/postgres/002_add_initial_data.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/migrations/postgres/006_add_authorization.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/migrations/postgres/006_add_authorization_down.sql" dialect="PostgreSQL" />
     <file url="PROJECT" dialect="PostgreSQL" />
   </component>
 </project>

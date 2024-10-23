@@ -34,3 +34,12 @@ func MapRolesToDTOs(roles []*models.Role) []*RoleDTO {
 	}
 	return roleDTOs
 }
+
+// MapRolesToNames maps a list of Role models to a list of role names
+func MapRolesToNames(roles []*models.Role) []string {
+	roleNames := make([]string, 0)
+	for _, role := range roles {
+		roleNames = append(roleNames, string(role.RoleName))
+	}
+	return roleNames
+}

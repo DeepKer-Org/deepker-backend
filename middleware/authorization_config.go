@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -20,7 +21,7 @@ func RoleAuthorization(requiredRoles []string) gin.HandlerFunc {
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			return []byte("mySecretKey"), nil
+			return []byte(os.Getenv("JWT_SECRET_KEY")), nil
 		})
 
 		if err != nil {

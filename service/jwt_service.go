@@ -2,10 +2,11 @@ package service
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"os"
 	"time"
 )
 
-var secretKey = []byte("mySecretKey")
+var secretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 
 // GenerateToken genera un token JWT con roles
 func GenerateToken(username string, roles []string) (string, error) {
