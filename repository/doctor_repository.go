@@ -9,6 +9,7 @@ import (
 // DoctorRepository interface includes the specific methods and embeds BaseRepository
 type DoctorRepository interface {
 	BaseRepository[models.Doctor]
+	GetDoctorByUserID(userID uuid.UUID) (*models.Doctor, error)
 	GetDoctorsByIDs(ids []uuid.UUID) ([]*models.Doctor, error)
 	GetDoctorsByAlertID(alertID uuid.UUID) ([]*models.Doctor, error)
 }
@@ -26,6 +27,15 @@ func NewDoctorRepository(db *gorm.DB) DoctorRepository {
 		BaseRepository: baseRepo,
 		db:             db,
 	}
+}
+
+// GetDoctorByUserID retrieves a doctor by their UserID.
+func (r *doctorRepository) GetDoctorByUserID(userID uuid.UUID) (*models.Doctor, error) {
+	var doctor models.Doctor
+	if err := r.db.Where("user_id = ?", userID).First(&doctor).Error; err != nil {
+		return nil, err
+	}
+	return &doctor, nil
 }
 
 // GetDoctorsByIDs retrieves doctors by their DoctorIDs.

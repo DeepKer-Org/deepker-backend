@@ -1,6 +1,8 @@
 package service
 
 import (
+	"biometric-data-backend/enums"
+	"biometric-data-backend/models"
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
 	"errors"
@@ -13,8 +15,6 @@ type AuthorizationService interface {
 	RegisterUser(userDTO *dto.UserRegisterDTO) (*uuid.UUID, error)
 	RegisterUserInTransaction(userDTO *dto.UserRegisterDTO, tx *gorm.DB) (*uuid.UUID, error)
 	AuthenticateUser(loginDTO *dto.UserLoginDTO) (string, error)
-	//ResetPassword(resetDTO *dto.PasswordResetDTO) error
-	//RemoveUser(userID uuid.UUID) error
 }
 
 type userService struct {
@@ -46,31 +46,7 @@ func (s *userService) RegisterUser(userDTO *dto.UserRegisterDTO) (*uuid.UUID, er
 	return &user.UserID, nil
 }
 
-// AuthenticateUser handles user authentication
-func (s *userService) AuthenticateUser(loginDTO *dto.UserLoginDTO) (string, error) {
-	//user, err := s.repo.GetUserByEmail(loginDTO.Email)
-	user, err := s.repo.GetUserByEmail(loginDTO.Email)
-	if err != nil {
-		log.Printf("Error fetching user: %v", err)
-		return "", err
-	}
-
-	if user.Password != loginDTO.Password {
-		log.Println("Incorrect password for user:", loginDTO.Email)
-		return "", errors.New("incorrect password")
-	}
-
-	token, err := GenerateToken(loginDTO.Email, dto.MapRolesToNames(user.Roles))
-
-	if err != nil {
-		log.Printf("Failed to generate token: %v", err)
-		return "", err
-	}
-
-	log.Println("User authenticated successfully:", loginDTO.Email)
-	return token, nil
-}
-
+// RegisterUserInTransaction handles user registration within a transaction
 func (s *userService) RegisterUserInTransaction(userDTO *dto.UserRegisterDTO, tx *gorm.DB) (*uuid.UUID, error) {
 	// Fetch roles within the transaction
 	roles, err := s.roleRepo.GetRolesByNames(userDTO.Roles)
@@ -93,40 +69,38 @@ func (s *userService) RegisterUserInTransaction(userDTO *dto.UserRegisterDTO, tx
 	return &user.UserID, nil
 }
 
-/*
-// ResetPassword restablece la contraseña del usuario
-func (s *userService) ResetPassword(resetDTO *dto.PasswordResetDTO) error {
-	user, err := s.repo.GetByEmail(resetDTO.Email)
+// AuthenticateUser handles user authentication
+func (s *userService) AuthenticateUser(loginDTO *dto.UserLoginDTO) (string, error) {
+	user, err := s.repo.GetUserByEmail(loginDTO.Email)
 	if err != nil {
 		log.Printf("Error fetching user: %v", err)
-		return err
+		return "", err
 	}
 
-	// Actualizar la contraseña
-	user.Password = resetDTO.NewPassword
-	err = s.repo.Update(user)
+	if user.Password != loginDTO.Password {
+		log.Println("Incorrect password for user:", loginDTO.Email)
+		return "", errors.New("incorrect password")
+	}
+
+	token, err := GenerateToken(user.Email, dto.MapRolesToNames(user.Roles), map[string]interface{}{
+		"user_id": user.UserID,
+	})
+
 	if err != nil {
-		log.Printf("Failed to reset password: %v", err)
-		return err
+		log.Printf("Failed to generate token: %v", err)
+		return "", err
 	}
 
-	log.Println("Password reset successfully for user:", resetDTO.Email)
-	return nil
+	log.Println("User authenticated successfully:", loginDTO.Email)
+	return token, nil
 }
 
-// RemoveUser elimina un usuario por su ID
-func (s *userService) RemoveUser(userID uuid.UUID) error {
-	log.Println("Deleting user with UserID:", userID)
-	err := s.repo.Delete(userID)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Println("User not found with UserID:", userID)
-			return nil
+// hasRole helper function to check if a user has a specific role
+func hasRole(roles []*models.Role, targetRole enums.RoleEnum) bool {
+	for _, role := range roles {
+		if role.RoleName == targetRole {
+			return true
 		}
-		log.Printf("Failed to delete user: %v", err)
-		return err
 	}
-	log.Println("User deleted successfully with UserID:", userID)
-	return nil
+	return false
 }
-*/

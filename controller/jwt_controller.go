@@ -23,7 +23,7 @@ func (ac *AuthController) GenerateTokenEndpoint(c *gin.Context) {
 		return
 	}
 
-	token, err := service.GenerateToken(username, roles)
+	token, err := service.GenerateToken(username, roles, nil)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return

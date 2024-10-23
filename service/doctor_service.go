@@ -13,6 +13,7 @@ import (
 type DoctorService interface {
 	CreateDoctor(doctorDTO *dto.DoctorCreateDTO) error
 	GetDoctorByID(id uuid.UUID) (*dto.DoctorDTO, error)
+	GetDoctorByUserID(userID uuid.UUID) (*dto.DoctorDTO, error)
 	GetDoctorsByAlertID(alertID uuid.UUID) ([]*dto.DoctorDTO, error)
 	GetShortDoctorByID(id uuid.UUID) (*dto.DoctorDTO, error)
 	GetAllDoctors() ([]*dto.DoctorDTO, error)
@@ -84,6 +85,23 @@ func (s *doctorService) GetDoctorByID(id uuid.UUID) (*dto.DoctorDTO, error) {
 	}
 	if doctor == nil {
 		log.Println("No doctor found with DoctorID:", id)
+		return nil, nil
+	}
+
+	// Map the Doctor entity to the DoctorDTO
+	return dto.MapDoctorToDTO(doctor), nil
+}
+
+// Get a doctor by UserID and map the result to DoctorDTO
+func (s *doctorService) GetDoctorByUserID(userID uuid.UUID) (*dto.DoctorDTO, error) {
+	log.Println("Fetching doctor with UserID:", userID)
+	doctor, err := s.repo.GetDoctorByUserID(userID)
+	if err != nil {
+		log.Printf("Error fetching doctor: %v", err)
+		return nil, err
+	}
+	if doctor == nil {
+		log.Println("No doctor found with UserID:", userID)
 		return nil, nil
 	}
 

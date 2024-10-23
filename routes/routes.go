@@ -129,6 +129,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	// Additional doctor-specific route
 	router.GET("/"+DoctorsResource+"/:id/short", doctorController.GetShortDoctorByID)
 	router.GET("/"+DoctorsResource+"/alertID/:alertID", doctorController.GetDoctorsByAlertID)
+	router.GET("/"+DoctorsResource+"/userID/:userID", doctorController.GetDoctorByUserID)
 
 	// Patient
 	patientRepo := repository.NewPatientRepository(db)

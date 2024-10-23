@@ -7,7 +7,6 @@ import (
 
 type AuthorizationRepository interface {
 	BaseRepository[models.User]
-	GetUserByUsername(username string) (*models.User, error)
 	GetUserByEmail(email string) (*models.User, error)
 }
 
@@ -22,17 +21,6 @@ func NewUserRepository(db *gorm.DB) AuthorizationRepository {
 		BaseRepository: baseRepo,
 		db:             db,
 	}
-}
-
-// GetUserByUsername retrieves a user by their username.
-func (r *authorizationRepository) GetUserByUsername(username string) (*models.User, error) {
-	var user models.User
-	if err := r.db.
-		Preload("Roles").
-		Where("username = ?", username).First(&user).Error; err != nil {
-		return nil, err
-	}
-	return &user, nil
 }
 
 // GetUserByEmail retrieves a user by their email.
