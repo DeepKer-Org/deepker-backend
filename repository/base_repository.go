@@ -7,11 +7,15 @@ import (
 
 type BaseRepository[T any] interface {
 	Create(entity *T) error
+	CreateInTransaction(entity *T, tx *gorm.DB) error
 	GetByID(id interface{}, primaryKey string) (*T, error)
 	GetByIDs(ids []interface{}, primaryKey string) ([]*T, error)
 	GetAll() ([]*T, error)
 	Update(entity *T, primaryKey string, id interface{}) error
+	UpdateInTransaction(entity *T, primaryKey string, id interface{}, tx *gorm.DB) error
 	Delete(id interface{}, primaryKey string) error
+	DeleteInTransaction(id interface{}, primaryKey string, tx *gorm.DB) error
+	BeginTransaction() *gorm.DB
 }
 
 type baseRepository[T any] struct {
@@ -22,15 +26,25 @@ func NewBaseRepository[T any](db *gorm.DB) BaseRepository[T] {
 	return &baseRepository[T]{db}
 }
 
-// Create a new record
+// BeginTransaction starts a new transaction
+func (r *baseRepository[T]) BeginTransaction() *gorm.DB {
+	return r.db.Begin()
+}
+
+// Create a new record without transaction
 func (r *baseRepository[T]) Create(entity *T) error {
-	if err := r.db.Create(entity).Error; err != nil {
+	return r.CreateInTransaction(entity, r.db) // Reuse transaction method
+}
+
+// CreateInTransaction a new record inside a transaction
+func (r *baseRepository[T]) CreateInTransaction(entity *T, tx *gorm.DB) error {
+	if err := tx.Create(entity).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-// GetByID ignoring logically deleted records (default behavior)
+// GetByID retrieves a record by ID (ignoring logically deleted records)
 func (r *baseRepository[T]) GetByID(id interface{}, primaryKey string) (*T, error) {
 	var entity T
 	if err := r.db.Where(primaryKey+" = ?", id).First(&entity).Error; err != nil {
@@ -42,7 +56,7 @@ func (r *baseRepository[T]) GetByID(id interface{}, primaryKey string) (*T, erro
 	return &entity, nil
 }
 
-// GetByIDs ignoring logically deleted records (default behavior)
+// GetByIDs retrieves records by a list of IDs (ignoring logically deleted records)
 func (r *baseRepository[T]) GetByIDs(ids []interface{}, primaryKey string) ([]*T, error) {
 	var entities []*T
 	if err := r.db.Where(primaryKey+" IN (?)", ids).Find(&entities).Error; err != nil {
@@ -51,7 +65,7 @@ func (r *baseRepository[T]) GetByIDs(ids []interface{}, primaryKey string) ([]*T
 	return entities, nil
 }
 
-// GetAll ignoring logically deleted records (default behavior)
+// GetAll retrieves all records (ignoring logically deleted records)
 func (r *baseRepository[T]) GetAll() ([]*T, error) {
 	var entities []*T
 	if err := r.db.Find(&entities).Error; err != nil {
@@ -60,16 +74,26 @@ func (r *baseRepository[T]) GetAll() ([]*T, error) {
 	return entities, nil
 }
 
-// Update an existing record
+// Update an existing record without transaction
 func (r *baseRepository[T]) Update(entity *T, primaryKey string, id interface{}) error {
-	if err := r.db.Model(entity).Where(primaryKey+" = ?", id).Updates(entity).Error; err != nil {
+	return r.UpdateInTransaction(entity, primaryKey, id, r.db) // Reuse transaction method
+}
+
+// UpdateInTransaction an existing record inside a transaction
+func (r *baseRepository[T]) UpdateInTransaction(entity *T, primaryKey string, id interface{}, tx *gorm.DB) error {
+	if err := tx.Model(entity).Where(primaryKey+" = ?", id).Updates(entity).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-// Delete a record by its primary key, with a variable primary key name
+// Delete a record by its primary key without transaction
 func (r *baseRepository[T]) Delete(id interface{}, primaryKey string) error {
+	return r.DeleteInTransaction(id, primaryKey, r.db) // Reuse transaction method
+}
+
+// DeleteInTransaction a record by its primary key inside a transaction
+func (r *baseRepository[T]) DeleteInTransaction(id interface{}, primaryKey string, tx *gorm.DB) error {
 	entity, err := r.GetByID(id, primaryKey)
 	if err != nil {
 		return err
@@ -77,7 +101,7 @@ func (r *baseRepository[T]) Delete(id interface{}, primaryKey string) error {
 	if entity == nil {
 		return gorm.ErrRecordNotFound
 	}
-	if err := r.db.Where(primaryKey+" = ?", id).Delete(new(T)).Error; err != nil {
+	if err := tx.Where(primaryKey+" = ?", id).Delete(new(T)).Error; err != nil {
 		return err
 	}
 	return nil
