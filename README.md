@@ -27,6 +27,7 @@ DB_PASSWORD=root
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=deepker
+JWT_SECRET_KEY=mySecretKey
 ```
 
 ### Step 3: Install Dependencies
