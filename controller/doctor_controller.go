@@ -184,3 +184,22 @@ func (dc *DoctorController) DeleteDoctor(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Doctor deleted successfully"})
 }
+
+// ChangePassword handles changing a doctor's password
+func (dc *DoctorController) ChangePassword(c *gin.Context) {
+	var changePasswordDTO dto.ChangePasswordDTO
+	if err := c.ShouldBindJSON(&changePasswordDTO); err != nil {
+		log.Printf("Error binding JSON: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	err := dc.DoctorService.ChangePassword(&changePasswordDTO)
+	if err != nil {
+		log.Printf("Failed to change password: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to change password"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password changed successfully"})
+}

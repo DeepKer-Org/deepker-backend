@@ -6,8 +6,10 @@ import (
 	"biometric-data-backend/repository"
 	"errors"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"log"
+	"time"
 )
 
 type DoctorService interface {
@@ -19,6 +21,7 @@ type DoctorService interface {
 	GetAllDoctors() ([]*dto.DoctorDTO, error)
 	UpdateDoctor(id uuid.UUID, doctorDTO *dto.DoctorUpdateDTO) error
 	DeleteDoctor(id uuid.UUID) error
+	ChangePassword(changePasswordDTO *dto.ChangePasswordDTO) error
 }
 
 type doctorService struct {
@@ -192,5 +195,52 @@ func (s *doctorService) DeleteDoctor(id uuid.UUID) error {
 		return err
 	}
 	log.Println("Doctor deleted successfully with DoctorID:", id)
+	return nil
+}
+
+// ChangePassword handles user password change
+func (s *doctorService) ChangePassword(changePasswordDTO *dto.ChangePasswordDTO) error {
+	log.Println("Changing password for user with DNI:", changePasswordDTO.DNI)
+
+	// Fetch the doctor
+	doctor, err := s.repo.GetDoctorByDNI(changePasswordDTO.DNI)
+	if err != nil {
+		log.Printf("Error fetching doctor: %v", err)
+		return err
+	}
+	if doctor == nil {
+		log.Printf("Doctor not found with DNI: %v", changePasswordDTO.DNI)
+		return gorm.ErrRecordNotFound
+	}
+
+	parseDate, err := time.Parse("2006-01-02", changePasswordDTO.IssuanceDate)
+	if !doctor.IssuanceDate.Equal(parseDate) {
+		log.Println("Incorrect issuance date for user with DNI:", changePasswordDTO.DNI)
+		return errors.New("incorrect issuance date")
+	}
+
+	// Fetch the user by ID
+	user, err := s.authRepo.GetByID(doctor.User.UserID, "user_id")
+	if err != nil {
+		log.Printf("Error fetching user: %v", err)
+		return err
+	}
+
+	// Hash the new password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(changePasswordDTO.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		log.Printf("Failed to hash new password: %v", err)
+		return err
+	}
+
+	// Update the user's password
+	user.Password = string(hashedPassword)
+	err = s.authRepo.Update(user, "user_id", user.UserID)
+	if err != nil {
+		log.Printf("Failed to update password for user ID %v: %v", user.UserID, err)
+		return err
+	}
+
+	log.Println("Password changed successfully for user ID:", user.UserID)
 	return nil
 }
