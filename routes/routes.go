@@ -26,6 +26,7 @@ const (
 	PatientsResource            = "patients"
 	RolesResource               = "roles"
 	AuthorizationResource       = "authorization"
+	PhoneResource               = "phones"
 )
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -252,4 +253,13 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		alertController.DeleteAlert,
 		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
+
+	// Phone
+	phoneRepo := repository.NewPhoneRepository(db)
+	phoneService := service.NewPhoneService(phoneRepo)
+	phoneController := controller.NewPhoneController(phoneService)
+
+	// Register phone routes
+	router.POST("/"+PhoneResource, phoneController.CreatePhone)
+
 }
