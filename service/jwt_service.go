@@ -1,15 +1,18 @@
 package service
 
 import (
-	"github.com/dgrijalva/jwt-go"
+	"fmt"
+	"github.com/golang-jwt/jwt/v5"
 	"os"
 	"time"
 )
 
-var secretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
-
 // GenerateToken generates a JWT token
 func GenerateToken(email string, roles []string, additionalClaims map[string]interface{}) (string, error) {
+	secretKey := os.Getenv("JWT_SECRET_KEY")
+	if secretKey == "" {
+		return "", fmt.Errorf("JWT_SECRET_KEY not set in environment")
+	}
 	claims := jwt.MapClaims{
 		"email": email,
 		"roles": roles,
@@ -22,7 +25,7 @@ func GenerateToken(email string, roles []string, additionalClaims map[string]int
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString(secretKey)
+	tokenString, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", err
 	}

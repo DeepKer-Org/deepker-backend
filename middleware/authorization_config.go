@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func RoleAuthorization(requiredRoles []string) gin.HandlerFunc {
@@ -20,8 +20,15 @@ func RoleAuthorization(requiredRoles []string) gin.HandlerFunc {
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
+		secretKey := []byte(os.Getenv("JWT_SECRET_KEY"))
+		if len(secretKey) == 0 {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "JWT secret key not set"})
+			c.Abort()
+			return
+		}
+
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			return []byte(os.Getenv("JWT_SECRET_KEY")), nil
+			return secretKey, nil
 		})
 
 		if err != nil {
