@@ -30,6 +30,11 @@ type UserDTO struct {
 	Roles    []string `json:"roles"`
 }
 
+type UserUpdateDTO struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 // MapRegisterDTOToUser maps a UserRegisterDTO to a User model
 func MapRegisterDTOToUser(dto *UserRegisterDTO, roles []*models.Role) *models.User {
 	return &models.User{
@@ -37,4 +42,25 @@ func MapRegisterDTOToUser(dto *UserRegisterDTO, roles []*models.Role) *models.Us
 		Password: dto.Password,
 		Roles:    roles,
 	}
+}
+
+func MapUserToDTO(user *models.User) *UserDTO {
+	roles := make([]string, 0)
+	for _, role := range user.Roles {
+		roles = append(roles, string(role.RoleName))
+	}
+
+	return &UserDTO{
+		UserID:   user.UserID.String(),
+		Username: user.Username,
+		Roles:    roles,
+	}
+}
+
+func MapUsersToDTOs(users []*models.User) []*UserDTO {
+	userDTOs := make([]*UserDTO, 0)
+	for _, user := range users {
+		userDTOs = append(userDTOs, MapUserToDTO(user))
+	}
+	return userDTOs
 }

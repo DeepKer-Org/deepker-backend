@@ -109,7 +109,19 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 
 	// Register authorization routes
 	router.POST("/"+AuthorizationResource+"/login", authorizationController.AuthenticateUser)
-	router.POST("/"+AuthorizationResource+"/register", authorizationController.RegisterUser)
+	// router.POST("/"+AuthorizationResource+"/register", authorizationController.RegisterUser)
+
+	// Register authorization routes with middleware
+	registerCrudRoutesWithMiddleware(
+		router,
+		AuthorizationResource,
+		authorizationController.RegisterUser,
+		authorizationController.GetUserById,
+		authorizationController.GetAllUsers,
+		authorizationController.UpdateUser,
+		authorizationController.DeleteUser,
+		enums.ToStringArray(enums.Admin),
+	)
 
 	// Doctor
 	doctorRepo := repository.NewDoctorRepository(db)
