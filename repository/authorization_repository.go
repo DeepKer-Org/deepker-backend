@@ -13,6 +13,7 @@ type AuthorizationRepository interface {
 	GetAllUsers(offset int, limit int) ([]*models.User, error)
 	CountAllUsers() (int64, error)
 	DeleteUserAndUserRoles(id uuid.UUID) error
+	UpdateUserRoles(user *models.User, roles []*models.Role) error
 }
 
 type authorizationRepository struct {
@@ -91,5 +92,25 @@ func (r *authorizationRepository) DeleteUserAndUserRoles(id uuid.UUID) error {
 		return err
 	}
 
+	return tx.Commit().Error
+}
+
+func (r *authorizationRepository) UpdateUserRoles(user *models.User, roles []*models.Role) error {
+	// Start a transaction for atomic operation
+	tx := r.db.Begin()
+
+	// Clear existing roles for the user
+	if err := tx.Model(user).Association("Roles").Clear(); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Assign new roles
+	if err := tx.Model(user).Association("Roles").Append(roles); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Commit the transaction
 	return tx.Commit().Error
 }

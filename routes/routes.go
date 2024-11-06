@@ -109,7 +109,6 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 
 	// Register authorization routes
 	router.POST("/"+AuthorizationResource+"/login", authorizationController.AuthenticateUser)
-	// router.POST("/"+AuthorizationResource+"/register", authorizationController.RegisterUser)
 
 	// Register authorization routes with middleware
 	registerCrudRoutesWithMiddleware(

@@ -1,7 +1,6 @@
 package service
 
 import (
-	"biometric-data-backend/enums"
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
 	"errors"
@@ -30,7 +29,11 @@ type doctorService struct {
 	authService AuthorizationService
 }
 
-func NewDoctorService(repo repository.DoctorRepository, authRepo repository.AuthorizationRepository, authService AuthorizationService) DoctorService {
+func NewDoctorService(
+	repo repository.DoctorRepository,
+	authRepo repository.AuthorizationRepository,
+	authService AuthorizationService,
+) DoctorService {
 	return &doctorService{
 		repo:        repo,
 		authRepo:    authRepo,
@@ -42,16 +45,16 @@ func NewDoctorService(repo repository.DoctorRepository, authRepo repository.Auth
 func (s *doctorService) CreateDoctor(doctorDTO *dto.DoctorCreateDTO) error {
 	log.Println("Creating a new doctor with DNI:", doctorDTO.DNI)
 
-	// Start a new transaction
 	tx := s.repo.BeginTransaction()
 
 	// Create the user inside the transaction
-	userRegisterDTO := &dto.UserRegisterDTO{
+	user := &dto.UserRegisterDTO{
 		Username: doctorDTO.DNI,
 		Password: doctorDTO.Password,
-		Roles:    enums.ToStringArray(enums.Doctor),
+		Roles:    doctorDTO.Roles,
 	}
-	userID, err := s.authService.RegisterUserInTransaction(userRegisterDTO, tx)
+
+	userID, err := s.authService.RegisterUserInTransaction(user, tx)
 	if err != nil {
 		log.Printf("Failed to register user: %v", err)
 		tx.Rollback() // Rollback the transaction if an error occurs

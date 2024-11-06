@@ -31,8 +31,9 @@ type UserDTO struct {
 }
 
 type UserUpdateDTO struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string   `json:"username"`
+	Password string   `json:"password"`
+	Roles    []string `json:"roles"`
 }
 
 // MapRegisterDTOToUser maps a UserRegisterDTO to a User model

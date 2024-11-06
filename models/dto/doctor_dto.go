@@ -7,10 +7,11 @@ import (
 
 // DoctorCreateDTO is used for creating a new doctor
 type DoctorCreateDTO struct {
-	DNI            string `json:"dni" binding:"required"`
-	Password       string `json:"password" binding:"required,min=12"`
-	Name           string `json:"name"`
-	Specialization string `json:"specialization"`
+	DNI            string   `json:"dni" binding:"required"`
+	Password       string   `json:"password" binding:"required,min=12"`
+	Name           string   `json:"name"`
+	Specialization string   `json:"specialization"`
+	Roles          []string `json:"roles" binding:"required"`
 }
 
 // DoctorUpdateDTO is used for updating an existing doctor

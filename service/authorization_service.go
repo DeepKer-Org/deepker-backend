@@ -171,6 +171,7 @@ func (s *userService) GetAllUsers(page int, limit int) ([]*dto.UserDTO, int, err
 func (s *userService) UpdateUser(id uuid.UUID, userDTO *dto.UserUpdateDTO) error {
 	log.Println("Updating user with UserID:", id)
 
+	// Retrieve the user by ID
 	user, err := s.repo.GetUserByID(id)
 	if err != nil {
 		log.Printf("Error retrieving user: %v", err)
@@ -181,10 +182,10 @@ func (s *userService) UpdateUser(id uuid.UUID, userDTO *dto.UserUpdateDTO) error
 		return gorm.ErrRecordNotFound
 	}
 
-	// Update the user entity with the new values
+	// Update the user entity with new values
 	user.Username = userDTO.Username
 
-	// If new password, hash it and update the user entity
+	// If a new password is provided, hash it and update the user entity
 	if userDTO.Password != "" {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userDTO.Password), bcrypt.DefaultCost)
 		if err != nil {
@@ -194,6 +195,23 @@ func (s *userService) UpdateUser(id uuid.UUID, userDTO *dto.UserUpdateDTO) error
 		user.Password = string(hashedPassword)
 	}
 
+	// Update roles if provided
+	if len(userDTO.Roles) > 0 {
+		// Get roles by names from the repository
+		roles, err := s.roleRepo.GetRolesByNames(userDTO.Roles)
+		if err != nil {
+			log.Printf("Failed to retrieve roles: %v", err)
+			return err
+		}
+
+		// Replace user's roles with the new roles
+		if err := s.repo.UpdateUserRoles(user, roles); err != nil {
+			log.Printf("Failed to update user roles: %v", err)
+			return err
+		}
+	}
+
+	// Save updates to the user in the repository
 	err = s.repo.Update(user, "user_id", id)
 	if err != nil {
 		log.Printf("Failed to update user: %v", err)
@@ -207,7 +225,7 @@ func (s *userService) UpdateUser(id uuid.UUID, userDTO *dto.UserUpdateDTO) error
 func (s *userService) DeleteUser(id uuid.UUID) error {
 	log.Println("Deleting user with UserID:", id)
 
-	err := s.repo.DeleteUserAndUserRoles(id)
+	err := s.repo.Delete(id, "user_id")
 	if err != nil {
 		log.Printf("Failed to delete user: %v", err)
 		return err
