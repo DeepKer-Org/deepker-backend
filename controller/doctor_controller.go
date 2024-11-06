@@ -92,6 +92,33 @@ func (dc *DoctorController) GetDoctorByUserID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"doctor": doctor})
 }
 
+func (dc *DoctorController) UpdateDoctorByUserID(c *gin.Context) {
+	id := c.Param("userID")
+
+	userID, err := uuid.Parse(id)
+	if err != nil {
+		log.Printf("Invalid UUID: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	var doctorDTO dto.DoctorUpdateDTO
+	if err := c.ShouldBindJSON(&doctorDTO); err != nil {
+		log.Printf("Error binding JSON: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	err = dc.DoctorService.UpdateDoctorByUserID(userID, &doctorDTO)
+	if err != nil {
+		log.Printf("Failed to update doctor: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update doctor"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Doctor updated successfully", "doctor": doctorDTO})
+}
+
 // GetDoctorsByAlertID handles retrieving all doctors associated with an alert
 func (dc *DoctorController) GetDoctorsByAlertID(c *gin.Context) {
 	alertID := c.Param("alertID")
