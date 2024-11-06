@@ -3,21 +3,28 @@ package dto
 import (
 	"biometric-data-backend/models"
 	"github.com/google/uuid"
+	"log"
+	"time"
 )
 
 // DoctorCreateDTO is used for creating a new doctor
 type DoctorCreateDTO struct {
-	DNI            string `json:"dni" binding:"required"`
-	Password       string `json:"password" binding:"required,min=12"`
-	Name           string `json:"name"`
-	Specialization string `json:"specialization"`
+	DNI            string   `json:"dni" binding:"required"`
+	Password       string   `json:"password" binding:"required,min=12"`
+	Name           string   `json:"name"`
+	Specialization string   `json:"specialization"`
+	Roles          []string `json:"roles" binding:"required"`
+	IssuanceDate   string   `json:"issuance_date"`
 }
 
 // DoctorUpdateDTO is used for updating an existing doctor
 type DoctorUpdateDTO struct {
-	DNI            string `json:"dni"`
-	Name           string `json:"name"`
-	Specialization string `json:"specialization"`
+	DNI            string   `json:"dni"`
+	Password       string   `json:"password"`
+	Name           string   `json:"name"`
+	Specialization string   `json:"specialization"`
+	Roles          []string `json:"roles"`
+	IssuanceDate   string   `json:"issuance_date"`
 }
 
 // DoctorDTO is used for retrieving a doctor
@@ -26,6 +33,7 @@ type DoctorDTO struct {
 	DNI            string    `json:"dni"`
 	Name           string    `json:"name"`
 	Specialization string    `json:"specialization"`
+	IssuanceDate   string    `json:"issuance_date"`
 }
 
 // MapDoctorToDTO maps a Doctor model to a DoctorDTO
@@ -38,6 +46,7 @@ func MapDoctorToDTO(doctor *models.Doctor) *DoctorDTO {
 		DNI:            doctor.DNI,
 		Name:           doctor.Name,
 		Specialization: doctor.Specialization,
+		IssuanceDate:   doctor.IssuanceDate.Format("2006-01-02"),
 	}
 }
 
@@ -52,10 +61,21 @@ func MapDoctorsToDTOs(doctors []*models.Doctor) []*DoctorDTO {
 
 // MapCreateDTOToDoctor maps a DoctorCreateDTO to a Doctor model
 func MapCreateDTOToDoctor(dto *DoctorCreateDTO) *models.Doctor {
+	// Define the expected date format
+	const layout = "2006-01-02"
+
+	// Parse the issuance date string to time.Time
+	issuanceDate, err := time.Parse(layout, dto.IssuanceDate)
+	if err != nil {
+		log.Printf("Error parsing IssuanceDate: %v", err)
+		issuanceDate = time.Time{}
+	}
+
 	return &models.Doctor{
 		DNI:            dto.DNI,
 		Name:           dto.Name,
 		Specialization: dto.Specialization,
+		IssuanceDate:   issuanceDate,
 	}
 }
 

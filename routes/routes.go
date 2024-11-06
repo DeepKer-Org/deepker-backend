@@ -109,11 +109,22 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 
 	// Register authorization routes
 	router.POST("/"+AuthorizationResource+"/login", authorizationController.AuthenticateUser)
-	router.POST("/"+AuthorizationResource+"/register", authorizationController.RegisterUser)
+
+	// Register authorization routes with middleware
+	registerCrudRoutesWithMiddleware(
+		router,
+		AuthorizationResource,
+		authorizationController.RegisterUser,
+		authorizationController.GetUserById,
+		authorizationController.GetAllUsers,
+		authorizationController.UpdateUser,
+		authorizationController.DeleteUser,
+		enums.ToStringArray(enums.Admin),
+	)
 
 	// Doctor
 	doctorRepo := repository.NewDoctorRepository(db)
-	doctorService := service.NewDoctorService(doctorRepo, userRepo, userService)
+	doctorService := service.NewDoctorService(doctorRepo, userRepo, roleRepo, userService)
 	doctorController := controller.NewDoctorController(doctorService)
 
 	// Register doctor routes
@@ -131,6 +142,8 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	router.GET("/"+DoctorsResource+"/:id/short", doctorController.GetShortDoctorByID)
 	router.GET("/"+DoctorsResource+"/alertID/:alertID", doctorController.GetDoctorsByAlertID)
 	router.GET("/"+DoctorsResource+"/userID/:userID", doctorController.GetDoctorByUserID)
+	router.PATCH("/"+DoctorsResource+"/userID/:userID", doctorController.UpdateDoctorByUserID)
+
 	// Change password for doctor
 	router.PATCH("/"+AuthorizationResource+"/change-password", doctorController.ChangePassword)
 	// Patient

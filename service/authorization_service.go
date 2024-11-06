@@ -1,6 +1,7 @@
 package service
 
 import (
+	"biometric-data-backend/models"
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
 	"errors"
@@ -14,6 +15,10 @@ type AuthorizationService interface {
 	RegisterUser(userDTO *dto.UserRegisterDTO) (*uuid.UUID, error)
 	RegisterUserInTransaction(userDTO *dto.UserRegisterDTO, tx *gorm.DB) (*uuid.UUID, error)
 	AuthenticateUser(loginDTO *dto.UserLoginDTO) (string, error)
+	GetUserById(id uuid.UUID) (*dto.UserDTO, error)
+	GetAllUsers(page int, limit int) ([]*dto.UserDTO, int, error)
+	UpdateUser(id uuid.UUID, userDTO *dto.UserUpdateDTO) error
+	DeleteUser(id uuid.UUID) error
 }
 
 type userService struct {
@@ -123,4 +128,109 @@ func (s *userService) AuthenticateUser(loginDTO *dto.UserLoginDTO) (string, erro
 
 	log.Println("User authenticated successfully:", loginDTO.Username)
 	return token, nil
+}
+
+func (s *userService) GetUserById(id uuid.UUID) (*dto.UserDTO, error) {
+	log.Println("Fetching user with UserID:", id)
+
+	user, err := s.repo.GetUserByID(id)
+	if err != nil {
+		log.Printf("Failed to fetch user: %v", err)
+		return nil, err
+	}
+
+	userDTO := dto.MapUserToDTO(user)
+	log.Println("User fetched successfully with UserID:", user.UserID)
+	return userDTO, nil
+}
+
+func (s *userService) GetAllUsers(page int, limit int) ([]*dto.UserDTO, int, error) {
+	offset := (page - 1) * limit
+	var users []*models.User
+	var totalCount int64
+	var err error
+
+	users, err = s.repo.GetAllUsers(offset, limit)
+	if err != nil {
+		log.Printf("Failed to fetch users: %v", err)
+		return nil, 0, err
+	}
+
+	totalCount, err = s.repo.CountAllUsers()
+	if err != nil {
+		log.Printf("Failed to count users: %v", err)
+		return nil, 0, err
+	}
+
+	userDTOs := dto.MapUsersToDTOs(users)
+	log.Println("Users fetched successfully, total count:", len(users))
+
+	return userDTOs, int(totalCount), nil
+}
+
+func (s *userService) UpdateUser(id uuid.UUID, userDTO *dto.UserUpdateDTO) error {
+	log.Println("Updating user with UserID:", id)
+
+	// Retrieve the user by ID
+	user, err := s.repo.GetUserByID(id)
+	if err != nil {
+		log.Printf("Error retrieving user: %v", err)
+		return err
+	}
+	if user == nil {
+		log.Printf("User not found with UserID: %v", id)
+		return gorm.ErrRecordNotFound
+	}
+
+	// Update the user entity with new values
+	user.Username = userDTO.Username
+
+	// If a new password is provided, hash it and update the user entity
+	if userDTO.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userDTO.Password), bcrypt.DefaultCost)
+		if err != nil {
+			log.Printf("Failed to hash password: %v", err)
+			return err
+		}
+		user.Password = string(hashedPassword)
+	}
+
+	// Update roles if provided
+	if len(userDTO.Roles) > 0 {
+		// Get roles by names from the repository
+		roles, err := s.roleRepo.GetRolesByNames(userDTO.Roles)
+		if err != nil {
+			log.Printf("Failed to retrieve roles: %v", err)
+			return err
+		}
+
+		// Replace user's roles with the new roles
+		if err := s.repo.UpdateUserRoles(user, roles); err != nil {
+			log.Printf("Failed to update user roles: %v", err)
+			return err
+		}
+	}
+
+	// Save updates to the user in the repository
+	err = s.repo.Update(user, "user_id", id)
+	if err != nil {
+		log.Printf("Failed to update user: %v", err)
+		return err
+	}
+
+	log.Println("User updated successfully with UserID:", user.UserID)
+	return nil
+}
+
+func (s *userService) DeleteUser(id uuid.UUID) error {
+	log.Println("Deleting user with UserID:", id)
+
+	err := s.repo.Delete(id, "user_id")
+	if err != nil {
+		log.Printf("Failed to delete user: %v", err)
+		return err
+	}
+
+	log.Println("User deleted successfully with UserID:", id)
+	return nil
 }

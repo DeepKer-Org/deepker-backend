@@ -5,6 +5,7 @@ import (
 )
 
 type User struct {
+	BaseModel
 	UserID   uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	Username string    `gorm:"size:100;unique;not null"`
 	Password string    `gorm:"not null"`
