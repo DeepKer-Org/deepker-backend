@@ -21,8 +21,8 @@ DROP TABLE IF EXISTS alerts;
 -- Dropping the monitoring_devices table
 DROP TABLE IF EXISTS monitoring_devices;
 
--- Dropping the biometric_records table
-DROP TABLE IF EXISTS biometric_records;
+-- Dropping the biometric_data table
+DROP TABLE IF EXISTS biometric_data;
 
 -- Dropping the doctors table
 DROP TABLE IF EXISTS doctors;

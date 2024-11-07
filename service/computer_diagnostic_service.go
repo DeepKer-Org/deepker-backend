@@ -28,7 +28,6 @@ func NewComputerDiagnosticService(repo repository.ComputerDiagnosticRepository) 
 
 func (s *computerDiagnosticService) CreateComputerDiagnostic(diagnosisDTO *dto.ComputerDiagnosticCreateDTO) error {
 	diagnosis := &models.ComputerDiagnostic{
-		AlertID:    diagnosisDTO.AlertID,
 		Diagnosis:  diagnosisDTO.Diagnosis,
 		Percentage: diagnosisDTO.Percentage,
 	}
@@ -85,7 +84,6 @@ func (s *computerDiagnosticService) UpdateComputerDiagnostic(id uuid.UUID, diagn
 		return gorm.ErrRecordNotFound
 	}
 
-	diagnosis.AlertID = diagnosisDTO.AlertID
 	diagnosis.Diagnosis = diagnosisDTO.Diagnosis
 	diagnosis.Percentage = diagnosisDTO.Percentage
 

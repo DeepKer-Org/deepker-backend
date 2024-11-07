@@ -14,14 +14,11 @@ CREATE TABLE patients (
     deleted_at TIMESTAMP
 );
 
--- Creating the biometric records table
-CREATE TABLE biometric_records (
+-- Creating the biometric data table
+CREATE TABLE biometric_data (
     biometric_data_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     o2_saturation INT,
     heart_rate INT,
-    systolic_blood_pressure INT,
-    diastolic_blood_pressure INT,
-    temperature DECIMAL(4,1),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP
@@ -35,6 +32,7 @@ CREATE TABLE alerts (
     final_diagnosis VARCHAR(100),
     patient_id UUID,
     biometric_data_id UUID,
+    diagnostic_id UUID,
     attended_by_id UUID,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -44,7 +42,6 @@ CREATE TABLE alerts (
 -- Creating the computer diagnostic table
 CREATE TABLE computer_diagnostics (
     diagnostic_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    alert_id UUID NOT NULL,
     diagnosis VARCHAR(100) NOT NULL,
     percentage DECIMAL(4,2),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

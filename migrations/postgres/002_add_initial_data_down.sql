@@ -26,7 +26,16 @@ DELETE FROM public.computer_diagnostics
 WHERE diagnostic_id IN (
                         'fe18e71a-fb41-4a3a-85f6-0581eaaf4839',
                         'ff2f442f-0481-4d33-8702-9dd3d87d251b',
-                        'c5a9b459-2283-4b53-b565-9da36eea304a'
+                        'c5a9b459-2283-4b53-b565-9da36eea304a',
+                        '25ea8d63-7869-4ee9-9054-cf7f15b61db4',
+                        '3b2bda86-a71d-4fbd-924d-623c97c849bd',
+                        '073b9f6a-8dfb-4a17-ae1d-1613e05db40d',
+                        '44556677-8888-9999-aaaa-bbbbccccdddd',
+                        '55667788-9999-aaaa-bbbb-ccccdddd1111',
+                        '66778899-aaaa-bbbb-cccc-ddddeeeeffff',
+                        '00000000-fb41-4a3a-85f6-0581eaaf4839',
+                        '11111111-0481-4d33-8702-9dd3d87d251b',
+                        '22222222-2283-4b53-b565-9da36eea304a'
     );
 
 -- Deleting data from 'comorbidities' table (Child table)
@@ -72,8 +81,8 @@ WHERE alert_id IN (
                    'dddddddd-dddd-dddd-dddd-dddddddddddd'
     );
 
--- Deleting data from 'biometric_records' table (Parent table)
-DELETE FROM public.biometric_records
+-- Deleting data from 'biometric_data' table (Parent table)
+DELETE FROM public.biometric_data
 WHERE biometric_data_id IN (
                             '55555555-5555-5555-5555-555555555555',
                             '66666666-6666-6666-6666-666666666666',
@@ -102,7 +111,7 @@ WHERE patient_id IN (
                      '0f25d62e-85f4-422d-bc29-a1716e8f67c0'
     );
 
--- Rollback (Delete records by medical_visit_id)
+-- Rollback (Delete data by medical_visit_id)
 DELETE FROM public.medical_visits WHERE medical_visit_id IN (
                                                              '00000000-1111-1111-1111-000000000001',
                                                              '00000000-1111-1111-1111-000000000002',

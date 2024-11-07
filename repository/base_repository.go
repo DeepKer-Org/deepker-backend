@@ -44,7 +44,7 @@ func (r *baseRepository[T]) CreateInTransaction(entity *T, tx *gorm.DB) error {
 	return nil
 }
 
-// GetByID retrieves a record by ID (ignoring logically deleted records)
+// GetByID retrieves a record by ID (ignoring logically deleted data)
 func (r *baseRepository[T]) GetByID(id interface{}, primaryKey string) (*T, error) {
 	var entity T
 	if err := r.db.Where(primaryKey+" = ?", id).First(&entity).Error; err != nil {
@@ -56,7 +56,7 @@ func (r *baseRepository[T]) GetByID(id interface{}, primaryKey string) (*T, erro
 	return &entity, nil
 }
 
-// GetByIDs retrieves records by a list of IDs (ignoring logically deleted records)
+// GetByIDs retrieves data by a list of IDs (ignoring logically deleted data)
 func (r *baseRepository[T]) GetByIDs(ids []interface{}, primaryKey string) ([]*T, error) {
 	var entities []*T
 	if err := r.db.Where(primaryKey+" IN (?)", ids).Find(&entities).Error; err != nil {
@@ -65,7 +65,7 @@ func (r *baseRepository[T]) GetByIDs(ids []interface{}, primaryKey string) ([]*T
 	return entities, nil
 }
 
-// GetAll retrieves all records (ignoring logically deleted records)
+// GetAll retrieves all data (ignoring logically deleted data)
 func (r *baseRepository[T]) GetAll() ([]*T, error) {
 	var entities []*T
 	if err := r.db.Find(&entities).Error; err != nil {
