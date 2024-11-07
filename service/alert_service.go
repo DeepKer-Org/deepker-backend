@@ -4,7 +4,9 @@ import (
 	"biometric-data-backend/models"
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
+	"biometric-data-backend/utils"
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"log"
@@ -29,15 +31,17 @@ type alertService struct {
 	computerDiagnosticRepo repository.ComputerDiagnosticRepository
 	doctorRepo             repository.DoctorRepository
 	monitoringDeviceRepo   repository.MonitoringDeviceRepository
+	phoneRepo              repository.PhoneRepository
 }
 
-func NewAlertService(alertRepo repository.AlertRepository, biometricRepo repository.BiometricDataRepository, computerDiagnosticRepo repository.ComputerDiagnosticRepository, doctorRepo repository.DoctorRepository, monitoringDeviceRepo repository.MonitoringDeviceRepository, patientRepo repository.PatientRepository) AlertService {
+func NewAlertService(alertRepo repository.AlertRepository, biometricRepo repository.BiometricDataRepository, computerDiagnosticRepo repository.ComputerDiagnosticRepository, doctorRepo repository.DoctorRepository, monitoringDeviceRepo repository.MonitoringDeviceRepository, phoneRepo repository.PhoneRepository, patientRepo repository.PatientRepository) AlertService {
 	return &alertService{
 		alertRepo:              alertRepo,
 		biometricRepo:          biometricRepo,
 		computerDiagnosticRepo: computerDiagnosticRepo,
 		doctorRepo:             doctorRepo,
 		monitoringDeviceRepo:   monitoringDeviceRepo,
+		phoneRepo:              phoneRepo,
 		patientRepo:            patientRepo,
 	}
 }
@@ -101,9 +105,21 @@ func (s *alertService) CreateAlert(alertDTO *dto.AlertCreateDTO) (*dto.AlertCrea
 		return &dto.AlertCreateResponseDTO{Message: "Failed to fetch patient information"}, err
 	}
 
+	// Parse the timezone from the alertDTO
+	location, err := time.LoadLocation(alertDTO.Timezone)
+	if err != nil {
+		// Fallback to UTC if the provided timezone is invalid
+		fmt.Printf("Invalid timezone provided (%s), defaulting to UTC: %v\n", alertDTO.Timezone, err)
+		location = time.UTC
+	}
+
+	// Get the current time in the specified timezone and convert it to UTC
+	localTime := time.Now().In(location)
+	utcTime := localTime.UTC()
+
 	// Create Alert
 	alert := &models.Alert{
-		AlertTimestamp:     time.Now(),
+		AlertTimestamp:     utcTime,
 		AttendedTimestamp:  nil,
 		AttendedBy:         nil,
 		BiometricDataID:    biometricData.BiometricDataID,
@@ -125,6 +141,20 @@ func (s *alertService) CreateAlert(alertDTO *dto.AlertCreateDTO) (*dto.AlertCrea
 	if err := tx.Commit().Error; err != nil {
 		log.Printf("Failed to commit transaction: %v", err)
 		return &dto.AlertCreateResponseDTO{Message: "Failed to commit transaction"}, err
+	}
+
+	// Get all push tokens in the phones table
+	pushTokens, err := s.phoneRepo.GetPushTokens()
+
+	if len(pushTokens) != 0 {
+		notificationTitle := "Alerta Crítica: " + computerDiagnostic.Diagnosis
+		notificationBody := "Paciente: " + patient.Name + ", Ubicación: " + patient.Location
+
+		// Send push notifications to all push tokens
+		err = utils.SendExponentPushNotifications(pushTokens, notificationTitle, notificationBody)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Build Response DTO

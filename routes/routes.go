@@ -250,9 +250,17 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
 
+	// Phone
+	phoneRepo := repository.NewPhoneRepository(db)
+	phoneService := service.NewPhoneService(phoneRepo)
+	phoneController := controller.NewPhoneController(phoneService)
+
+	// Register phone routes
+	router.POST("/"+PhoneResource, phoneController.CreatePhone)
+
 	// Alert
 	alertRepo := repository.NewAlertRepository(db)
-	alertService := service.NewAlertService(alertRepo, biometricRepo, computerDiagnosticRepo, doctorRepo, monitoringDeviceRepo, patientRepo)
+	alertService := service.NewAlertService(alertRepo, biometricRepo, computerDiagnosticRepo, doctorRepo, monitoringDeviceRepo, phoneRepo, patientRepo)
 	alertController := controller.NewAlertController(alertService)
 
 	// Register alert routes
@@ -266,13 +274,4 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		alertController.DeleteAlert,
 		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
-
-	// Phone
-	phoneRepo := repository.NewPhoneRepository(db)
-	phoneService := service.NewPhoneService(phoneRepo)
-	phoneController := controller.NewPhoneController(phoneService)
-
-	// Register phone routes
-	router.POST("/"+PhoneResource, phoneController.CreatePhone)
-
 }

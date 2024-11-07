@@ -13,6 +13,7 @@ type AlertCreateDTO struct {
 	Percentage   float64 `json:"percentage"`
 	O2Saturation float64 `json:"o2_saturation"`
 	HeartRate    float64 `json:"heart_rate"`
+	Timezone     string  `json:"timezone"`
 }
 
 type AlertCreateResponseDTO struct {
