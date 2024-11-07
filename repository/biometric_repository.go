@@ -8,7 +8,7 @@ import (
 
 type BiometricDataRepository interface {
 	BaseRepository[models.BiometricData]
-	GetBiometricRecordsByAlertID(id uuid.UUID) ([]*models.BiometricData, error)
+	GetBiometricDataByAlertID(id uuid.UUID) ([]*models.BiometricData, error)
 }
 
 type biometricRepository struct {
@@ -24,8 +24,8 @@ func NewBiometricDataRepository(db *gorm.DB) BiometricDataRepository {
 	}
 }
 
-// GetBiometricRecordsByAlertID retrieves a biometric by their AlertID.
-func (r *biometricRepository) GetBiometricRecordsByAlertID(id uuid.UUID) ([]*models.BiometricData, error) {
+// GetBiometricDataByAlertID retrieves a biometric by their AlertID.
+func (r *biometricRepository) GetBiometricDataByAlertID(id uuid.UUID) ([]*models.BiometricData, error) {
 	var biometrics []*models.BiometricData
 	if err := r.db.Where("alert_id = ?", id).Find(&biometrics).Error; err != nil {
 		return nil, err

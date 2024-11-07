@@ -19,7 +19,7 @@ const (
 	DoctorsResource             = "doctors"
 	ComorbiditiesResource       = "comorbidities"
 	MedicationsResource         = "medications"
-	BiometricRecordsResource    = "biometrics"
+	BiometricDataResource       = "biometrics"
 	ComputerDiagnosticsResource = "computer-diagnostics"
 	MonitoringDevicesResource   = "monitoring-devices"
 	AlertsResource              = "alerts"
@@ -207,10 +207,10 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	// Register biometric routes
 	registerCrudRoutesWithMiddleware(
 		router,
-		BiometricRecordsResource,
+		BiometricDataResource,
 		biometricController.CreateBiometricData,
 		biometricController.GetBiometricDataByID,
-		biometricController.GetAllBiometricRecords,
+		biometricController.GetAllBiometricData,
 		biometricController.UpdateBiometricData,
 		biometricController.DeleteBiometricData,
 		enums.ToStringArray(enums.Admin, enums.Doctor),
@@ -252,7 +252,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 
 	// Alert
 	alertRepo := repository.NewAlertRepository(db)
-	alertService := service.NewAlertService(alertRepo, biometricRepo, computerDiagnosticRepo, doctorRepo, patientRepo)
+	alertService := service.NewAlertService(alertRepo, biometricRepo, computerDiagnosticRepo, doctorRepo, monitoringDeviceRepo, patientRepo)
 	alertController := controller.NewAlertController(alertService)
 
 	// Register alert routes

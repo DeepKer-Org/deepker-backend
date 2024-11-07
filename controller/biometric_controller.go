@@ -45,9 +45,9 @@ func (bc *BiometricDataController) GetBiometricDataByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"biometric": biometric})
 }
 
-// GetAllBiometricRecords handles retrieving all biometric records
-func (bc *BiometricDataController) GetAllBiometricRecords(c *gin.Context) {
-	biometrics, err := bc.BiometricDataService.GetAllBiometricRecords()
+// GetAllBiometricData handles retrieving all biometric data
+func (bc *BiometricDataController) GetAllBiometricData(c *gin.Context) {
+	biometrics, err := bc.BiometricDataService.GetAllBiometricData()
 	if err != nil {
 		log.Printf("Error retrieving biometrics: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve biometrics"})

@@ -5,7 +5,6 @@ import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/repository"
 	"errors"
-	"fmt"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"log"
@@ -29,63 +28,106 @@ type alertService struct {
 	biometricRepo          repository.BiometricDataRepository
 	computerDiagnosticRepo repository.ComputerDiagnosticRepository
 	doctorRepo             repository.DoctorRepository
+	monitoringDeviceRepo   repository.MonitoringDeviceRepository
 }
 
-func NewAlertService(alertRepo repository.AlertRepository, biometricRepo repository.BiometricDataRepository, computerDiagnosticRepo repository.ComputerDiagnosticRepository, doctorRepo repository.DoctorRepository, patientRepo repository.PatientRepository) AlertService {
+func NewAlertService(alertRepo repository.AlertRepository, biometricRepo repository.BiometricDataRepository, computerDiagnosticRepo repository.ComputerDiagnosticRepository, doctorRepo repository.DoctorRepository, monitoringDeviceRepo repository.MonitoringDeviceRepository, patientRepo repository.PatientRepository) AlertService {
 	return &alertService{
 		alertRepo:              alertRepo,
 		biometricRepo:          biometricRepo,
 		computerDiagnosticRepo: computerDiagnosticRepo,
 		doctorRepo:             doctorRepo,
+		monitoringDeviceRepo:   monitoringDeviceRepo,
 		patientRepo:            patientRepo,
 	}
 }
 
 func (s *alertService) CreateAlert(alertDTO *dto.AlertCreateDTO) (*dto.AlertCreateResponseDTO, error) {
-	biometricData, err := s.biometricRepo.GetByID(alertDTO.BiometricDataID, "biometric_data_id")
-	if err != nil {
-		log.Printf("Error retrieving biometric data with ID: %s, error: %v", alertDTO.BiometricDataID, err)
-		return &dto.AlertCreateResponseDTO{
-			Message: fmt.Sprintf("Failed to retrieve biometric data with ID: %s", alertDTO.BiometricDataID),
-		}, err
+	tx := s.alertRepo.BeginTransaction()
+	if tx.Error != nil {
+		log.Printf("Failed to start transaction: %v", tx.Error)
+		return &dto.AlertCreateResponseDTO{Message: "Transaction start failed"}, tx.Error
 	}
 
-	patient, err := s.patientRepo.GetByID(alertDTO.PatientID, "patient_id")
+	defer func() {
+		// Rollback transaction if it's not committed yet
+		if r := recover(); r != nil {
+			tx.Rollback()
+			log.Printf("Transaction rolled back due to panic: %v", r)
+		} else if tx.Error != nil {
+			tx.Rollback()
+			log.Printf("Transaction rolled back due to error: %v", tx.Error)
+		}
+	}()
+
+	// Get Monitoring Device
+	device, err := s.monitoringDeviceRepo.GetMonitoringDeviceByID(alertDTO.DeviceID)
 	if err != nil {
-		log.Printf("Error retrieving patient with ID: %s, error: %v", alertDTO.PatientID, err)
-		return &dto.AlertCreateResponseDTO{
-			Message: fmt.Sprintf("Failed to retrieve patient with ID: %s", alertDTO.PatientID),
-		}, err
+		log.Printf("Device not found: %v", err)
+		return &dto.AlertCreateResponseDTO{Message: "Device not found"}, err
 	}
 
-	computerDiagnosticIDs := convertUUIDsToInterface(alertDTO.ComputerDiagnosticIDs)
-	computerDiagnostics, err := s.computerDiagnosticRepo.GetByIDs(computerDiagnosticIDs, "diagnostic_id")
-	if err != nil {
-		log.Printf("Error retrieving computer diagnostics with IDs: %v, error: %v", alertDTO.ComputerDiagnosticIDs, err)
-		return &dto.AlertCreateResponseDTO{
-			Message: "Failed to retrieve computer diagnostics",
-		}, err
+	// Create Biometric Data
+	biometricData := &models.BiometricData{
+		O2Saturation: alertDTO.O2Saturation,
+		HeartRate:    alertDTO.HeartRate,
 	}
 
+	err = s.biometricRepo.CreateInTransaction(biometricData, tx)
+	if err != nil {
+		log.Printf("Failed to create biometric data: %v", err)
+		tx.Rollback()
+		return &dto.AlertCreateResponseDTO{Message: "Failed to create biometric data"}, err
+	}
+
+	// Create Computer Diagnostic
+	computerDiagnostic := &models.ComputerDiagnostic{
+		Diagnosis:  alertDTO.Diagnosis,
+		Percentage: alertDTO.Percentage,
+	}
+
+	err = s.computerDiagnosticRepo.CreateInTransaction(computerDiagnostic, tx)
+	if err != nil {
+		log.Printf("Failed to create computer diagnostic: %v", err)
+		tx.Rollback()
+		return &dto.AlertCreateResponseDTO{Message: "Failed to create computer diagnostic"}, err
+	}
+
+	// Fetch Patient Information
+	patient, err := s.patientRepo.GetByID(device.PatientID, "patient_id")
+	if err != nil {
+		log.Printf("Failed to fetch patient information: %v", err)
+		tx.Rollback()
+		return &dto.AlertCreateResponseDTO{Message: "Failed to fetch patient information"}, err
+	}
+
+	// Create Alert
 	alert := &models.Alert{
-		AlertTimestamp:      time.Now(),
-		AttendedTimestamp:   nil,
-		AttendedBy:          nil,
-		BiometricDataID:     alertDTO.BiometricDataID,
-		BiometricData:       biometricData,
-		PatientID:           alertDTO.PatientID,
-		Patient:             patient,
-		ComputerDiagnostics: computerDiagnostics,
+		AlertTimestamp:     time.Now(),
+		AttendedTimestamp:  nil,
+		AttendedBy:         nil,
+		BiometricDataID:    biometricData.BiometricDataID,
+		BiometricData:      biometricData,
+		DiagnosticID:       computerDiagnostic.DiagnosticID,
+		ComputerDiagnostic: computerDiagnostic,
+		PatientID:          patient.PatientID,
+		Patient:            patient,
 	}
 
-	err = s.alertRepo.Create(alert)
+	err = s.alertRepo.CreateInTransaction(alert, tx)
 	if err != nil {
 		log.Printf("Failed to create alert: %v", err)
-		return &dto.AlertCreateResponseDTO{
-			Message: "Failed to create alert",
-		}, err
+		tx.Rollback()
+		return &dto.AlertCreateResponseDTO{Message: "Failed to create alert"}, err
 	}
 
+	// Commit transaction if all operations succeeded
+	if err := tx.Commit().Error; err != nil {
+		log.Printf("Failed to commit transaction: %v", err)
+		return &dto.AlertCreateResponseDTO{Message: "Failed to commit transaction"}, err
+	}
+
+	// Build Response DTO
 	alertResponse := &dto.AlertCreateResponseDTO{
 		AlertID: alert.AlertID.String(),
 		Message: "Alert created successfully",
@@ -232,13 +274,4 @@ func (s *alertService) GetAllAlertsByTimezone(timezone string) ([]*dto.AlertDTO,
 	alertDTOs := dto.MapAlertsToDTOs(alerts)
 	log.Printf("Alerts fetched successfully with count: %d", len(alerts))
 	return alertDTOs, nil
-}
-
-// Convert uuid slice to []interface{}
-func convertUUIDsToInterface(uuids []uuid.UUID) []interface{} {
-	interfaceSlice := make([]interface{}, len(uuids))
-	for i, v := range uuids {
-		interfaceSlice[i] = v
-	}
-	return interfaceSlice
 }

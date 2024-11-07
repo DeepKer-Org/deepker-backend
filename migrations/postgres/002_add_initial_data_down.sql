@@ -81,7 +81,7 @@ WHERE alert_id IN (
                    'dddddddd-dddd-dddd-dddd-dddddddddddd'
     );
 
--- Deleting data from 'biometric_records' table (Parent table)
+-- Deleting data from 'biometric_data' table (Parent table)
 DELETE FROM public.biometric_data
 WHERE biometric_data_id IN (
                             '55555555-5555-5555-5555-555555555555',
@@ -111,7 +111,7 @@ WHERE patient_id IN (
                      '0f25d62e-85f4-422d-bc29-a1716e8f67c0'
     );
 
--- Rollback (Delete records by medical_visit_id)
+-- Rollback (Delete data by medical_visit_id)
 DELETE FROM public.medical_visits WHERE medical_visit_id IN (
                                                              '00000000-1111-1111-1111-000000000001',
                                                              '00000000-1111-1111-1111-000000000002',

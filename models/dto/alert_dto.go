@@ -8,9 +8,11 @@ import (
 
 // AlertCreateDTO is used for creating a new alert
 type AlertCreateDTO struct {
-	BiometricDataID       uuid.UUID   `json:"biometric_data_id"`
-	ComputerDiagnosticIDs []uuid.UUID `json:"computer_diagnostic_ids"`
-	PatientID             uuid.UUID   `json:"patient_id"`
+	DeviceID     string  `json:"device_id"`
+	Diagnosis    string  `json:"diagnosis"`
+	Percentage   float64 `json:"percentage"`
+	O2Saturation float64 `json:"o2_saturation"`
+	HeartRate    float64 `json:"heart_rate"`
 }
 
 type AlertCreateResponseDTO struct {
@@ -26,15 +28,15 @@ type AlertUpdateDTO struct {
 
 // AlertDTO is used for retrieving an alert along with related entities
 type AlertDTO struct {
-	AlertID             uuid.UUID                `json:"alert_id"`
-	AlertTimestamp      time.Time                `json:"alert_timestamp"`
-	AttendedBy          *DoctorDTO               `json:"attended_by"`
-	AttendedTimestamp   string                   `json:"attended_timestamp"`
-	AlertStatus         string                   `json:"alert_status"`
-	FinalDiagnosis      string                   `json:"final_diagnosis"`
-	BiometricData       *BiometricDataDTO        `json:"biometric_data"`
-	ComputerDiagnostics []*ComputerDiagnosticDTO `json:"computer_diagnoses"`
-	Patient             *PatientForAlertDTO      `json:"patient"`
+	AlertID            uuid.UUID              `json:"alert_id"`
+	AlertTimestamp     time.Time              `json:"alert_timestamp"`
+	AttendedBy         *DoctorDTO             `json:"attended_by"`
+	AttendedTimestamp  string                 `json:"attended_timestamp"`
+	AlertStatus        string                 `json:"alert_status"`
+	FinalDiagnosis     string                 `json:"final_diagnosis"`
+	BiometricData      *BiometricDataDTO      `json:"biometric_data"`
+	ComputerDiagnostic *ComputerDiagnosticDTO `json:"computer_diagnostic"`
+	Patient            *PatientForAlertDTO    `json:"patient"`
 }
 
 // MapAlertToDTO maps an Alert model to an AlertDTO
@@ -58,15 +60,15 @@ func MapAlertToDTO(alert *models.Alert) *AlertDTO {
 	}
 
 	return &AlertDTO{
-		AlertID:             alert.AlertID,
-		AlertTimestamp:      alert.AlertTimestamp,
-		AttendedTimestamp:   attendedTimestamp,
-		AlertStatus:         alertStatus,
-		AttendedBy:          MapDoctorToDTO(alert.AttendedBy),
-		FinalDiagnosis:      alert.FinalDiagnosis,
-		BiometricData:       MapBiometricDataToDTO(alert.BiometricData),
-		ComputerDiagnostics: MapComputerDiagnosticsToDTOs(alert.ComputerDiagnostics),
-		Patient:             MapPatientToPatientForAlertDTO(alert.Patient),
+		AlertID:            alert.AlertID,
+		AlertTimestamp:     alert.AlertTimestamp,
+		AttendedTimestamp:  attendedTimestamp,
+		AlertStatus:        alertStatus,
+		AttendedBy:         MapDoctorToDTO(alert.AttendedBy),
+		FinalDiagnosis:     alert.FinalDiagnosis,
+		BiometricData:      MapBiometricDataToDTO(alert.BiometricData),
+		ComputerDiagnostic: MapComputerDiagnosticToDTO(alert.ComputerDiagnostic),
+		Patient:            MapPatientToPatientForAlertDTO(alert.Patient),
 	}
 }
 
@@ -77,11 +79,4 @@ func MapAlertsToDTOs(alerts []*models.Alert) []*AlertDTO {
 		alertDTOs = append(alertDTOs, MapAlertToDTO(alert))
 	}
 	return alertDTOs
-}
-
-func MapCreateDTOToAlert(dto *AlertCreateDTO) *models.Alert {
-	return &models.Alert{
-		BiometricDataID: dto.BiometricDataID,
-		PatientID:       dto.PatientID,
-	}
 }
