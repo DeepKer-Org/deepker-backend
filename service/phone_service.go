@@ -21,12 +21,26 @@ func NewPhoneService(phoneRepo repository.PhoneRepository) PhoneService {
 }
 
 func (s *phoneService) CreatePhone(phoneDTO *dto.PhoneCreateDTO) error {
+	// Check if ExponentPushToken already exists
+	exists, err := s.phoneRepo.ExistsByExponentPushToken(phoneDTO.ExponentPushToken)
+	if err != nil {
+		log.Printf("Failed to check ExponentPushToken: %v", err)
+		return err
+	}
+
+	if exists {
+		log.Println("Phone with the same ExponentPushToken already exists, skipping creation.")
+		return nil
+	}
+
+	// Map DTO to model and create the phone
 	phone := dto.MapCreateDTOToPhone(phoneDTO)
-	err := s.phoneRepo.Create(phone)
+	err = s.phoneRepo.Create(phone)
 	if err != nil {
 		log.Printf("Failed to create phone: %v", err)
 		return err
 	}
-	log.Println("Patient created successfully with PhoneID:", phone.PhoneID)
+
+	log.Println("Phone created successfully with PhoneID:", phone.PhoneID)
 	return nil
 }

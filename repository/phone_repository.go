@@ -7,6 +7,7 @@ import (
 
 type PhoneRepository interface {
 	BaseRepository[models.Phone]
+	ExistsByExponentPushToken(token string) (bool, error)
 }
 
 type phoneRepository struct {
@@ -20,4 +21,12 @@ func NewPhoneRepository(db *gorm.DB) PhoneRepository {
 		BaseRepository: baseRepo,
 		db:             db,
 	}
+}
+
+func (r *phoneRepository) ExistsByExponentPushToken(token string) (bool, error) {
+	var count int64
+	if err := r.db.Model(&models.Phone{}).Where("exponent_push_token = ?", token).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
