@@ -23,12 +23,13 @@ ALTER TABLE monitoring_devices
     DROP CONSTRAINT IF EXISTS fk_patient_device,
     DROP CONSTRAINT IF EXISTS fk_linked_by_device;
 
--- Dropping foreign key constraint from 'computer_diagnostics' table
-ALTER TABLE computer_diagnostics
-    DROP CONSTRAINT IF EXISTS fk_alert_diagnostic;
-
 -- Dropping foreign key constraints from 'alerts' table
 ALTER TABLE alerts
     DROP CONSTRAINT IF EXISTS fk_patient_alert,
     DROP CONSTRAINT IF EXISTS fk_biometric_alert,
+    DROP CONSTRAINT IF EXISTS fk_diagnostic_alert,
     DROP CONSTRAINT IF EXISTS fk_attended_by;
+
+-- Dropping relationships between medical visits and patients
+ALTER TABLE medical_visits
+    DROP CONSTRAINT IF EXISTS fk_patient_visit;
