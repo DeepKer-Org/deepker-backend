@@ -71,6 +71,11 @@ func (s *alertService) CreateAlert(alertDTO *dto.AlertCreateDTO) (*dto.AlertCrea
 		return &dto.AlertCreateResponseDTO{Message: "Device not found"}, err
 	}
 
+	if device.Status != "In Use" {
+		log.Printf("Device is not in use")
+		return &dto.AlertCreateResponseDTO{Message: "Device is not in use"}, errors.New("device is not in use")
+	}
+
 	// Create Biometric Data
 	biometricData := &models.BiometricData{
 		O2Saturation: alertDTO.O2Saturation,
