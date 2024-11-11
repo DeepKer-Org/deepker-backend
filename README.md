@@ -123,4 +123,4 @@ The project follows a standard structure for Go applications, with the following
 #### Admin
 
 - `username`: admin@example.com
-- `password`:
+- `password`: hashed_password1!
