@@ -7,8 +7,7 @@ import (
 
 // MonitoringDeviceCreateDTO is used for creating a new monitoring device
 type MonitoringDeviceCreateDTO struct {
-	Status    string    `json:"status"`
-	PatientID uuid.UUID `json:"patient_id"`
+	Status string `json:"status"`
 }
 
 // MonitoringDeviceUpdateDTO is used for updating an existing monitoring device

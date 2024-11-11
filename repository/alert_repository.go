@@ -41,6 +41,7 @@ func (r *alertRepository) GetByID(id interface{}, primaryKey string) (*models.Al
 		Preload("Patient.Comorbidities").
 		Preload("Patient.Medications").
 		Preload("Patient.Doctors").
+		Preload("Patient.MonitoringDevice").
 		Preload("ComputerDiagnostic").
 		Where(primaryKey+" = ?", id).First(&alert).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -60,6 +61,7 @@ func (r *alertRepository) GetAll() ([]*models.Alert, error) {
 		Preload("Patient.Comorbidities").
 		Preload("Patient.Medications").
 		Preload("Patient.Doctors").
+		Preload("Patient.MonitoringDevice").
 		Preload("ComputerDiagnostic").
 		Find(&alerts).Error; err != nil {
 		return nil, err
@@ -96,6 +98,7 @@ func (r *alertRepository) GetUnattendedAlerts(offset int, limit int) ([]*models.
 		Preload("Patient.Comorbidities").
 		Preload("Patient.Medications").
 		Preload("Patient.Doctors").
+		Preload("Patient.MonitoringDevice").
 		Preload("ComputerDiagnostic").
 		Where("attended_timestamp IS NULL").
 		Order("alert_timestamp DESC").
@@ -126,6 +129,7 @@ func (r *alertRepository) GetAlertsByTimezone(timezone string) ([]*models.Alert,
 		Preload("Patient.Comorbidities").
 		Preload("Patient.Medications").
 		Preload("Patient.Doctors").
+		Preload("Patient.MonitoringDevice").
 		Preload("ComputerDiagnostic").
 		// Convert `alert_timestamp` from UTC to the specified timezone before comparison
 		Where("alert_timestamp AT TIME ZONE 'UTC' AT TIME ZONE ? >= ? AND alert_timestamp AT TIME ZONE 'UTC' AT TIME ZONE ? < ?", timezone, startOfDay, timezone, endOfDay).

@@ -25,3 +25,6 @@ ALTER TABLE doctor_patients
 
 ALTER TABLE medical_visits
     ADD CONSTRAINT fk_patient_visit FOREIGN KEY (patient_id) REFERENCES patients(patient_id);
+
+ALTER TABLE monitoring_devices
+    ADD CONSTRAINT unique_patient_device UNIQUE (patient_id);
