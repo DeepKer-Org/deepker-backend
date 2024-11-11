@@ -5,20 +5,27 @@ import (
 )
 
 func MapPatientToDTO(patient *models.Patient) *PatientDTO {
+	var monitoringDeviceID string
+	if patient.MonitoringDevice == nil {
+		monitoringDeviceID = ""
+	} else {
+		monitoringDeviceID = patient.MonitoringDevice.DeviceID
+	}
 	return &PatientDTO{
-		PatientID:     patient.PatientID,
-		DNI:           patient.DNI,
-		Name:          patient.Name,
-		Age:           patient.Age,
-		Weight:        patient.Weight,
-		Height:        patient.Height,
-		Sex:           patient.Sex,
-		Location:      patient.Location,
-		EntryDate:     FindEntryDate(patient.MedicalVisits),
-		Comorbidities: MapComorbiditiesToNames(patient.Comorbidities),
-		MedicalStaff:  MapDoctorsToDTOs(patient.Doctors),
-		Medications:   MapShortMedicationsToDTOs(patient.Medications),
-		MedicalVisits: MapMedicalVisitsToDTOs(patient.MedicalVisits),
+		PatientID:          patient.PatientID,
+		DNI:                patient.DNI,
+		Name:               patient.Name,
+		Age:                patient.Age,
+		Weight:             patient.Weight,
+		Height:             patient.Height,
+		Sex:                patient.Sex,
+		Location:           patient.Location,
+		MonitoringDeviceID: monitoringDeviceID,
+		EntryDate:          FindEntryDate(patient.MedicalVisits),
+		Comorbidities:      MapComorbiditiesToNames(patient.Comorbidities),
+		MedicalStaff:       MapDoctorsToDTOs(patient.Doctors),
+		Medications:        MapShortMedicationsToDTOs(patient.Medications),
+		MedicalVisits:      MapMedicalVisitsToDTOs(patient.MedicalVisits),
 	}
 }
 
@@ -34,15 +41,22 @@ func MapPatientToPatientForAlertDTO(patient *models.Patient) *PatientForAlertDTO
 	if patient.Medications == nil {
 		patient.Medications = make([]*models.Medication, 0)
 	}
+	var monitoringDeviceID string
+	if patient.MonitoringDevice == nil {
+		monitoringDeviceID = ""
+	} else {
+		monitoringDeviceID = patient.MonitoringDevice.DeviceID
+	}
 
 	return &PatientForAlertDTO{
-		DNI:           patient.DNI,
-		Name:          patient.Name,
-		Location:      patient.Location,
-		Age:           patient.Age,
-		Sex:           patient.Sex,
-		Comorbidities: MapComorbiditiesToNames(patient.Comorbidities),
-		Medications:   MapShortMedicationsToDTOs(patient.Medications),
+		DNI:                patient.DNI,
+		Name:               patient.Name,
+		Location:           patient.Location,
+		Age:                patient.Age,
+		Sex:                patient.Sex,
+		MonitoringDeviceID: monitoringDeviceID,
+		Comorbidities:      MapComorbiditiesToNames(patient.Comorbidities),
+		Medications:        MapShortMedicationsToDTOs(patient.Medications),
 	}
 }
 
@@ -75,5 +89,6 @@ func MapUpdateDTOToPatient(dto *PatientUpdateDTO, patient *models.Patient) *mode
 	patient.Height = dto.Height
 	patient.Sex = dto.Sex
 	patient.Location = dto.Location
+
 	return patient
 }
