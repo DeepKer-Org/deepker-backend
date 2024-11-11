@@ -112,3 +112,15 @@ The project follows a standard structure for Go applications, with the following
 - `config`: Contains the database configuration and environment variable loading.
 - `migrations`: Contains SQL files for database migrations.
 - `cmd/migrate`: Contains the migration script to run the migrations.
+
+### Test users
+
+#### Doctor
+
+- `username`: 4455667788
+- `password`: hashed_password1!
+
+#### Admin
+
+- `username`: admin@example.com
+- `password`:

@@ -21,10 +21,10 @@ CREATE TABLE IF NOT EXISTS user_roles (
 
 -- Insert example data into users table
 INSERT INTO users (username, password) VALUES
-                                                  ('4455667788', '$2a$10$B5NCzLM5PGwRqPZTLIRPSekumwD.xgWOcKplls2sMiEGe.INAVojm'),
+                                                  ('4455667788', '$2a$10$tBhrdwxV2Hc1jHyRxBdgve3PL/GlIr5YTDV3O0KBIbbHRbdpGtTzS'),
                                                   ('5566778899', '$2a$10$h5.2YfnHQs/CgyRMyew.j.DCiJMbVwSPlAAuWmgEbNcwNAyp4vrVe'),
                                                   ('6677889900', '$2a$10$qi.n3zf5C5VBpgcrehsTW.j.7Xu5JZjRhivCha8R6PUd8cl/rU9Ni'),
-                                                  ('admin@example.com', '$2a$10$jgcsnQnqwY9AnUa0zYxMzOcOVi/z1F3k0gvtkGEQDZLMDkyPU0oJ2');
+                                                  ('admin@example.com', '$2a$10$tBhrdwxV2Hc1jHyRxBdgve3PL/GlIr5YTDV3O0KBIbbHRbdpGtTzS');
 
 -- Insert example data into user_roles table (assign roles to users)
 INSERT INTO user_roles (user_id, role_id) VALUES
