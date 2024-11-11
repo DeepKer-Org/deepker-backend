@@ -36,6 +36,7 @@ func (r *patientRepository) GetByID(id interface{}, primaryKey string) (*models.
 		Preload("Doctors").
 		Preload("Alerts").
 		Preload("MedicalVisits").
+		Preload("MonitoringDevice").
 		Where(primaryKey+" = ?", id).First(&patient).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, err
@@ -54,6 +55,7 @@ func (r *patientRepository) GetAll() ([]*models.Patient, error) {
 		Preload("Doctors").
 		Preload("Alerts").
 		Preload("MedicalVisits").
+		Preload("MonitoringDevice").
 		Find(&patients).Error; err != nil {
 		return nil, err
 	}
@@ -150,6 +152,7 @@ func (r *patientRepository) GetAllPaginatedWithFilters(offset int, limit int, fi
 		Preload("Doctors").
 		Preload("Alerts").
 		Preload("MedicalVisits").
+		Preload("MonitoringDevice").
 		Offset(offset).
 		Limit(limit).
 		Find(&patients).Error; err != nil {

@@ -28,8 +28,7 @@ func NewMonitoringDeviceService(repo repository.MonitoringDeviceRepository) Moni
 
 func (s *monitoringDeviceService) CreateMonitoringDevice(deviceDTO *dto.MonitoringDeviceCreateDTO) error {
 	device := &models.MonitoringDevice{
-		Status:    deviceDTO.Status,
-		PatientID: &deviceDTO.PatientID,
+		Status: deviceDTO.Status,
 	}
 
 	err := s.repo.CreateMonitoringDevice(device)
