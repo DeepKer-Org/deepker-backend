@@ -1,6 +1,7 @@
 DB_USER=postgres
 DB_PASSWORD=root
-DB_HOST=localhost
+DB_HOST=db
 DB_PORT=5432
 DB_NAME=deepker
 JWT_SECRET_KEY=mySecretKey
+ALLOWED_ORIGIN=http://localhost:3000

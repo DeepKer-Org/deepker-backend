@@ -1,6 +1,7 @@
 package config
 
 import (
+	"biometric-data-backend/utils"
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -43,6 +44,9 @@ func LoadConfig() {
 		log.Fatal("Failed to connect to PostgreSQL: ", err)
 	}
 	log.Println("PostgreSQL database connected")
+
+	// Run the migrations
+	utils.ExecuteMigrations()
 }
 
 // CloseDB ensures the database connection is closed (if necessary)

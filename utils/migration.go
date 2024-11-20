@@ -1,5 +1,4 @@
-// cmd/migrate/main.go
-package main
+package utils
 
 import (
 	"database/sql"
@@ -15,7 +14,9 @@ import (
 	"strings"
 )
 
-func main() {
+// TODO: Compare hashes to see if any migrations were changed.
+// TODO: Reuse the configuration connection
+func ExecuteMigrations() {
 	// Parse command-line flags
 	resetFlag := flag.Bool("reset", false, "Reset the database by rolling back all migrations")
 	flag.Parse()
