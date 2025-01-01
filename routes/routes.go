@@ -3,6 +3,7 @@ package routes
 import (
 	"biometric-data-backend/controller"
 	"biometric-data-backend/enums"
+	"biometric-data-backend/internal/comorbidity"
 	"biometric-data-backend/middleware"
 	"biometric-data-backend/repository"
 	"biometric-data-backend/service"
@@ -166,9 +167,9 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	router.GET("/"+PatientsResource+"/dni/:dni", patientController.GetPatientByDNI)
 
 	// Comorbidity
-	comorbidityRepo := repository.NewComorbidityRepository(db)
-	comorbidityService := service.NewComorbidityService(comorbidityRepo)
-	comorbidityController := controller.NewComorbidityController(comorbidityService)
+	comorbidityRepo := comorbidity.NewRepository(db)
+	comorbidityService := comorbidity.NewService(comorbidityRepo)
+	comorbidityController := comorbidity.NewController(comorbidityService)
 
 	// Register comorbidity routes
 	registerCrudRoutesWithMiddleware(
