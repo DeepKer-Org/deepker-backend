@@ -2,7 +2,9 @@ package service
 
 import (
 	"biometric-data-backend/models/dto"
+	"biometric-data-backend/redis"
 	"biometric-data-backend/repository"
+	"context"
 	"errors"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -29,6 +31,7 @@ type doctorService struct {
 	authRepo    repository.AuthorizationRepository
 	roleRepo    repository.RoleRepository
 	authService AuthorizationService
+	cache       *redis.CacheManager
 }
 
 func NewDoctorService(
@@ -36,12 +39,14 @@ func NewDoctorService(
 	authRepo repository.AuthorizationRepository,
 	roleRepo repository.RoleRepository,
 	authService AuthorizationService,
+	cache *redis.CacheManager,
 ) DoctorService {
 	return &doctorService{
 		repo:        repo,
 		authRepo:    authRepo,
 		roleRepo:    roleRepo,
 		authService: authService,
+		cache:       cache,
 	}
 }
 
@@ -51,7 +56,6 @@ func (s *doctorService) CreateDoctor(doctorDTO *dto.DoctorCreateDTO) error {
 
 	tx := s.repo.BeginTransaction()
 
-	// Create the user inside the transaction
 	user := &dto.UserRegisterDTO{
 		Username: doctorDTO.DNI,
 		Password: doctorDTO.Password,
@@ -61,48 +65,146 @@ func (s *doctorService) CreateDoctor(doctorDTO *dto.DoctorCreateDTO) error {
 	userID, err := s.authService.RegisterUserInTransaction(user, tx)
 	if err != nil {
 		log.Printf("Failed to register user: %v", err)
-		tx.Rollback() // Rollback the transaction if an error occurs
+		tx.Rollback()
 		return err
 	}
 
-	// Map the DTO to the Doctor entity
 	doctor := dto.MapCreateDTOToDoctor(doctorDTO)
-	doctor.UserID = *userID // Assign the UserID to the Doctor
+	doctor.UserID = *userID
 
-	// Create the doctor inside the transaction
 	err = s.repo.CreateInTransaction(doctor, tx)
 	if err != nil {
 		log.Printf("Failed to create doctor: %v", err)
-		tx.Rollback() // Rollback the transaction if an error occurs
+		tx.Rollback()
 		return err
 	}
 
-	// Commit the transaction if everything is successful
 	tx.Commit()
+
+	// Invalidate cache for all doctors
+	_ = s.cache.Delete(context.Background(), "doctors:all")
 
 	log.Println("Doctor created successfully with DoctorID:", doctor.DoctorID)
 	return nil
-
 }
 
-// Get a doctor by ID and map the result to DoctorDTO
+// GetDoctorByID fetches a doctor by ID and uses cache
 func (s *doctorService) GetDoctorByID(id uuid.UUID) (*dto.DoctorDTO, error) {
-	log.Println("Fetching doctor with DoctorID:", id)
-	doctor, err := s.repo.GetByID(id, "doctor_id")
+	ctx := context.Background()
+	cacheKey := "doctor:" + id.String()
+
+	// Attempt to fetch from cache
+	var doctor dto.DoctorDTO
+	found, err := s.cache.Get(ctx, cacheKey, &doctor)
 	if err != nil {
-		log.Printf("Error fetching doctor: %v", err)
+		log.Printf("Error accessing cache for DoctorID %s: %v", id, err)
 		return nil, err
 	}
-	if doctor == nil {
-		log.Println("No doctor found with DoctorID:", id)
+	if found {
+		log.Println("Cache hit for doctor with DoctorID:", id)
+		return &doctor, nil
+	}
+
+	log.Println("Fetching doctor with DoctorID:", id)
+	dbDoctor, err := s.repo.GetByID(id, "doctor_id")
+	if err != nil {
+		return nil, err
+	}
+	if dbDoctor == nil {
 		return nil, nil
 	}
 
-	// Map the Doctor entity to the DoctorDTO
-	return dto.MapDoctorToDTO(doctor), nil
+	doctor = *dto.MapDoctorToDTO(dbDoctor)
+
+	// Store in cache
+	if err := s.cache.Set(ctx, cacheKey, doctor); err != nil {
+		log.Printf("Failed to cache doctor: %v", err)
+	}
+
+	return &doctor, nil
 }
 
-// Get a doctor by UserID and map the result to DoctorDTO
+// GetAllDoctors fetches all doctors with caching
+func (s *doctorService) GetAllDoctors() ([]*dto.DoctorDTO, error) {
+	ctx := context.Background()
+	cacheKey := "doctors:all"
+
+	// Attempt to fetch from cache
+	var doctors []*dto.DoctorDTO
+	found, err := s.cache.Get(ctx, cacheKey, &doctors)
+	if err != nil {
+		log.Printf("Error accessing cache for all doctors: %v", err)
+		return nil, err
+	}
+	if found {
+		log.Println("Cache hit for all doctors")
+		return doctors, nil
+	}
+
+	log.Println("Fetching all doctors")
+	dbDoctors, err := s.repo.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	doctors = dto.MapDoctorsToDTOs(dbDoctors)
+
+	// Store in cache
+	if err := s.cache.Set(ctx, cacheKey, doctors); err != nil {
+		log.Printf("Failed to cache doctors: %v", err)
+	}
+
+	return doctors, nil
+}
+
+// UpdateDoctor updates a doctor and invalidates the cache
+func (s *doctorService) UpdateDoctor(id uuid.UUID, doctorDTO *dto.DoctorUpdateDTO) error {
+	log.Println("Updating doctor with DoctorID:", id)
+
+	doctor, err := s.repo.GetByID(id, "doctor_id")
+	if err != nil {
+		log.Printf("Error fetching doctor: %v", err)
+		return err
+	}
+	if doctor == nil {
+		return gorm.ErrRecordNotFound
+	}
+
+	doctor = dto.MapUpdateDTOToDoctor(doctorDTO, doctor)
+
+	err = s.repo.Update(doctor, "doctor_id", id)
+	if err != nil {
+		log.Printf("Failed to update doctor: %v", err)
+		return err
+	}
+
+	// Invalidate cache for the updated doctor and all doctors
+	_ = s.cache.Delete(context.Background(), "doctor:"+id.String(), "doctors:all")
+
+	log.Println("Doctor updated successfully with DoctorID:", doctor.DoctorID)
+	return nil
+}
+
+// DeleteDoctor deletes a doctor and invalidates the cache
+func (s *doctorService) DeleteDoctor(id uuid.UUID) error {
+	log.Println("Deleting doctor with DoctorID:", id)
+
+	err := s.repo.Delete(id, "doctor_id")
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil
+		}
+		return err
+	}
+
+	// Invalidate cache for the deleted doctor and all doctors
+	_ = s.cache.Delete(context.Background(), "doctor:"+id.String(), "doctors:all")
+
+	log.Println("Doctor deleted successfully with DoctorID:", id)
+	return nil
+}
+
+// GetDoctorByUserID fetches a doctor by UserID
 func (s *doctorService) GetDoctorByUserID(userID uuid.UUID) (*dto.DoctorDTO, error) {
 	log.Println("Fetching doctor with UserID:", userID)
 	doctor, err := s.repo.GetDoctorByUserID(userID)
@@ -119,6 +221,7 @@ func (s *doctorService) GetDoctorByUserID(userID uuid.UUID) (*dto.DoctorDTO, err
 	return dto.MapDoctorToDTO(doctor), nil
 }
 
+// UpdateDoctorByUserID updates a doctor by UserID
 func (s *doctorService) UpdateDoctorByUserID(userID uuid.UUID, doctorDTO *dto.DoctorUpdateDTO) error {
 	log.Println("Updating doctor with UserID:", userID)
 
@@ -222,7 +325,7 @@ func (s *doctorService) UpdateDoctorByUserID(userID uuid.UUID, doctorDTO *dto.Do
 	return nil
 }
 
-// Get doctors by AlertID and map to DoctorDTO
+// GetDoctorsByAlertID Get doctors by AlertID and map to DoctorDTO
 func (s *doctorService) GetDoctorsByAlertID(alertID uuid.UUID) ([]*dto.DoctorDTO, error) {
 	doctors, err := s.repo.GetDoctorsByAlertID(alertID)
 	if err != nil {
@@ -235,7 +338,7 @@ func (s *doctorService) GetDoctorsByAlertID(alertID uuid.UUID) ([]*dto.DoctorDTO
 	return dto.MapDoctorsToDTOs(doctors), nil
 }
 
-// Get a short representation of a doctor (DoctorDTO) by ID
+// GetShortDoctorByID Get a short representation of a doctor (DoctorDTO) by ID
 func (s *doctorService) GetShortDoctorByID(id uuid.UUID) (*dto.DoctorDTO, error) {
 	log.Println("Fetching short version of doctor with DoctorID:", id)
 	doctor, err := s.repo.GetByID(id, "doctor_id")
@@ -248,64 +351,6 @@ func (s *doctorService) GetShortDoctorByID(id uuid.UUID) (*dto.DoctorDTO, error)
 
 	// Map to DoctorDTO
 	return dto.MapDoctorToDTO(doctor), nil
-}
-
-// Get all doctors and map them to DoctorDTO
-func (s *doctorService) GetAllDoctors() ([]*dto.DoctorDTO, error) {
-	log.Println("Fetching all doctors")
-	doctors, err := s.repo.GetAll()
-	if err != nil {
-		log.Printf("Error fetching doctors: %v", err)
-		return nil, err
-	}
-	log.Println("Doctors fetched successfully, total count:", len(doctors))
-
-	// Map the list of Doctor entities to DoctorDTOs
-	return dto.MapDoctorsToDTOs(doctors), nil
-}
-
-// Update an existing doctor using DoctorUpdateDTO
-func (s *doctorService) UpdateDoctor(id uuid.UUID, doctorDTO *dto.DoctorUpdateDTO) error {
-	log.Println("Updating doctor with DoctorID:", id)
-
-	// Fetch the existing doctor entity
-	doctor, err := s.repo.GetByID(id, "doctor_id")
-	if err != nil {
-		log.Printf("Error fetching doctor: %v", err)
-		return err
-	}
-	if doctor == nil {
-		log.Printf("Doctor not found with DoctorID: %v", id)
-		return gorm.ErrRecordNotFound
-	}
-
-	// Map the UpdateDTO to the existing entity
-	doctor = dto.MapUpdateDTOToDoctor(doctorDTO, doctor)
-
-	// Update the doctor in the database
-	err = s.repo.Update(doctor, "doctor_id", id)
-	if err != nil {
-		log.Printf("Failed to update doctor: %v", err)
-		return err
-	}
-	log.Println("Doctor updated successfully with DoctorID:", doctor.DoctorID)
-	return nil
-}
-
-// Delete a doctor by ID
-func (s *doctorService) DeleteDoctor(id uuid.UUID) error {
-	log.Println("Deleting doctor with DoctorID:", id)
-	err := s.repo.Delete(id, "doctor_id")
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Println("Doctor not found with DoctorID:", id)
-			return nil
-		}
-		log.Printf("Failed to delete doctor: %v", err)
-		return err
-	}
-	log.Println("Doctor deleted successfully with DoctorID:", id)
-	return nil
 }
 
 // ChangePassword handles user password change

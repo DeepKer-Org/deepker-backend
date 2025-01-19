@@ -2,7 +2,9 @@ package service
 
 import (
 	"biometric-data-backend/models/dto"
+	"biometric-data-backend/redis"
 	"biometric-data-backend/repository"
+	"context"
 	"errors"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -18,11 +20,12 @@ type ComorbidityService interface {
 }
 
 type comorbidityService struct {
-	repo repository.ComorbidityRepository
+	repo  repository.ComorbidityRepository
+	cache *redis.CacheManager
 }
 
-func NewComorbidityService(repo repository.ComorbidityRepository) ComorbidityService {
-	return &comorbidityService{repo: repo}
+func NewComorbidityService(repo repository.ComorbidityRepository, cache *redis.CacheManager) ComorbidityService {
+	return &comorbidityService{repo: repo, cache: cache}
 }
 
 func (s *comorbidityService) CreateComorbidity(comorbidityDTO *dto.ComorbidityCreateDTO) error {
@@ -33,33 +36,74 @@ func (s *comorbidityService) CreateComorbidity(comorbidityDTO *dto.ComorbidityCr
 		return err
 	}
 	log.Println("Comorbidity created successfully with ComorbidityID:", comorbidity.ComorbidityID)
+	_ = s.cache.Delete(context.Background(), "comorbidities:all")
 	return nil
 }
 
 func (s *comorbidityService) GetComorbidityByID(id uuid.UUID) (*dto.ComorbidityDTO, error) {
-	log.Println("Fetching comorbidity with ComorbidityID:", id)
-	comorbidity, err := s.repo.GetByID(id, "comorbidity_id")
+	ctx := context.Background()
+	cacheKey := "comorbidity:" + id.String()
+
+	// Attempt to fetch from cache
+	var comorbidity dto.ComorbidityDTO
+	found, err := s.cache.Get(ctx, cacheKey, &comorbidity)
 	if err != nil {
-		log.Printf("Error fetching comorbidity: %v", err)
 		return nil, err
 	}
-	if comorbidity == nil {
-		log.Println("No comorbidity found with ComorbidityID:", id)
+	if found {
+		log.Println("Cache hit for comorbidity with ComorbidityID:", id)
+		return &comorbidity, nil
+	}
+
+	// Fetch from database if not in cache
+	log.Println("Fetching comorbidity with ComorbidityID:", id)
+	dbComorbidity, err := s.repo.GetByID(id, "comorbidity_id")
+	if err != nil {
+		return nil, err
+	}
+	if dbComorbidity == nil {
 		return nil, nil
 	}
 
-	return dto.MapComorbidityToDTO(comorbidity), nil
+	comorbidity = *dto.MapComorbidityToDTO(dbComorbidity)
+
+	// Store in cache
+	if err := s.cache.Set(ctx, cacheKey, comorbidity); err != nil {
+		log.Printf("Failed to cache comorbidity: %v", err)
+	}
+
+	return &comorbidity, nil
 }
 
 func (s *comorbidityService) GetAllComorbidities() ([]*dto.ComorbidityDTO, error) {
-	log.Println("Fetching all comorbidities")
-	comorbidities, err := s.repo.GetAll()
+	ctx := context.Background()
+	cacheKey := "comorbidities:all"
+	// Attempt to fetch from cache
+	var comorbidities []*dto.ComorbidityDTO
+	found, err := s.cache.Get(ctx, cacheKey, &comorbidities)
 	if err != nil {
-		log.Printf("Error fetching comorbidities: %v", err)
+		return nil, err
+	}
+	if found {
+		log.Println("Cache hit for all comorbidities")
+		return comorbidities, nil
+	}
+
+	// Fetch from database if not in cache
+	log.Println("Fetching all comorbidities")
+	dbComorbidities, err := s.repo.GetAll()
+	if err != nil {
 		return nil, err
 	}
 
-	return dto.MapComorbiditiesToDTOs(comorbidities), nil
+	comorbidities = dto.MapComorbiditiesToDTOs(dbComorbidities)
+
+	// Store in cache
+	if err := s.cache.Set(ctx, cacheKey, comorbidities); err != nil {
+		log.Printf("Failed to cache comorbidities: %v", err)
+	}
+
+	return comorbidities, nil
 }
 
 func (s *comorbidityService) UpdateComorbidity(id uuid.UUID, comorbidityDTO *dto.ComorbidityUpdateDTO) error {
@@ -82,6 +126,7 @@ func (s *comorbidityService) UpdateComorbidity(id uuid.UUID, comorbidityDTO *dto
 		return err
 	}
 	log.Println("Comorbidity updated successfully with ComorbidityID:", comorbidity.ComorbidityID)
+	_ = s.cache.Delete(context.Background(), "comorbidity:"+id.String(), "comorbidities:all")
 	return nil
 }
 
@@ -97,5 +142,6 @@ func (s *comorbidityService) DeleteComorbidity(id uuid.UUID) error {
 		return err
 	}
 	log.Println("Comorbidity deleted successfully with ComorbidityID:", id)
+	_ = s.cache.Delete(context.Background(), "comorbidity:"+id.String(), "comorbidities:all")
 	return nil
 }
