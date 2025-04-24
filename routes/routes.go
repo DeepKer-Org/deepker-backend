@@ -1,15 +1,18 @@
 package routes
 
 import (
+	"biometric-data-backend/config"
 	"biometric-data-backend/controller"
 	"biometric-data-backend/enums"
 	"biometric-data-backend/middleware"
+	"biometric-data-backend/redis"
 	"biometric-data-backend/repository"
 	"biometric-data-backend/service"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -75,6 +78,8 @@ func registerCrudRoutesWithMiddleware(router *gin.Engine, resource string, creat
 }
 
 func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
+	// Initialize Redis cache manager
+	cacheManager := redis.NewCacheManager(config.RedisClient, 5*time.Minute)
 	// Apply CORS middleware to the router
 	router.Use(CORSMiddleware())
 	// JWT Auth
@@ -85,7 +90,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 
 	// Role
 	roleRepo := repository.NewRoleRepository(db)
-	roleService := service.NewRoleService(roleRepo)
+	roleService := service.NewRoleService(roleRepo, cacheManager)
 	roleController := controller.NewRoleController(roleService)
 
 	// Register role routes
@@ -124,7 +129,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 
 	// Doctor
 	doctorRepo := repository.NewDoctorRepository(db)
-	doctorService := service.NewDoctorService(doctorRepo, userRepo, roleRepo, userService)
+	doctorService := service.NewDoctorService(doctorRepo, userRepo, roleRepo, userService, cacheManager)
 	doctorController := controller.NewDoctorController(doctorService)
 
 	// Register doctor routes
@@ -148,7 +153,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	router.PATCH("/"+AuthorizationResource+"/change-password", doctorController.ChangePassword)
 	// Patient
 	patientRepo := repository.NewPatientRepository(db)
-	patientService := service.NewPatientService(patientRepo)
+	patientService := service.NewPatientService(patientRepo, cacheManager)
 	patientController := controller.NewPatientController(patientService)
 
 	// Register patient routes
@@ -167,7 +172,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 
 	// Comorbidity
 	comorbidityRepo := repository.NewComorbidityRepository(db)
-	comorbidityService := service.NewComorbidityService(comorbidityRepo)
+	comorbidityService := service.NewComorbidityService(comorbidityRepo, cacheManager)
 	comorbidityController := controller.NewComorbidityController(comorbidityService)
 
 	// Register comorbidity routes
@@ -184,7 +189,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 
 	// Medication
 	medicationRepo := repository.NewMedicationRepository(db)
-	medicationService := service.NewMedicationService(medicationRepo)
+	medicationService := service.NewMedicationService(medicationRepo, cacheManager)
 	medicationController := controller.NewMedicationController(medicationService)
 
 	// Register medication routes
@@ -201,7 +206,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 
 	// BiometricData
 	biometricRepo := repository.NewBiometricDataRepository(db)
-	biometricService := service.NewBiometricDataService(biometricRepo)
+	biometricService := service.NewBiometricDataService(biometricRepo, cacheManager)
 	biometricController := controller.NewBiometricDataController(biometricService)
 
 	// Register biometric routes
@@ -218,7 +223,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 
 	// ComputerDiagnostic
 	computerDiagnosticRepo := repository.NewComputerDiagnosticRepository(db)
-	computerDiagnosticService := service.NewComputerDiagnosticService(computerDiagnosticRepo)
+	computerDiagnosticService := service.NewComputerDiagnosticService(computerDiagnosticRepo, cacheManager)
 	computerDiagnosticController := controller.NewComputerDiagnosticController(computerDiagnosticService)
 
 	// Register computer diagnostic routes
@@ -235,7 +240,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 
 	// MonitoringDevice
 	monitoringDeviceRepo := repository.NewMonitoringDeviceRepository(db)
-	monitoringDeviceService := service.NewMonitoringDeviceService(monitoringDeviceRepo)
+	monitoringDeviceService := service.NewMonitoringDeviceService(monitoringDeviceRepo, cacheManager)
 	monitoringDeviceController := controller.NewMonitoringDeviceController(monitoringDeviceService)
 
 	// Register monitoring device routes
@@ -260,7 +265,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 
 	// Alert
 	alertRepo := repository.NewAlertRepository(db)
-	alertService := service.NewAlertService(alertRepo, biometricRepo, computerDiagnosticRepo, doctorRepo, monitoringDeviceRepo, phoneRepo, patientRepo)
+	alertService := service.NewAlertService(alertRepo, biometricRepo, computerDiagnosticRepo, doctorRepo, monitoringDeviceRepo, phoneRepo, patientRepo, cacheManager)
 	alertController := controller.NewAlertController(alertService)
 
 	// Register alert routes

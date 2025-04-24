@@ -3,6 +3,7 @@ package config
 import (
 	"biometric-data-backend/utils"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -47,6 +48,8 @@ func LoadConfig() {
 
 	// Run the migrations
 	utils.ExecuteMigrations()
+	// Load Redis configuration
+	LoadRedisConfig()
 }
 
 // CloseDB ensures the database connection is closed (if necessary)
@@ -60,5 +63,46 @@ func CloseDB() {
 		log.Println("Error closing database connection:", err)
 	} else {
 		log.Println("PostgreSQL connection closed")
+	}
+}
+
+var (
+	RedisClient   *redis.Client
+	RedisHost     string
+	RedisPort     string
+	RedisPassword string
+)
+
+// LoadRedisConfig initializes the Redis client with the configuration from environment variables.
+func LoadRedisConfig() {
+	RedisHost = os.Getenv("REDIS_HOST")
+	RedisPort = os.Getenv("REDIS_PORT")
+	RedisPassword = os.Getenv("REDIS_PASSWORD")
+
+	if RedisHost == "" || RedisPort == "" {
+		log.Fatal("Redis configuration not set")
+	}
+
+	// Initialize Redis client
+	RedisClient = redis.NewClient(&redis.Options{
+		Addr:     RedisHost + ":" + RedisPort,
+		Password: RedisPassword, // Leave empty if no password
+		DB:       0,             // Use default DB
+	})
+
+	// Test the connection
+	_, err := RedisClient.Ping(RedisClient.Context()).Result()
+	if err != nil {
+		log.Fatalf("Failed to connect to Redis: %v", err)
+	}
+
+	log.Println("Redis connected successfully")
+}
+
+func CloseRedis() {
+	if err := RedisClient.Close(); err != nil {
+		log.Println("Error closing Redis connection:", err)
+	} else {
+		log.Println("Redis connection closed")
 	}
 }
