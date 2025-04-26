@@ -1,4 +1,0 @@
-INSERT INTO alerts (alert_id, patient_id, room, alert_timestamp, o2_saturation, heart_rate, blood_pressure, computer_diagnoses, alert_status, attended_by, attended_timestamp, final_diagnosis, created_at, updated_at)
-VALUES (uuid(), uuid(), 'ICU', toTimestamp(now()), 95, 120, {'systolic': 120, 'diastolic': 80}, ['Hypertension'], 'Open', 'Dr. Smith', toTimestamp(now()), 'Hypertension', toTimestamp(now()), toTimestamp(now()));
-INSERT INTO alerts (alert_id, patient_id, room, alert_timestamp, o2_saturation, heart_rate, blood_pressure, computer_diagnoses, alert_status, attended_by, attended_timestamp, final_diagnosis, created_at, updated_at)
-VALUES (uuid(), uuid(), 'ICU', toTimestamp(now()), 95, 120, {'systolic': 120, 'diastolic': 80}, ['Hypertension'], 'Open', 'Dr. Smith', toTimestamp(now()), 'Hypertension', toTimestamp(now()), toTimestamp(now()));

@@ -9,11 +9,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type AlertService interface {
@@ -370,15 +371,15 @@ func (s *alertService) GetAllAlertsByTimezone(timezone string) ([]*dto.AlertDTO,
 
 	// Attempt to fetch from cache
 	var alerts []*dto.AlertDTO
-	found, err := s.cache.Get(context.Background(), cacheKey, &alerts)
-	if err != nil {
-		log.Printf("Error accessing cache for timezone %s: %v", timezone, err)
-		return nil, err
-	}
-	if found {
-		log.Println("Cache hit for alerts by timezone:", timezone)
-		return alerts, nil
-	}
+	// found, err := s.cache.Get(context.Background(), cacheKey, &alerts)
+	// if err != nil {
+	// 	log.Printf("Error accessing cache for timezone %s: %v", timezone, err)
+	// 	return nil, err
+	// }
+	// if found {
+	// 	log.Println("Cache hit for alerts by timezone:", timezone)
+	// 	return alerts, nil
+	// }
 
 	dbAlerts, err := s.alertRepo.GetAlertsByTimezone(timezone)
 	if err != nil {

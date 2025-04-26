@@ -40,7 +40,7 @@ go mod tidy
 
 This command downloads the necessary Go modules specified in the `go.mod` file.
 
-### Step 4: Initialize the Database
+### Step 4: Initialize the database and cache manager
 
 Use Docker to start a PostgreSQL container with the following command:
 
@@ -48,22 +48,17 @@ Use Docker to start a PostgreSQL container with the following command:
 docker run --name postgres-deepker -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=root -e POSTGRES_DB=deepker -p 5432:5432 -d postgres
 ```
 
-### Step 5: Run Migrations to Create the Tables
-
-Now that the dependencies are installed and the database is running, you can run the migrations:
+Use Docker to start a Redis container with the following command:
 
 ```sh
-go run cmd/migrate/main.go
-```
-If any new migrations are added, you can run the migration script again to apply them.
-
-**Note**: To execute the rollback, run the migration script with the `--reset` flag:
-
-```sh
-go run cmd/migrate/main.go --reset
+docker run -d --name redis-local \
+  -p 6379:6379 \
+  -e REDIS_PASSWORD=your_secure_password \
+  redis \
+  redis-server --requirepass your_secure_password
 ```
 
-### Step 6: Generate Swagger Documentation (Optional)
+<!-- ### Step 5: Generate Swagger Documentation (Optional)
 
 Install Swagger if you haven't already:
 
@@ -75,29 +70,30 @@ Generate the Swagger documentation:
 
 ```sh
 swag init
-```
+``` -->
 
-### Step 7: Run the Project
+### Step 5: Run the Project
 
 Run the project:
 
 ```sh
 go run cmd/server/main.go
 ```
-
+<!-- 
 ### Step 8: View the API Documentation (If Generated)
 
 Open your browser and visit the following link to view the API documentation:
 
-[http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+[http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html) -->
 
 ## Default Credentials
-- `username`: admin@example.com
-- `password`: hashed_password_admin
+
+- `username`: 44556677 | 55667788 | 66778899
+- `password`: hashed_password1!
 - `role`: admin
 
 - `username`: doctor{1-3}@example.com
-- `password`: hashed_password{1-3}
+- `password`: hashed_password1!
 - `role`: doctor
 
 ## Project Structure
@@ -112,15 +108,3 @@ The project follows a standard structure for Go applications, with the following
 - `config`: Contains the database configuration and environment variable loading.
 - `migrations`: Contains SQL files for database migrations.
 - `cmd/migrate`: Contains the migration script to run the migrations.
-
-### Test users
-
-#### Doctor
-
-- `username`: 4455667788
-- `password`: hashed_password1!
-
-#### Admin
-
-- `username`: admin@example.com
-- `password`: hashed_password1!
