@@ -246,8 +246,6 @@ func (s *alertService) GetAllAlerts() ([]*dto.AlertDTO, error) {
 }
 
 func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) error {
-	log.Println("Updating alert with AlertID:", id)
-
 	alert, err := s.alertRepo.GetByID(id, "alert_id")
 	if err != nil {
 		log.Printf("Error retrieving alert: %v", err)
@@ -258,9 +256,15 @@ func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) e
 		return gorm.ErrRecordNotFound
 	}
 
-	if alert.AttendedByID.Valid == false && alertDTO.AttendedByID == uuid.Nil {
-		log.Printf("AttendedByID must be set before updating other fields")
-		return errors.New("attendedById must be set before updating other fields")
+	if alertDTO.AttendedByID == uuid.Nil {
+		err := s.alertRepo.Liberate(alert)
+		if err != nil {
+			log.Printf("Failed to liberate alert: %v", err)
+			return err
+		}
+
+		_ = s.cache.Delete(context.Background(), "alert:"+id.String(), "alerts:all")
+		return nil
 	}
 
 	// Update AttendedByID if provided
@@ -271,13 +275,10 @@ func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) e
 		}
 	}
 
-	// Only allow updates to other fields if AttendedByID is set
+	// // Only allow updates to other fields if AttendedByID is set
 	if alert.AttendedByID.Valid {
 		utcTimestamp := alertDTO.AttendedTimestamp.UTC()
 		alert.AttendedTimestamp = &utcTimestamp
-	} else {
-		log.Println("Cannot update fields other than AttendedByID as it has not been set.")
-		return errors.New("other fields cannot be updated until attendedById is set")
 	}
 
 	err = s.alertRepo.Update(alert, "alert_id", id)

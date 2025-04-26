@@ -3,9 +3,10 @@ package repository
 import (
 	"biometric-data-backend/models"
 	"errors"
-	"gorm.io/gorm"
 	"log"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // AlertRepository includes specific methods for the Alert entity and embeds BaseRepository
@@ -15,6 +16,7 @@ type AlertRepository interface {
 	GetUnattendedAlerts(offset int, limit int) ([]*models.Alert, error)
 	CountAlertsByStatus(status string, count *int64) error
 	GetAlertsByTimezone(timezone string) ([]*models.Alert, error)
+	Liberate(alert *models.Alert) error
 }
 
 // alertRepository struct embeds baseRepository for common CRUD operations
@@ -149,4 +151,13 @@ func (r *alertRepository) CountAlertsByStatus(status string, count *int64) error
 		condition = "attended_timestamp IS NULL"
 	}
 	return r.db.Model(&models.Alert{}).Where(condition).Count(count).Error
+}
+
+func (r *alertRepository) Liberate(alert *models.Alert) error {
+	err := r.db.Model(&models.Alert{}).Where("alert_id = ?", alert.AlertID).Update("attended_timestamp", nil).Update("attended_by_id", nil).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

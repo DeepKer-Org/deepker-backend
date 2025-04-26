@@ -2,8 +2,9 @@ package dto
 
 import (
 	"biometric-data-backend/models"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // AlertCreateDTO is used for creating a new alert

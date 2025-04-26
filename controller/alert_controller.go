@@ -3,11 +3,12 @@ package controller
 import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/service"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type AlertController struct {
