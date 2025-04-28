@@ -176,20 +176,7 @@ func (s *alertService) CreateAlert(alertDTO *dto.AlertCreateDTO) (*dto.AlertCrea
 }
 
 func (s *alertService) GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error) {
-	ctx := context.Background()
-	cacheKey := "alert:" + id.String()
-
-	// Attempt to fetch from cache
 	var alert dto.AlertDTO
-	found, err := s.cache.Get(ctx, cacheKey, &alert)
-	if err != nil {
-		log.Printf("Error accessing cache for AlertID %s: %v", id, err)
-		return nil, err
-	}
-	if found {
-		log.Println("Cache hit for alert with AlertID:", id)
-		return &alert, nil
-	}
 
 	log.Println("Fetching alert with AlertID:", id)
 	dbAlert, err := s.alertRepo.GetByID(id, "alert_id")
@@ -203,11 +190,6 @@ func (s *alertService) GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error) {
 	}
 
 	alert = *dto.MapAlertToDTO(dbAlert)
-
-	// Store in cache
-	if err := s.cache.Set(ctx, cacheKey, alert); err != nil {
-		log.Printf("Failed to cache alert: %v", err)
-	}
 
 	return &alert, nil
 }
@@ -254,6 +236,16 @@ func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) e
 	if alert == nil {
 		log.Printf("Alert not found with AlertID: %v", id)
 		return gorm.ErrRecordNotFound
+	}
+
+	if alertDTO.FinalDiagnosis != "" {
+		alert.FinalDiagnosis = alertDTO.FinalDiagnosis
+		err := s.alertRepo.UpdateAlert(alert)
+		if err != nil {
+			log.Printf("Failed to update alert: %v", err)
+			return err
+		}
+		return nil
 	}
 
 	if alertDTO.AttendedByID == uuid.Nil {

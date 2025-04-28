@@ -17,6 +17,7 @@ type AlertRepository interface {
 	CountAlertsByPeriod(period string, count *int64) error
 	GetAlertsByTimezone(timezone string) ([]*models.Alert, error)
 	Liberate(alert *models.Alert) error
+	UpdateAlert(alert *models.Alert) error
 }
 
 // alertRepository struct embeds baseRepository for common CRUD operations
@@ -156,10 +157,18 @@ func (r *alertRepository) CountAlertsByPeriod(period string, count *int64) error
 }
 
 func (r *alertRepository) Liberate(alert *models.Alert) error {
-	err := r.db.Model(&models.Alert{}).Where("alert_id = ?", alert.AlertID).Update("attended_timestamp", nil).Update("attended_by_id", nil).Error
+	err := r.db.Model(&models.Alert{}).Where("alert_id = ?", alert.AlertID).Update("attended_timestamp", nil).Update("attended_by_id", nil).Update("final_diagnosis", "").Error
 	if err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func (r *alertRepository) UpdateAlert(alert *models.Alert) error {
+	err := r.db.Save(alert).Error
+	if err != nil {
+		return err
+	}
 	return nil
 }
