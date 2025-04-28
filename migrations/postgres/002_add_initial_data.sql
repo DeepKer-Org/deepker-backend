@@ -87,7 +87,6 @@ INSERT INTO public.doctor_patients (doctor_patient_id, doctor_id, patient_id, as
 INSERT INTO public.doctor_patients (doctor_patient_id, doctor_id, patient_id, assigned_at) VALUES ('cb63633a-0174-4667-8e0f-eafa7deaf6c8', '66778899-aaaa-bbbb-cccc-ddddeeeeffff', '33333333-3333-3333-3333-333333333333', '2023-09-22 12:00:00.000000');
 INSERT INTO public.doctor_patients (doctor_patient_id, doctor_id, patient_id, assigned_at) VALUES ('44d7ef74-bf07-40f6-b3a7-69a690ce37e4', '55667788-9999-aaaa-bbbb-ccccdddd1111', '11111111-1111-1111-1111-111111111111', '2023-09-20 10:00:00.000000');
 INSERT INTO public.doctor_patients (doctor_patient_id, doctor_id, patient_id, assigned_at) VALUES ('bf407595-426b-43f1-98fb-da2da22baa73', '55667788-9999-aaaa-bbbb-ccccdddd1111', '79f76313-759b-4423-a0cf-5a23dc8c0b75', '2023-09-20 10:00:00.000000');
-INSERT INTO public.doctor_patients (doctor_patient_id, doctor_id, patient_id, assigned_at) VALUES ('9fb7db16-719a-4c96-a250-da5a86b60032', '55667788-9999-aaaa-bbbb-ccccdddd1111', '79f76313-759b-4423-a0cf-5a23dc8c0b75', '2024-09-30 00:53:20.708175');
 
 
 -- This section creates and inserts data into the 'doctors' table.
