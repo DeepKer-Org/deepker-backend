@@ -12,9 +12,9 @@ import (
 // AlertRepository includes specific methods for the Alert entity and embeds BaseRepository
 type AlertRepository interface {
 	BaseRepository[models.Alert]
-	GetAttendedAlerts(offset int, limit int) ([]*models.Alert, error)
-	GetUnattendedAlerts(offset int, limit int) ([]*models.Alert, error)
-	CountAlertsByStatus(status string, count *int64) error
+	GetRecentAlerts(offset int, limit int) ([]*models.Alert, error)
+	GetPastAlerts(offset int, limit int) ([]*models.Alert, error)
+	CountAlertsByPeriod(period string, count *int64) error
 	GetAlertsByTimezone(timezone string) ([]*models.Alert, error)
 	Liberate(alert *models.Alert) error
 }
@@ -71,8 +71,8 @@ func (r *alertRepository) GetAll() ([]*models.Alert, error) {
 	return alerts, nil
 }
 
-// GetAttendedAlerts retrieves attended alerts with pagination (attended_timestamp is not null).
-func (r *alertRepository) GetAttendedAlerts(offset int, limit int) ([]*models.Alert, error) {
+// GetRecentAlerts retrieves recent alerts with pagination (alert_timestamp <= 24 hours).
+func (r *alertRepository) GetRecentAlerts(offset int, limit int) ([]*models.Alert, error) {
 	var alerts []*models.Alert
 	if err := r.db.Preload("BiometricData").
 		Preload("AttendedBy").
@@ -81,7 +81,7 @@ func (r *alertRepository) GetAttendedAlerts(offset int, limit int) ([]*models.Al
 		Preload("Patient.Medications").
 		Preload("Patient.Doctors").
 		Preload("ComputerDiagnostic").
-		Where("attended_timestamp IS NOT NULL").
+		Where("alert_timestamp >= ?", time.Now().UTC().Add(-24*time.Hour)).
 		Order("alert_timestamp DESC").
 		Offset(offset).
 		Limit(limit).
@@ -91,8 +91,8 @@ func (r *alertRepository) GetAttendedAlerts(offset int, limit int) ([]*models.Al
 	return alerts, nil
 }
 
-// GetUnattendedAlerts retrieves unattended alerts with pagination (attended_timestamp is null).
-func (r *alertRepository) GetUnattendedAlerts(offset int, limit int) ([]*models.Alert, error) {
+// GetPastAlerts retrieves past alerts with pagination (alert_timestamp > 24 hours).
+func (r *alertRepository) GetPastAlerts(offset int, limit int) ([]*models.Alert, error) {
 	var alerts []*models.Alert
 	if err := r.db.Preload("BiometricData").
 		Preload("AttendedBy").
@@ -102,7 +102,7 @@ func (r *alertRepository) GetUnattendedAlerts(offset int, limit int) ([]*models.
 		Preload("Patient.Doctors").
 		Preload("Patient.MonitoringDevice").
 		Preload("ComputerDiagnostic").
-		Where("attended_timestamp IS NULL").
+		Where("alert_timestamp < ?", time.Now().UTC().Add(-24*time.Hour)).
 		Order("alert_timestamp DESC").
 		Offset(offset).
 		Limit(limit).
@@ -133,7 +133,6 @@ func (r *alertRepository) GetAlertsByTimezone(timezone string) ([]*models.Alert,
 		Preload("Patient.Doctors").
 		Preload("Patient.MonitoringDevice").
 		Preload("ComputerDiagnostic").
-		// Convert `alert_timestamp` from UTC to the specified timezone before comparison
 		Where("alert_timestamp AT TIME ZONE 'UTC' AT TIME ZONE ? >= ? AND alert_timestamp AT TIME ZONE 'UTC' AT TIME ZONE ? < ?", timezone, startOfDay, timezone, endOfDay).
 		Order("alert_timestamp DESC").
 		Find(&alerts).Error; err != nil {
@@ -143,14 +142,17 @@ func (r *alertRepository) GetAlertsByTimezone(timezone string) ([]*models.Alert,
 	return alerts, nil
 }
 
-func (r *alertRepository) CountAlertsByStatus(status string, count *int64) error {
+func (r *alertRepository) CountAlertsByPeriod(period string, count *int64) error {
 	var condition string
-	if status == "attended" {
-		condition = "attended_timestamp IS NOT NULL"
+	if period == "recent" {
+		condition = "alert_timestamp >= ?"
 	} else {
-		condition = "attended_timestamp IS NULL"
+		condition = "alert_timestamp < ?"
 	}
-	return r.db.Model(&models.Alert{}).Where(condition).Count(count).Error
+
+	cutoffTime := time.Now().UTC().Add(-24 * time.Hour)
+
+	return r.db.Model(&models.Alert{}).Where(condition, cutoffTime).Count(count).Error
 }
 
 func (r *alertRepository) Liberate(alert *models.Alert) error {
