@@ -17,8 +17,7 @@ WHERE doctor_patient_id IN (
                             '2a7f893a-3269-40ad-97b1-7e8be66d1a55',
                             'cb63633a-0174-4667-8e0f-eafa7deaf6c8',
                             '44d7ef74-bf07-40f6-b3a7-69a690ce37e4',
-                            'bf407595-426b-43f1-98fb-da2da22baa73',
-                            '9fb7db16-719a-4c96-a250-da5a86b60032'
+                            'bf407595-426b-43f1-98fb-da2da22baa73'
     );
 
 -- Deleting data from 'computer_diagnostics' table (Child table)

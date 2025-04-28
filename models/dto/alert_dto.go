@@ -2,8 +2,9 @@ package dto
 
 import (
 	"biometric-data-backend/models"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // AlertCreateDTO is used for creating a new alert
@@ -25,6 +26,7 @@ type AlertCreateResponseDTO struct {
 type AlertUpdateDTO struct {
 	AttendedTimestamp *time.Time `json:"attended_timestamp"`
 	AttendedByID      uuid.UUID  `json:"attended_by_id"`
+	FinalDiagnosis    string     `json:"final_diagnosis"`
 }
 
 // AlertDTO is used for retrieving an alert along with related entities

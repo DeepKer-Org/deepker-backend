@@ -2,6 +2,7 @@ package repository
 
 import (
 	"biometric-data-backend/models"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

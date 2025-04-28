@@ -23,7 +23,7 @@ type AlertService interface {
 	GetAllAlerts() ([]*dto.AlertDTO, error)
 	UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) error
 	DeleteAlert(id uuid.UUID) error
-	GetAllAlertsByStatus(status string, page int, limit int) ([]*dto.AlertDTO, int, error)
+	GetAllAlertsByPeriod(period string, page int, limit int) ([]*dto.AlertDTO, int, error)
 	GetAllAlertsByTimezone(timezone string) ([]*dto.AlertDTO, error)
 }
 
@@ -176,20 +176,7 @@ func (s *alertService) CreateAlert(alertDTO *dto.AlertCreateDTO) (*dto.AlertCrea
 }
 
 func (s *alertService) GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error) {
-	ctx := context.Background()
-	cacheKey := "alert:" + id.String()
-
-	// Attempt to fetch from cache
 	var alert dto.AlertDTO
-	found, err := s.cache.Get(ctx, cacheKey, &alert)
-	if err != nil {
-		log.Printf("Error accessing cache for AlertID %s: %v", id, err)
-		return nil, err
-	}
-	if found {
-		log.Println("Cache hit for alert with AlertID:", id)
-		return &alert, nil
-	}
 
 	log.Println("Fetching alert with AlertID:", id)
 	dbAlert, err := s.alertRepo.GetByID(id, "alert_id")
@@ -203,11 +190,6 @@ func (s *alertService) GetAlertByID(id uuid.UUID) (*dto.AlertDTO, error) {
 	}
 
 	alert = *dto.MapAlertToDTO(dbAlert)
-
-	// Store in cache
-	if err := s.cache.Set(ctx, cacheKey, alert); err != nil {
-		log.Printf("Failed to cache alert: %v", err)
-	}
 
 	return &alert, nil
 }
@@ -246,8 +228,6 @@ func (s *alertService) GetAllAlerts() ([]*dto.AlertDTO, error) {
 }
 
 func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) error {
-	log.Println("Updating alert with AlertID:", id)
-
 	alert, err := s.alertRepo.GetByID(id, "alert_id")
 	if err != nil {
 		log.Printf("Error retrieving alert: %v", err)
@@ -258,9 +238,25 @@ func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) e
 		return gorm.ErrRecordNotFound
 	}
 
-	if alert.AttendedByID.Valid == false && alertDTO.AttendedByID == uuid.Nil {
-		log.Printf("AttendedByID must be set before updating other fields")
-		return errors.New("attendedById must be set before updating other fields")
+	if alertDTO.FinalDiagnosis != "" {
+		alert.FinalDiagnosis = alertDTO.FinalDiagnosis
+		err := s.alertRepo.UpdateAlert(alert)
+		if err != nil {
+			log.Printf("Failed to update alert: %v", err)
+			return err
+		}
+		return nil
+	}
+
+	if alertDTO.AttendedByID == uuid.Nil {
+		err := s.alertRepo.Liberate(alert)
+		if err != nil {
+			log.Printf("Failed to liberate alert: %v", err)
+			return err
+		}
+
+		_ = s.cache.Delete(context.Background(), "alert:"+id.String(), "alerts:all")
+		return nil
 	}
 
 	// Update AttendedByID if provided
@@ -271,13 +267,10 @@ func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) e
 		}
 	}
 
-	// Only allow updates to other fields if AttendedByID is set
+	// // Only allow updates to other fields if AttendedByID is set
 	if alert.AttendedByID.Valid {
 		utcTimestamp := alertDTO.AttendedTimestamp.UTC()
 		alert.AttendedTimestamp = &utcTimestamp
-	} else {
-		log.Println("Cannot update fields other than AttendedByID as it has not been set.")
-		return errors.New("other fields cannot be updated until attendedById is set")
 	}
 
 	err = s.alertRepo.Update(alert, "alert_id", id)
@@ -310,9 +303,9 @@ func (s *alertService) DeleteAlert(id uuid.UUID) error {
 	return nil
 }
 
-func (s *alertService) GetAllAlertsByStatus(status string, page int, limit int) ([]*dto.AlertDTO, int, error) {
-	status = strings.ToLower(status)
-	log.Printf("Fetching alerts with status: %s, page: %d, limit: %d", status, page, limit)
+func (s *alertService) GetAllAlertsByPeriod(period string, page int, limit int) ([]*dto.AlertDTO, int, error) {
+	period = strings.ToLower(period)
+	log.Printf("Fetching alerts with period: %s, page: %d, limit: %d", period, page, limit)
 
 	offset := (page - 1) * limit
 	var alerts []*models.Alert
@@ -320,34 +313,34 @@ func (s *alertService) GetAllAlertsByStatus(status string, page int, limit int) 
 	var err error
 
 	// Define cache key
-	cacheKey := fmt.Sprintf("alerts:status:%s:page:%d:limit:%d", status, page, limit)
+	// cacheKey := fmt.Sprintf("alerts:period:%s:page:%d:limit:%d", period, page, limit)
 
 	// Attempt to fetch from cache
 	var alertDTOs []*dto.AlertDTO
-	found, cacheErr := s.cache.Get(context.Background(), cacheKey, &alertDTOs)
-	if cacheErr != nil {
-		log.Printf("Error accessing cache for status %s: %v", status, cacheErr)
-	}
-	if found {
-		log.Println("Cache hit for alerts by status:", status)
-		return alertDTOs, int(totalCount), nil
-	}
+	// found, cacheErr := s.cache.Get(context.Background(), cacheKey, &alertDTOs)
+	// if cacheErr != nil {
+	// 	log.Printf("Error accessing cache for period %s: %v", period, cacheErr)
+	// }
+	// if found {
+	// 	log.Println("Cache hit for alerts by period:", period)
+	// 	return alertDTOs, int(totalCount), nil
+	// }
 
-	// Fetch data based on status
-	switch status {
-	case "attended":
-		err = s.alertRepo.CountAlertsByStatus("attended", &totalCount)
+	// Fetch data based on period
+	switch period {
+	case "recent":
+		err = s.alertRepo.CountAlertsByPeriod("recent", &totalCount)
 		if err == nil {
-			alerts, err = s.alertRepo.GetAttendedAlerts(offset, limit)
+			alerts, err = s.alertRepo.GetRecentAlerts(offset, limit)
 		}
-	case "unattended":
-		err = s.alertRepo.CountAlertsByStatus("unattended", &totalCount)
+	case "past":
+		err = s.alertRepo.CountAlertsByPeriod("past", &totalCount)
 		if err == nil {
-			alerts, err = s.alertRepo.GetUnattendedAlerts(offset, limit)
+			alerts, err = s.alertRepo.GetPastAlerts(offset, limit)
 		}
 	default:
-		log.Printf("Invalid status: %s", status)
-		return nil, 0, errors.New("invalid status: must be 'attended' or 'unattended'")
+		log.Printf("Invalid period: %s", period)
+		return nil, 0, errors.New("invalid period: must be 'recent' or 'past'")
 	}
 
 	if err != nil {
@@ -358,28 +351,18 @@ func (s *alertService) GetAllAlertsByStatus(status string, page int, limit int) 
 	alertDTOs = dto.MapAlertsToDTOs(alerts)
 
 	// Store in cache
-	if cacheErr == nil {
-		_ = s.cache.Set(context.Background(), cacheKey, alertDTOs)
-	}
+	// if cacheErr == nil {
+	// 	_ = s.cache.Set(context.Background(), cacheKey, alertDTOs)
+	// }
 
-	log.Printf("Alerts fetched successfully with status: %s, count: %d", status, len(alerts))
+	// log.Printf("Alerts fetched successfully with period: %s, count: %d", period, len(alerts))
 	return alertDTOs, int(totalCount), nil
 }
 
 func (s *alertService) GetAllAlertsByTimezone(timezone string) ([]*dto.AlertDTO, error) {
 	cacheKey := "alerts:timezone:" + timezone
 
-	// Attempt to fetch from cache
 	var alerts []*dto.AlertDTO
-	// found, err := s.cache.Get(context.Background(), cacheKey, &alerts)
-	// if err != nil {
-	// 	log.Printf("Error accessing cache for timezone %s: %v", timezone, err)
-	// 	return nil, err
-	// }
-	// if found {
-	// 	log.Println("Cache hit for alerts by timezone:", timezone)
-	// 	return alerts, nil
-	// }
 
 	dbAlerts, err := s.alertRepo.GetAlertsByTimezone(timezone)
 	if err != nil {
@@ -389,7 +372,6 @@ func (s *alertService) GetAllAlertsByTimezone(timezone string) ([]*dto.AlertDTO,
 
 	alerts = dto.MapAlertsToDTOs(dbAlerts)
 
-	// Store in cache
 	_ = s.cache.Set(context.Background(), cacheKey, alerts)
 
 	log.Printf("Alerts fetched successfully for timezone: %s, count: %d", timezone, len(alerts))

@@ -3,11 +3,12 @@ package controller
 import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/service"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type AlertController struct {
@@ -71,16 +72,16 @@ func (ac *AlertController) GetAlertByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"alert": alert})
 }
 
-// GetAllAlerts handles retrieving all alerts with optional status filtering and pagination
+// GetAllAlerts handles retrieving all alerts with optional period filtering and pagination
 func (ac *AlertController) GetAllAlerts(c *gin.Context) {
-	status := c.Query("status")
+	period := c.Query("period")
 	timezone := c.Query("timezone")
 
 	var alerts []*dto.AlertDTO
 	var totalCount int
 	var err error
 
-	if status != "" {
+	if period != "" {
 		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil || page < 1 {
 			page = 1
@@ -91,11 +92,11 @@ func (ac *AlertController) GetAllAlerts(c *gin.Context) {
 			limit = 10
 		}
 
-		// Fetch paginated alerts and total count by status
-		alerts, totalCount, err = ac.AlertService.GetAllAlertsByStatus(status, page, limit)
+		// Fetch paginated alerts and total count by period
+		alerts, totalCount, err = ac.AlertService.GetAllAlertsByPeriod(period, page, limit)
 		if err != nil {
-			log.Printf("Error retrieving alerts by status: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve alerts by status"})
+			log.Printf("Error retrieving alerts by period: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve alerts by period"})
 			return
 		}
 
