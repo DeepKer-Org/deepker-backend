@@ -21,10 +21,10 @@ func ExecuteMigrations() {
 	resetFlag := flag.Bool("reset", false, "Reset the database by rolling back all migrations")
 	flag.Parse()
 
-	// Load environment variables from .env file
+	// Load environment variables from .env file or use defaults
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Println("No .env file found, using default environment variables")
 	}
 
 	// Build the connection string

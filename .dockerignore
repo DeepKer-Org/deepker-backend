@@ -1,0 +1,42 @@
+# Ignore local configuration files
+.env
+.env.local
+.env.development
+.env.production
+
+# Ignore build directories and binaries
+/bin
+/build
+/dist
+/myapp
+
+# Ignore local dependencies
+vendor/
+
+# Ignore test files
+*.test
+testdata/
+
+# Ignore documentation and miscellaneous files
+README.md
+LICENSE
+.git
+.gitignore
+*.log
+*.md
+*.txt
+
+# Ignore development directories
+.idea/
+.vscode/
+*.swp
+
+# Ignore temporary data files
+tmp/
+cache/
+logs/
+
+# Ignore Docker-related files
+Dockerfile
+docker-compose.yml
+.dockerignore
