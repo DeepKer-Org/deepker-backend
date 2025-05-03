@@ -21,10 +21,10 @@ func ExecuteMigrations() {
 	resetFlag := flag.Bool("reset", false, "Reset the database by rolling back all migrations")
 	flag.Parse()
 
-	// Load environment variables from .env file
+	// Load environment variables from .env file or use defaults
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Println("No .env file found, using default environment variables")
 	}
 
 	// Build the connection string
@@ -33,9 +33,10 @@ func ExecuteMigrations() {
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbName := os.Getenv("DB_NAME")
+	sslmode := os.Getenv("SSL_MODE")
 
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		dbHost, dbPort, dbUser, dbPassword, dbName)
+	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		dbHost, dbPort, dbUser, dbPassword, dbName, sslmode)
 
 	// Open the database connection
 	db, err := sql.Open("postgres", connStr)
