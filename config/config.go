@@ -3,12 +3,13 @@ package config
 import (
 	"biometric-data-backend/utils"
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/go-redis/redis/v8"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"log"
-	"os"
 )
 
 var (
@@ -27,14 +28,16 @@ func LoadConfig() {
 	DBName = os.Getenv("DB_NAME")
 	DBHost = os.Getenv("DB_HOST")
 	DBPort = os.Getenv("DB_PORT")
+	sslmode := os.Getenv("SSL_MODE")
+	TimeZone := os.Getenv("TIME_ZONE")
 
 	if DBUser == "" || DBPassword == "" || DBName == "" || DBHost == "" || DBPort == "" {
 		log.Fatal("Database configuration not set")
 	}
 
 	// Build the connection string for PostgreSQL
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC",
-		DBHost, DBUser, DBPassword, DBName, DBPort)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
+		DBHost, DBUser, DBPassword, DBName, DBPort, sslmode, TimeZone)
 
 	// Connect to the database
 	var err error
@@ -75,6 +78,13 @@ var (
 
 // LoadRedisConfig initializes the Redis client with the configuration from environment variables.
 func LoadRedisConfig() {
+	// Check if caching is enabled
+    cacheEnabled := os.Getenv("CACHE_ENABLED") != "false"
+    if !cacheEnabled {
+        log.Println("Cache is disabled. Skipping Redis initialization.")
+        return
+    }
+
 	RedisHost = os.Getenv("REDIS_HOST")
 	RedisPort = os.Getenv("REDIS_PORT")
 	RedisPassword = os.Getenv("REDIS_PASSWORD")
