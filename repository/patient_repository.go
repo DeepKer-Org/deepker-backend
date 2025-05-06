@@ -4,8 +4,9 @@ import (
 	"biometric-data-backend/models"
 	"biometric-data-backend/models/dto"
 	"errors"
-	"gorm.io/gorm"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 // PatientRepository interface includes the specific methods and embeds BaseRepository

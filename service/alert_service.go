@@ -137,7 +137,6 @@ func (s *alertService) CreateAlert(alertDTO *dto.AlertCreateDTO) (*dto.AlertCrea
 		DiagnosticID:       computerDiagnostic.DiagnosticID,
 		ComputerDiagnostic: computerDiagnostic,
 		PatientID:          patient.PatientID,
-		Patient:            patient,
 	}
 
 	err = s.alertRepo.CreateInTransaction(alert, tx)
@@ -228,6 +227,7 @@ func (s *alertService) GetAllAlerts() ([]*dto.AlertDTO, error) {
 }
 
 func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) error {
+
 	alert, err := s.alertRepo.GetByID(id, "alert_id")
 	if err != nil {
 		log.Printf("Error retrieving alert: %v", err)
@@ -273,7 +273,18 @@ func (s *alertService) UpdateAlert(id uuid.UUID, alertDTO *dto.AlertUpdateDTO) e
 		alert.AttendedTimestamp = &utcTimestamp
 	}
 
-	err = s.alertRepo.Update(alert, "alert_id", id)
+	updateAlert := &models.Alert{
+		AlertTimestamp:     alert.AlertTimestamp,
+		AttendedTimestamp:  alert.AttendedTimestamp,
+		AttendedByID:       uuid.NullUUID{UUID: alertDTO.AttendedByID, Valid: true},
+		BiometricDataID:    alert.BiometricDataID,
+		BiometricData:      alert.BiometricData,
+		DiagnosticID:       alert.DiagnosticID,
+		ComputerDiagnostic: alert.ComputerDiagnostic,
+		PatientID:          alert.PatientID,
+	}
+
+	err = s.alertRepo.Update(updateAlert, "alert_id", id)
 	if err != nil {
 		log.Printf("Failed to update alert: %v", err)
 		return err

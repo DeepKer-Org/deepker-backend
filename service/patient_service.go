@@ -8,9 +8,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"log"
 )
 
 type PatientService interface {
