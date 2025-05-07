@@ -3,10 +3,13 @@ package controller
 import (
 	"biometric-data-backend/models/dto"
 	"biometric-data-backend/service"
-	"github.com/gin-gonic/gin"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type MonitoringDeviceController struct {
@@ -105,19 +108,26 @@ func (mdc *MonitoringDeviceController) GetAllMonitoringDevices(c *gin.Context) {
 func (mdc *MonitoringDeviceController) UpdateMonitoringDevice(c *gin.Context) {
 	id := c.Param("id")
 
-	log.Println("Updating monitoring device with DeviceID:", id)
-
 	var deviceDTO dto.MonitoringDeviceUpdateDTO
 	if err := c.ShouldBindJSON(&deviceDTO); err != nil {
-		log.Printf("Error binding JSON: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
 	err := mdc.MonitoringDeviceService.UpdateMonitoringDevice(id, &deviceDTO)
 	if err != nil {
-		log.Printf("Failed to update monitoring device: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update monitoring device"})
+		var pgErr *pgconn.PgError
+		if ok := errors.As(err, &pgErr); ok {
+			c.JSON(http.StatusConflict, gin.H{
+				"error":   "Database constraint error",
+				"code":    pgErr.Code,
+				"message": pgErr.Message,
+				"detail":  pgErr.Detail,
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
 
