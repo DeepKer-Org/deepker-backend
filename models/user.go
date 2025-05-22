@@ -1,15 +1,13 @@
 package models
 
+import (
+	"github.com/google/uuid"
+)
+
 type User struct {
-	ID    uint   `json:"id" gorm:"primaryKey"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
-
-func (u *User) GetID() uint {
-	return u.ID
-}
-
-func (u *User) SetID(id uint) {
-	u.ID = id
+	BaseModel
+	UserID   uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	Username string    `gorm:"size:100;unique;not null"`
+	Password string    `gorm:"not null"`
+	Roles    []*Role   `gorm:"many2many:user_roles;joinForeignKey:UserID;joinReferences:RoleID;"`
 }

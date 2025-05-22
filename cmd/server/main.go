@@ -14,20 +14,21 @@ import (
 func main() {
 	env := godotenv.Load()
 	if env != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("No .env file found, using default environment variables")
 	}
+
 	config.LoadConfig()
+	defer config.CloseDB()
 
 	router := gin.Default()
-	// Initialize swagger
+
 	docs.SwaggerInfo.BasePath = "/"
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	routes.RegisterRoutes(router)
+	routes.RegisterRoutes(router, config.DB)
 
 	log.Println("Server is running on port 8080")
-	err := router.Run(":8080")
-	if err != nil {
-		return
+	if err := router.Run(":8080"); err != nil {
+		log.Fatal("Failed to start server: ", err)
 	}
 }
