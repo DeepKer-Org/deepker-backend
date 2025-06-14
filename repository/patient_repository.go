@@ -94,7 +94,7 @@ func applyPatientFilters(query *gorm.DB, filters dto.PatientFilter) *gorm.DB {
 		query = query.Where("patients.age = ?", filters.Age)
 	}
 	if filters.Location != "" {
-		query = query.Where("patients.location LIKE ?", "%"+filters.Location+"%")
+		query = query.Where("LOWER(patients.location) LIKE ?", "%"+strings.ToLower(filters.Location)+"%")
 	}
 
 	// Join the doctor_patients table to filter by doctor_id
