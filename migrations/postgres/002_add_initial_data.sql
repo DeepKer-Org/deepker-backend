@@ -337,7 +337,7 @@ VALUES
         'dddddddd-dddd-dddd-dddd-dddddddddddd',
         '2023-09-25 14:00:00.000000',
         '2024-10-10 12:18:29.000000',
-        'Arrhythmia',
+        'Arritmia',
         '11111111-1111-1111-1111-111111111111',
         '55555555-5555-5555-5555-555555555555',
         '55667788-9999-aaaa-bbbb-ccccdddd1111',
@@ -443,7 +443,7 @@ INSERT INTO
 VALUES
     (
         'fe18e71a-fb41-4a3a-85f6-0581eaaf4839',
-        'Arrhythmia',
+        'Arritmia',
         85.80,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -462,7 +462,7 @@ INSERT INTO
 VALUES
     (
         'ff2f442f-0481-4d33-8702-9dd3d87d251b',
-        'Possible Heart Attack',
+        'Posible ataque al corazón',
         80.50,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -481,7 +481,7 @@ INSERT INTO
 VALUES
     (
         'c5a9b459-2283-4b53-b565-9da36eea304a',
-        'Hypertension Crisis',
+        'Crisis de hipertensión',
         93.20,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -500,7 +500,7 @@ INSERT INTO
 VALUES
     (
         '25ea8d63-7869-4ee9-9054-cf7f15b61db4',
-        'Arrhythmia',
+        'Arritmia',
         75.80,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -519,7 +519,7 @@ INSERT INTO
 VALUES
     (
         '3b2bda86-a71d-4fbd-924d-623c97c849bd',
-        'Possible Heart Attack',
+        'Posible ataque al corazón',
         82.50,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -538,7 +538,7 @@ INSERT INTO
 VALUES
     (
         '073b9f6a-8dfb-4a17-ae1d-1613e05db40d',
-        'Hypertension Crisis',
+        'Crisis de hipertensión',
         90.30,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -557,7 +557,7 @@ INSERT INTO
 VALUES
     (
         '25e00000-7869-4ee9-9054-cf7f15b61db4',
-        'Arrhythmia',
+        'Arritmia',
         75.40,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -576,7 +576,7 @@ INSERT INTO
 VALUES
     (
         '44556677-8888-9999-aaaa-bbbbccccdddd',
-        'Possible Heart Attack',
+        'Posible ataque al corazón',
         83.50,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -595,7 +595,7 @@ INSERT INTO
 VALUES
     (
         '55667788-9999-aaaa-bbbb-ccccdddd1111',
-        'Hypertension Crisis',
+        'Crisis de hipertensión',
         93.28,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -614,7 +614,7 @@ INSERT INTO
 VALUES
     (
         '66778899-aaaa-bbbb-cccc-ddddeeeeffff',
-        'Arrhythmia',
+        'Arritmia',
         78.80,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -633,7 +633,7 @@ INSERT INTO
 VALUES
     (
         '44550000-8888-9999-aaaa-bbbbccccdddd',
-        'Possible Heart Attack',
+        'Posible ataque al corazón',
         94.50,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -652,7 +652,7 @@ INSERT INTO
 VALUES
     (
         '55667000-9999-aaaa-bbbb-ccccdddd1111',
-        'Hypertension Crisis',
+        'Crisis de hipertensión',
         91.20,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -671,7 +671,7 @@ INSERT INTO
 VALUES
     (
         '00000000-fb41-4a3a-85f6-0581eaaf4839',
-        'Arrhythmia',
+        'Arritmia',
         75.88,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -690,7 +690,7 @@ INSERT INTO
 VALUES
     (
         '11111111-0481-4d33-8702-9dd3d87d251b',
-        'Possible Heart Attack',
+        'Posible ataque al corazón',
         85.90,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -709,7 +709,7 @@ INSERT INTO
 VALUES
     (
         '22222222-2283-4b53-b565-9da36eea304a',
-        'Hypertension Crisis',
+        'Crisis de hipertensión',
         90.20,
         '2024-09-29 17:16:24.443420',
         '2024-09-29 17:16:24.443420',
@@ -891,11 +891,11 @@ VALUES
     (
         'de44255a-f7ab-425e-8a98-a24fb05a54e1',
         '11111111-1111-1111-1111-111111111111',
-        'Aspirin',
+        'Aspirina',
         '2023-09-01',
         '2023-09-30',
         '500mg',
-        'Once daily',
+        'Una veces al día',
         '2024-09-29 17:16:24.484946',
         '2024-09-29 17:16:24.484946',
         null
@@ -922,7 +922,7 @@ VALUES
         '2023-09-15',
         '2023-10-15',
         '20mg',
-        'Twice daily',
+        'Dos veces al día',
         '2024-09-29 17:16:24.484946',
         '2024-09-29 17:16:24.484946',
         null
@@ -945,11 +945,11 @@ VALUES
     (
         '47666597-c6bf-4651-9429-36405e0410fd',
         '33333333-3333-3333-3333-333333333333',
-        'Metformin',
+        'Metformina',
         '2023-09-20',
         '2023-10-20',
         '500mg',
-        'Once daily',
+        'Una veces al día',
         '2024-09-29 17:16:24.484946',
         '2024-09-29 17:16:24.484946',
         null
@@ -976,7 +976,7 @@ VALUES
         '2023-09-01',
         '2023-09-30',
         '50mg',
-        'Once daily',
+        'Una veces al día',
         '2024-09-29 17:16:24.484946',
         '2024-09-29 17:16:24.484946',
         null
