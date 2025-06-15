@@ -13,6 +13,7 @@ import (
 type PatientRepository interface {
 	BaseRepository[models.Patient]
 	GetPatientByDNI(dni string) (*models.Patient, error)
+	GetAllLocations() ([]string, error)
 	GetAllPaginatedWithFilters(offset int, limit int, filters dto.PatientFilter) ([]*models.Patient, int64, error)
 }
 
@@ -78,6 +79,17 @@ func (r *patientRepository) GetPatientByDNI(dni string) (*models.Patient, error)
 	}
 
 	return &patient, nil
+}
+
+func (r *patientRepository) GetAllLocations() ([]string, error) {
+	var locations []string
+	if err := r.db.Model(&models.Patient{}).
+		Distinct("location").
+		Where("location IS NOT NULL AND location != ''").
+		Pluck("location", &locations).Error; err != nil {
+		return nil, err
+	}
+	return locations, nil
 }
 
 func applyPatientFilters(query *gorm.DB, filters dto.PatientFilter) *gorm.DB {

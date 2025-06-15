@@ -169,6 +169,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	)
 	// Additional patient-specific route
 	router.GET("/"+PatientsResource+"/dni/:dni", patientController.GetPatientByDNI)
+	router.GET("/"+PatientsResource+"/locations", patientController.GetAllPatientLocations)
 
 	// Comorbidity
 	comorbidityRepo := repository.NewComorbidityRepository(db)
