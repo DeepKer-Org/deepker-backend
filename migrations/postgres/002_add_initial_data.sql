@@ -425,81 +425,10 @@ VALUES
     );
 
 -- This section creates and inserts data into the 'comorbidities' table.
-INSERT INTO
-    public.comorbidities (
-        comorbidity_id,
-        patient_id,
-        comorbidity,
-        created_at,
-        updated_at,
-        deleted_at
-    )
-VALUES
-    (
-        '25ea8d63-7869-4ee9-9054-cf7f15b61db4',
-        '11111111-1111-1111-1111-111111111111',
-        'Diabetes',
-        '2024-09-29 17:16:24.505852',
-        '2024-09-29 17:16:24.505852',
-        null
-    );
-
-INSERT INTO
-    public.comorbidities (
-        comorbidity_id,
-        patient_id,
-        comorbidity,
-        created_at,
-        updated_at,
-        deleted_at
-    )
-VALUES
-    (
-        'c8154392-8ddc-41cd-852a-e6ee572f1772',
-        '22222222-2222-2222-2222-222222222222',
-        'Obesity',
-        '2024-09-29 17:16:24.505852',
-        '2024-09-29 17:16:24.505852',
-        null
-    );
-
-INSERT INTO
-    public.comorbidities (
-        comorbidity_id,
-        patient_id,
-        comorbidity,
-        created_at,
-        updated_at,
-        deleted_at
-    )
-VALUES
-    (
-        '3b2bda86-a71d-4fbd-924d-623c97c849bd',
-        '33333333-3333-3333-3333-333333333333',
-        'Asthma',
-        '2024-09-29 17:16:24.505852',
-        '2024-09-29 17:16:24.505852',
-        null
-    );
-
-INSERT INTO
-    public.comorbidities (
-        comorbidity_id,
-        patient_id,
-        comorbidity,
-        created_at,
-        updated_at,
-        deleted_at
-    )
-VALUES
-    (
-        '073b9f6a-8dfb-4a17-ae1d-1613e05db40d',
-        '33333333-3333-3333-3333-333333333333',
-        'Cancer',
-        '2024-09-29 14:46:28.072331',
-        '2024-09-29 14:46:28.072331',
-        null
-    );
+INSERT INTO public.comorbidities (comorbidity_id, patient_id, comorbidity, created_at, updated_at, deleted_at) VALUES ('25ea8d63-7869-4ee9-9054-cf7f15b61db4', '11111111-1111-1111-1111-111111111111', 'Diabetes', '2024-09-29 17:16:24.505852', '2024-09-29 17:16:24.505852', null);
+INSERT INTO public.comorbidities (comorbidity_id, patient_id, comorbidity, created_at, updated_at, deleted_at) VALUES ('c8154392-8ddc-41cd-852a-e6ee572f1772', '22222222-2222-2222-2222-222222222222', 'Obesidad', '2024-09-29 17:16:24.505852', '2024-09-29 17:16:24.505852', null);
+INSERT INTO public.comorbidities (comorbidity_id, patient_id, comorbidity, created_at, updated_at, deleted_at) VALUES ('3b2bda86-a71d-4fbd-924d-623c97c849bd', '33333333-3333-3333-3333-333333333333', 'Asma', '2024-09-29 17:16:24.505852', '2024-09-29 17:16:24.505852', null);
+INSERT INTO public.comorbidities (comorbidity_id, patient_id, comorbidity, created_at, updated_at, deleted_at) VALUES ('073b9f6a-8dfb-4a17-ae1d-1613e05db40d', '33333333-3333-3333-3333-333333333333', 'Cáncer', '2024-09-29 14:46:28.072331', '2024-09-29 14:46:28.072331', null);
 
 -- This section creates and inserts data into the 'computer_diagnostics' table.
 INSERT INTO
@@ -940,74 +869,9 @@ VALUES
     );
 
 -- This section creates and inserts data into the 'doctors' table.
-INSERT INTO
-    public.doctors (
-        doctor_id,
-        dni,
-        issuance_date,
-        name,
-        specialization,
-        created_at,
-        updated_at,
-        deleted_at
-    )
-VALUES
-    (
-        '44556677-8888-9999-aaaa-bbbbccccdddd',
-        '44556677',
-        '2019-05-15',
-        'Dr. Alice Brown',
-        'Cardiologist',
-        '2024-09-29 17:16:24.525101',
-        '2024-09-29 17:16:24.525101',
-        null
-    );
-
-INSERT INTO
-    public.doctors (
-        doctor_id,
-        dni,
-        issuance_date,
-        name,
-        specialization,
-        created_at,
-        updated_at,
-        deleted_at
-    )
-VALUES
-    (
-        '55667788-9999-aaaa-bbbb-ccccdddd1111',
-        '55667788',
-        '2018-03-12',
-        'Dr. Bob Green',
-        'Pulmonologist',
-        '2024-09-29 17:16:24.525101',
-        '2024-09-29 17:16:24.525101',
-        null
-    );
-
-INSERT INTO
-    public.doctors (
-        doctor_id,
-        dni,
-        issuance_date,
-        name,
-        specialization,
-        created_at,
-        updated_at,
-        deleted_at
-    )
-VALUES
-    (
-        '66778899-aaaa-bbbb-cccc-ddddeeeeffff',
-        '66778899',
-        '2020-11-23',
-        'Dr. Charlie Blue',
-        'General Practitioner',
-        '2024-09-29 17:16:24.525101',
-        '2024-09-29 17:16:24.525101',
-        null
-    );
+INSERT INTO public.doctors (doctor_id, dni, issuance_date, name, specialization, created_at, updated_at, deleted_at) VALUES ('44556677-8888-9999-aaaa-bbbbccccdddd', '44556677', '2019-05-15', 'Dr. Alice Brown', 'Cardiólogo', '2024-09-29 17:16:24.525101', '2024-09-29 17:16:24.525101', null);
+INSERT INTO public.doctors (doctor_id, dni, issuance_date, name, specialization, created_at, updated_at, deleted_at) VALUES ('55667788-9999-aaaa-bbbb-ccccdddd1111', '55667788', '2018-03-12', 'Dr. Bob Green', 'Neumólogo', '2024-09-29 17:16:24.525101', '2024-09-29 17:16:24.525101', null);
+INSERT INTO public.doctors (doctor_id, dni, issuance_date, name, specialization, created_at, updated_at, deleted_at) VALUES ('66778899-aaaa-bbbb-cccc-ddddeeeeffff', '66778899', '2020-11-23', 'Dr. Charlie Blue', 'Médico General', '2024-09-29 17:16:24.525101', '2024-09-29 17:16:24.525101', null);
 
 -- This section creates and inserts data into the 'medications' table.
 INSERT INTO
@@ -1206,7 +1070,7 @@ VALUES
         70.50,
         175.30,
         'M',
-        'Room 101',
+        'Sala 101',
         '2024-09-29 17:13:54.981035',
         '2024-09-29 17:13:54.981035',
         null
@@ -1235,7 +1099,7 @@ VALUES
         60.20,
         162.40,
         'F',
-        'Room 202',
+        'Sala 202',
         '2024-09-29 17:13:54.981035',
         '2024-09-29 17:13:54.981035',
         null
@@ -1264,7 +1128,7 @@ VALUES
         65.70,
         168.90,
         'F',
-        'Room 303',
+        'Sala 303',
         '2024-09-29 17:13:54.981035',
         '2024-09-29 17:13:54.981035',
         null
@@ -1293,7 +1157,7 @@ VALUES
         70.50,
         175.30,
         'M',
-        'Room 101',
+        'Sala 101',
         '2024-09-29 14:44:19.335160',
         '2024-09-29 14:47:30.484805',
         '2024-09-29 14:48:23.168631'
@@ -1322,7 +1186,7 @@ VALUES
         70.50,
         175.30,
         'M',
-        'Room 101',
+        'Sala 101',
         '2024-09-29 14:45:22.979759',
         '2024-09-29 14:45:22.979759',
         null
@@ -1351,7 +1215,7 @@ VALUES
         70.50,
         175.30,
         'M',
-        'Room 101',
+        'Sala 101',
         '2024-09-29 14:45:22.979759',
         '2024-09-29 14:45:22.979759',
         null
@@ -1380,7 +1244,7 @@ VALUES
         70.50,
         175.30,
         'M',
-        'Room 101',
+        'Sala 101',
         '2024-09-29 14:45:22.979759',
         '2024-09-29 14:45:22.979759',
         null
@@ -1409,7 +1273,7 @@ VALUES
         70.50,
         175.30,
         'M',
-        'Room 101',
+        'Sala 101',
         '2024-10-07 12:50:22.971668',
         '2024-10-07 12:50:22.971668',
         null
