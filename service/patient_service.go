@@ -19,6 +19,7 @@ type PatientService interface {
 	GetPatientByID(id uuid.UUID) (*dto.PatientDTO, error)
 	GetPatientByDNI(dni string) (*dto.PatientDTO, error)
 	GetAllPatients(page int, limit int, filters dto.PatientFilter) ([]*dto.PatientDTO, int, error)
+	GetAllLocations() ([]string, error)
 	UpdatePatient(id uuid.UUID, patientDTO *dto.PatientUpdateDTO) error
 	DeletePatient(id uuid.UUID) error
 }
@@ -155,6 +156,32 @@ func (s *patientService) GetAllPatients(page int, limit int, filters dto.Patient
 	}
 
 	return patients, totalCount, nil
+}
+
+func (s *patientService) GetAllLocations() ([]string, error) {
+	ctx := context.Background()
+	cacheKey := "patients:locations:all"
+
+	var locations []string
+	found, err := s.cache.Get(ctx, cacheKey, &locations)
+	if err != nil {
+		return nil, err
+	}
+	if found {
+		log.Println("Cache hit for patient locations")
+		return locations, nil
+	}
+
+	locations, err = s.repo.GetAllLocations()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.cache.Set(ctx, cacheKey, locations); err != nil {
+		log.Printf("Failed to cache patient locations: %v", err)
+	}
+
+	return locations, nil
 }
 
 func (s *patientService) UpdatePatient(id uuid.UUID, patientDTO *dto.PatientUpdateDTO) error {
