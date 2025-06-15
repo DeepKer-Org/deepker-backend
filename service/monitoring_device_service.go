@@ -14,6 +14,7 @@ import (
 
 type MonitoringDeviceService interface {
 	CreateMonitoringDevice(deviceDTO *dto.MonitoringDeviceCreateDTO) error
+	GetAllMonitoringDevicesSimple() ([]*dto.MonitoringDeviceSimpleDTO, error)
 	GetMonitoringDeviceByID(id string) (*dto.MonitoringDeviceDTO, error)
 	GetAllMonitoringDevices(page int, limit int, filters dto.MonitoringDeviceFilter) ([]*dto.MonitoringDeviceDTO, int, error)
 	GetAllMonitoringDevicesByStatus(status string) ([]*dto.MonitoringDeviceDTO, int, error)
@@ -45,6 +46,35 @@ func (s *monitoringDeviceService) CreateMonitoringDevice(deviceDTO *dto.Monitori
 	// Invalidate cache for all devices
 	_ = s.cache.Delete(context.Background(), "monitoring_devices:all")
 	return nil
+}
+
+func (s *monitoringDeviceService) GetAllMonitoringDevicesSimple() ([]*dto.MonitoringDeviceSimpleDTO, error) {
+	ctx := context.Background()
+	cacheKey := "monitoring_devices:simple:all"
+
+	var devices []*dto.MonitoringDeviceSimpleDTO
+	found, err := s.cache.Get(ctx, cacheKey, &devices)
+	if err != nil {
+		return nil, err
+	}
+	if found {
+		log.Println("Cache hit for simple monitoring devices")
+		return devices, nil
+	}
+
+	log.Println("Fetching all simple monitoring devices")
+	dbDevices, err := s.repo.GetAllSimple()
+	if err != nil {
+		return nil, err
+	}
+
+	devices = dto.MapMonitoringDevicesToSimpleDTOs(dbDevices)
+
+	if err := s.cache.Set(ctx, cacheKey, devices); err != nil {
+		log.Printf("Failed to cache simple monitoring devices: %v", err)
+	}
+
+	return devices, nil
 }
 
 func (s *monitoringDeviceService) GetMonitoringDeviceByID(id string) (*dto.MonitoringDeviceDTO, error) {
