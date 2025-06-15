@@ -169,6 +169,7 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 	)
 	// Additional patient-specific route
 	router.GET("/"+PatientsResource+"/dni/:dni", patientController.GetPatientByDNI)
+	router.GET("/"+PatientsResource+"/locations", patientController.GetAllPatientLocations)
 
 	// Comorbidity
 	comorbidityRepo := repository.NewComorbidityRepository(db)
@@ -254,6 +255,9 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		monitoringDeviceController.DeleteMonitoringDevice,
 		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
+	authorized := router.Group("/")
+	authorized.Use(middleware.RoleAuthorization(enums.ToStringArray(enums.Admin, enums.Doctor)))
+	authorized.GET("/monitoring-devices/simple", monitoringDeviceController.GetAllMonitoringDevicesSimple)
 
 	// Phone
 	phoneRepo := repository.NewPhoneRepository(db)

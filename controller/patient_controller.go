@@ -139,6 +139,18 @@ func (pc *PatientController) GetAllPatients(c *gin.Context) {
 	return
 }
 
+// GetAllPatientLocations handles retrieving all unique patient locations
+func (pc *PatientController) GetAllPatientLocations(c *gin.Context) {
+	locations, err := pc.PatientService.GetAllLocations()
+	if err != nil {
+		log.Printf("Error retrieving patient locations: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve patient locations"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"locations": locations})
+}
+
 // UpdatePatient handles updating an existing patient
 func (pc *PatientController) UpdatePatient(c *gin.Context) {
 	id := c.Param("id")
