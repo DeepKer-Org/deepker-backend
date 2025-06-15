@@ -61,6 +61,18 @@ func (mdc *MonitoringDeviceController) GetMonitoringDeviceByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"device": device})
 }
 
+// GetAllMonitoringDevicesSimple handles retrieving all devices with only ID and status
+func (mdc *MonitoringDeviceController) GetAllMonitoringDevicesSimple(c *gin.Context) {
+	devices, err := mdc.MonitoringDeviceService.GetAllMonitoringDevicesSimple()
+	if err != nil {
+		log.Printf("Error retrieving simple monitoring devices: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve monitoring devices"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"devices": devices})
+}
+
 // GetAllMonitoringDevices handles retrieving all monitoring devices
 func (mdc *MonitoringDeviceController) GetAllMonitoringDevices(c *gin.Context) {
 	var totalCount int
