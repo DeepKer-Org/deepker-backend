@@ -254,6 +254,9 @@ func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
 		monitoringDeviceController.DeleteMonitoringDevice,
 		enums.ToStringArray(enums.Admin, enums.Doctor),
 	)
+	authorized := router.Group("/")
+	authorized.Use(middleware.RoleAuthorization(enums.ToStringArray(enums.Admin, enums.Doctor)))
+	authorized.GET("/monitoring-devices/simple", monitoringDeviceController.GetAllMonitoringDevicesSimple)
 
 	// Phone
 	phoneRepo := repository.NewPhoneRepository(db)

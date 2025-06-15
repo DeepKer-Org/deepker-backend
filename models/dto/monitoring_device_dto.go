@@ -51,3 +51,21 @@ func MapMonitoringDevicesToDTOs(devices []*models.MonitoringDevice) []*Monitorin
 	}
 	return deviceDTOs
 }
+
+// MonitoringDeviceSimpleDTO for simple searches
+type MonitoringDeviceSimpleDTO struct {
+	DeviceID string `json:"device_id"`
+	Status   string `json:"status"`
+}
+
+// MapMonitoringDevicesToSimpleDTOs maps a list of MonitoringDevice models to a list of MonitoringDeviceSimpleDTOs
+func MapMonitoringDevicesToSimpleDTOs(devices []*models.MonitoringDevice) []*MonitoringDeviceSimpleDTO {
+	var simpleDTOs []*MonitoringDeviceSimpleDTO
+	for _, device := range devices {
+		simpleDTOs = append(simpleDTOs, &MonitoringDeviceSimpleDTO{
+			DeviceID: device.DeviceID,
+			Status:   device.Status,
+		})
+	}
+	return simpleDTOs
+}

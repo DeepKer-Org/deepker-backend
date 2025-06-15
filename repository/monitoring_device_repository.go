@@ -8,6 +8,7 @@ import (
 
 type MonitoringDeviceRepository interface {
 	CreateMonitoringDevice(monitoringDevice *models.MonitoringDevice) error
+	GetAllSimple() ([]*models.MonitoringDevice, error)
 	GetMonitoringDeviceByID(id string) (*models.MonitoringDevice, error)
 	GetAllMonitoringDevices(offset int, limit int, filters dto.MonitoringDeviceFilter) ([]*models.MonitoringDevice, error)
 	GetDevicesByStatus(status string) ([]*models.MonitoringDevice, error)
@@ -30,6 +31,15 @@ func (r *monitoringDeviceRepository) CreateMonitoringDevice(monitoringDevice *mo
 		return err
 	}
 	return nil
+}
+
+// GetAllSimple retrieves all monitoring devices with minimal information.
+func (r *monitoringDeviceRepository) GetAllSimple() ([]*models.MonitoringDevice, error) {
+	var devices []*models.MonitoringDevice
+	if err := r.db.Select("device_id, status").Find(&devices).Error; err != nil {
+		return nil, err
+	}
+	return devices, nil
 }
 
 // GetMonitoringDeviceByID retrieves a monitoringDevice by their MonitoringDeviceID.
