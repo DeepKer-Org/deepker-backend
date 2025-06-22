@@ -16,6 +16,18 @@ type BaseRepository[T any] interface {
 	Delete(id interface{}, primaryKey string) error
 	DeleteInTransaction(id interface{}, primaryKey string, tx *gorm.DB) error
 	BeginTransaction() *gorm.DB
+	// Additional common methods
+	Exists(field string, value interface{}) (bool, error)
+	GetByField(field string, value interface{}) ([]*T, error)
+	Count() (int64, error)
+	CountWhere(condition string, args ...interface{}) (int64, error)
+	GetPaginated(offset, limit int, orderBy string) ([]*T, error)
+	CreateBatch(entities []*T) error
+}
+
+// BaseRepositoryInterface alias for easier usage
+type BaseRepositoryInterface[T any] interface {
+	BaseRepository[T]
 }
 
 type baseRepository[T any] struct {
@@ -105,4 +117,65 @@ func (r *baseRepository[T]) DeleteInTransaction(id interface{}, primaryKey strin
 		return err
 	}
 	return nil
+}
+
+// Exists checks if a record exists with the given field and value
+func (r *baseRepository[T]) Exists(field string, value interface{}) (bool, error) {
+	var count int64
+	err := r.db.Model(new(T)).Where(field+" = ?", value).Count(&count).Error
+	return count > 0, err
+}
+
+// GetByField retrieves records by a specific field
+func (r *baseRepository[T]) GetByField(field string, value interface{}) ([]*T, error) {
+	var entities []*T
+	if err := r.db.Where(field+" = ?", value).Find(&entities).Error; err != nil {
+		return nil, err
+	}
+	return entities, nil
+}
+
+// Count returns the total number of records
+func (r *baseRepository[T]) Count() (int64, error) {
+	var count int64
+	err := r.db.Model(new(T)).Count(&count).Error
+	return count, err
+}
+
+// CountWhere returns the count of records matching the condition
+func (r *baseRepository[T]) CountWhere(condition string, args ...interface{}) (int64, error) {
+	var count int64
+	err := r.db.Model(new(T)).Where(condition, args...).Count(&count).Error
+	return count, err
+}
+
+// GetPaginated retrieves records with pagination and ordering
+func (r *baseRepository[T]) GetPaginated(offset, limit int, orderBy string) ([]*T, error) {
+	var entities []*T
+	query := r.db.Offset(offset).Limit(limit)
+	
+	if orderBy != "" {
+		query = query.Order(orderBy)
+	}
+	
+	if err := query.Find(&entities).Error; err != nil {
+		return nil, err
+	}
+	return entities, nil
+}
+
+// CreateBatch creates multiple records in a single transaction
+func (r *baseRepository[T]) CreateBatch(entities []*T) error {
+	if len(entities) == 0 {
+		return nil
+	}
+	
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		for _, entity := range entities {
+			if err := tx.Create(entity).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }

@@ -8,11 +8,8 @@ import (
 	"biometric-data-backend/redis"
 	"biometric-data-backend/repository"
 	"biometric-data-backend/service"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
-	"os"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -33,15 +30,7 @@ const (
 )
 
 func CORSMiddleware() gin.HandlerFunc {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("No .env file found, using default configuration")
-	}
-
-	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
-	if allowedOrigin == "" {
-		allowedOrigin = "http://localhost:3000"
-	}
+	allowedOrigin := config.App.CORS.AllowedOrigin
 
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
@@ -78,8 +67,19 @@ func registerCrudRoutesWithMiddleware(router *gin.Engine, resource string, creat
 }
 
 func RegisterRoutes(router *gin.Engine, db *gorm.DB) {
-	// Initialize Redis cache manager
-	cacheManager := redis.NewCacheManager(config.RedisClient, 5*time.Minute)
+	// Initialize Redis cache manager with configurable settings
+	var cacheManager *redis.CacheManager
+	if config.IsCacheEnabled() {
+		cacheManager = redis.NewCacheManagerWithEnabled(
+			config.RedisClient, 
+			config.App.Cache.DefaultTTL,
+			config.App.Cache.Enabled,
+		)
+		log.Printf("Cache manager initialized: enabled=%v, TTL=%v", config.App.Cache.Enabled, config.App.Cache.DefaultTTL)
+	} else {
+		cacheManager = redis.NewCacheManagerWithEnabled(nil, 0, false)
+		log.Println("Cache manager initialized: disabled")
+	}
 	// Apply CORS middleware to the router
 	router.Use(CORSMiddleware())
 	// JWT Auth

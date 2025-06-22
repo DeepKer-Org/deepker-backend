@@ -4,7 +4,6 @@ import (
 	"biometric-data-backend/utils"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/go-redis/redis/v8"
 	"gorm.io/driver/postgres"
@@ -23,21 +22,19 @@ var (
 
 // LoadConfig loads the database configuration and establishes the connection with PostgreSQL
 func LoadConfig() {
-	DBUser = os.Getenv("DB_USER")
-	DBPassword = os.Getenv("DB_PASSWORD")
-	DBName = os.Getenv("DB_NAME")
-	DBHost = os.Getenv("DB_HOST")
-	DBPort = os.Getenv("DB_PORT")
-	sslmode := os.Getenv("SSL_MODE")
-	TimeZone := os.Getenv("TIME_ZONE")
+	// Load app configuration first
+	LoadAppConfig()
 
-	if DBUser == "" || DBPassword == "" || DBName == "" || DBHost == "" || DBPort == "" {
-		log.Fatal("Database configuration not set")
-	}
+	// Use configuration from app config
+	DBUser = App.DB.User
+	DBPassword = App.DB.Password
+	DBName = App.DB.Name
+	DBHost = App.DB.Host
+	DBPort = App.DB.Port
 
 	// Build the connection string for PostgreSQL
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
-		DBHost, DBUser, DBPassword, DBName, DBPort, sslmode, TimeZone)
+		DBHost, DBUser, DBPassword, DBName, DBPort, App.DB.SSLMode, App.DB.TimeZone)
 
 	// Connect to the database
 	var err error
@@ -76,28 +73,23 @@ var (
 	RedisPassword string
 )
 
-// LoadRedisConfig initializes the Redis client with the configuration from environment variables.
+// LoadRedisConfig initializes the Redis client with the configuration from app config.
 func LoadRedisConfig() {
-	// Check if caching is enabled
-    cacheEnabled := os.Getenv("CACHE_ENABLED") != "false"
-    if !cacheEnabled {
-        log.Println("Cache is disabled. Skipping Redis initialization.")
-        return
-    }
-
-	RedisHost = os.Getenv("REDIS_HOST")
-	RedisPort = os.Getenv("REDIS_PORT")
-	RedisPassword = os.Getenv("REDIS_PASSWORD")
-
-	if RedisHost == "" || RedisPort == "" {
-		log.Fatal("Redis configuration not set")
+	// Check if Redis is enabled
+	if !IsRedisEnabled() {
+		log.Println("Redis is disabled. Skipping Redis initialization.")
+		return
 	}
+
+	RedisHost = App.Redis.Host
+	RedisPort = App.Redis.Port
+	RedisPassword = App.Redis.Password
 
 	// Initialize Redis client
 	RedisClient = redis.NewClient(&redis.Options{
 		Addr:     RedisHost + ":" + RedisPort,
-		Password: RedisPassword, // Leave empty if no password
-		DB:       0,             // Use default DB
+		Password: RedisPassword,
+		DB:       App.Redis.DB,
 	})
 
 	// Test the connection

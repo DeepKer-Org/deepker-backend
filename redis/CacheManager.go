@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"os"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -19,22 +18,33 @@ type CacheManager struct {
 
 // NewCacheManager creates a new instance of CacheManager.
 func NewCacheManager(client *redis.Client, ttl time.Duration) *CacheManager {
-	// Check if caching is enabled via environment variable
-    cacheEnabled := os.Getenv("CACHE_ENABLED") != "false"
-
 	return &CacheManager{
-		client: client,
-		ttl:    ttl,
-		enabled: cacheEnabled,
+		client:  client,
+		ttl:     ttl,
+		enabled: client != nil, // Enable only if Redis client is available
 	}
+}
+
+// NewCacheManagerWithEnabled creates a new instance of CacheManager with explicit enabled flag.
+func NewCacheManagerWithEnabled(client *redis.Client, ttl time.Duration, enabled bool) *CacheManager {
+	return &CacheManager{
+		client:  client,
+		ttl:     ttl,
+		enabled: enabled && client != nil,
+	}
+}
+
+// IsEnabled returns whether caching is enabled
+func (cm *CacheManager) IsEnabled() bool {
+	return cm.enabled && cm.client != nil
 }
 
 // Get retrieves a value from the cache and deserializes it.
 func (cm *CacheManager) Get(ctx context.Context, key string, dest interface{}) (bool, error) {
-	if !cm.enabled {
-        log.Printf("Cache is disabled. Skipping Get for key: %s", key)
-        return false, nil
-    }
+	if !cm.IsEnabled() {
+		log.Printf("Cache is disabled. Skipping Get for key: %s", key)
+		return false, nil
+	}
 	cached, err := cm.client.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		// Key not found in cache
@@ -55,10 +65,10 @@ func (cm *CacheManager) Get(ctx context.Context, key string, dest interface{}) (
 
 // Set serializes a value and stores it in the cache.
 func (cm *CacheManager) Set(ctx context.Context, key string, value interface{}) error {
-	if !cm.enabled {
-        log.Printf("Cache is disabled. Skipping Set for key: %s", key)
-        return nil
-    }
+	if !cm.IsEnabled() {
+		log.Printf("Cache is disabled. Skipping Set for key: %s", key)
+		return nil
+	}
 	serialized, err := json.Marshal(value)
 	if err != nil {
 		return err
@@ -69,9 +79,9 @@ func (cm *CacheManager) Set(ctx context.Context, key string, value interface{}) 
 
 // Delete removes one or more keys from the cache.
 func (cm *CacheManager) Delete(ctx context.Context, keys ...string) error {
-	if !cm.enabled {
-        log.Printf("Cache is disabled. Skipping Delete for keys: %v", keys)
-        return nil
-    }
+	if !cm.IsEnabled() {
+		log.Printf("Cache is disabled. Skipping Delete for keys: %v", keys)
+		return nil
+	}
 	return cm.client.Del(ctx, keys...).Err()
 }
