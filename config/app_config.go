@@ -85,10 +85,10 @@ func LoadAppConfig() *AppConfig {
 			Port:     getEnvOrDefault("REDIS_PORT", "6379"),
 			Password: getEnvOrDefault("REDIS_PASSWORD", ""),
 			DB:       getEnvAsInt("REDIS_DB", 0),
-			Enabled:  getEnvAsBool("REDIS_ENABLED", true),
+			Enabled:  getEnvAsBool("REDIS_ENABLED", false),
 		},
 		Cache: CacheConfig{
-			Enabled:    getEnvAsBool("CACHE_ENABLED", true),
+			Enabled:    getEnvAsBool("CACHE_ENABLED", false),
 			DefaultTTL: getEnvAsDuration("CACHE_DEFAULT_TTL", 5*time.Minute),
 		},
 		JWT: JWTConfig{
@@ -108,7 +108,7 @@ func LoadAppConfig() *AppConfig {
 		log.Fatal("JWT_SECRET_KEY is required")
 	}
 
-	log.Printf("Configuration loaded: Cache enabled: %v, Redis enabled: %v", 
+	log.Printf("Configuration loaded: Cache enabled: %v, Redis enabled: %v",
 		App.Cache.Enabled, App.Redis.Enabled)
 
 	return App
